@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\source\apps\calcextent\main.cpp" />
+    <ClCompile Include="..\..\source\core\xml\BaseTypeConversion.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\xml\ClassExport.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\xml\PropertyBase.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\xml\Tokenizer.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\string\ConvertUTF.cpp">
+      <Filter>string</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\string\FilenameUtils.cpp">
+      <Filter>string</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\string\StringUtils.cpp">
+      <Filter>string</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\CommonPath.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\FileSystem.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\image\ImageHandler.cpp">
+      <Filter>image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\image\ImageWriter.cpp">
+      <Filter>image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\image\stb_image.c">
+      <Filter>image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\image\lodepng\lodepng.cpp">
+      <Filter>image\lodepng</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="image">
+      <UniqueIdentifier>{18df2d8c-5c2a-4cee-aecc-88ef0b0540f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{f4a7f2db-dedb-468d-874e-c9b3afb0b161}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="string">
+      <UniqueIdentifier>{f224944e-114e-42d5-97e6-938e7b096277}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xml">
+      <UniqueIdentifier>{bfa327d8-fbc4-419e-9113-4d9560472bfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="image\lodepng">
+      <UniqueIdentifier>{009ef466-62fe-4f21-80dc-512d5666876a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="geo">
+      <UniqueIdentifier>{187f878a-1d1b-407b-ad08-c3a9803724fa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\source\core\xml\ClassExport.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\xml\PropertyBase.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\xml\Tokenizer.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\xml\xml.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\string\ConvertUTF.h">
+      <Filter>string</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\string\FilenameUtils.h">
+      <Filter>string</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\string\StringUtils.h">
+      <Filter>string</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\CommonPath.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\FileSystem.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\ImageHandler.h">
+      <Filter>image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\ImageWriter.h">
+      <Filter>image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\stb_image_write.h">
+      <Filter>image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\lodepng\lodepng.h">
+      <Filter>image\lodepng</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\og.h" />
+    <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
+      <Filter>geo</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\source\core\image\ImageHandler.inl">
+      <Filter>image</Filter>
+    </None>
+  </ItemGroup>
+</Project>
