@@ -42,6 +42,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(SolutionDir)tmp\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\..\bin\</OutDir>
+    <TargetName>$(ProjectName)_debug</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
