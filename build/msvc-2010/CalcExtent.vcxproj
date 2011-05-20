@@ -56,6 +56,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -86,6 +87,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -113,6 +115,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\source\apps\calcextent\main.cpp" />
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp" />
+    <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageHandler.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageWriter.cpp" />
     <ClCompile Include="..\..\source\core\image\lodepng\lodepng.cpp" />
@@ -129,12 +132,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h" />
+    <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h" />
     <ClInclude Include="..\..\source\core\image\ImageHandler.h" />
     <ClInclude Include="..\..\source\core\image\ImageWriter.h" />
     <ClInclude Include="..\..\source\core\image\lodepng\lodepng.h" />
     <ClInclude Include="..\..\source\core\image\stb_image_write.h" />
     <ClInclude Include="..\..\source\core\io\CommonPath.h" />
     <ClInclude Include="..\..\source\core\io\FileSystem.h" />
+    <ClInclude Include="..\..\source\core\math\mathutils.h" />
+    <ClInclude Include="..\..\source\core\math\vec3.h" />
     <ClInclude Include="..\..\source\core\og.h" />
     <ClInclude Include="..\..\source\core\string\ConvertUTF.h" />
     <ClInclude Include="..\..\source\core\string\FilenameUtils.h" />

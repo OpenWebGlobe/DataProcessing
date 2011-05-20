@@ -44,6 +44,9 @@
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
       <Filter>geo</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="image">
@@ -63,6 +66,9 @@
     </Filter>
     <Filter Include="geo">
       <UniqueIdentifier>{187f878a-1d1b-407b-ad08-c3a9803724fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{fd8fbcaf-3f9d-40a4-ac4e-a5db40bb9e3e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -108,6 +114,15 @@
     <ClInclude Include="..\..\source\core\og.h" />
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
       <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h">
+      <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\mathutils.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\vec3.h">
+      <Filter>math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

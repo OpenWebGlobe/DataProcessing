@@ -1,10 +1,19 @@
 /*******************************************************************************
-Project       : i3D OpenGlobe SDK - Reference Implementation
-Version       : 1.0
-Author        : Martin Christen, martin.christen@fhnw.ch
-Copyright     : (c) 2006-2010 by FHNW/IVGI. All Rights Reserved
-
-$License$
+#      ____               __          __  _      _____ _       _               #
+#     / __ \              \ \        / / | |    / ____| |     | |              #
+#    | |  | |_ __   ___ _ __ \  /\  / /__| |__ | |  __| | ___ | |__   ___      #
+#    | |  | | '_ \ / _ \ '_ \ \/  \/ / _ \ '_ \| | |_ | |/ _ \| '_ \ / _ \     #
+#    | |__| | |_) |  __/ | | \  /\  /  __/ |_) | |__| | | (_) | |_) |  __/     #
+#     \____/| .__/ \___|_| |_|\/  \/ \___|_.__/ \_____|_|\___/|_.__/ \___|     #
+#           | |                                                                #
+#           |_|                                                                #
+#                                                                              #
+#                                (c) 2011 by                                   #
+#           University of Applied Sciences Northwestern Switzerland            #
+#                     Institute of Geomatics Engineering                       #
+#                           martin.christen@fhnw.ch                            #
+********************************************************************************
+*     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
 #include "ImageHandler.h"
