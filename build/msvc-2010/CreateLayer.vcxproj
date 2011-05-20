@@ -11,10 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{53BD189F-1BD8-4654-89E8-53B00BFE9D00}</ProjectGuid>
+    <ProjectGuid>{53BD189F-1BD8-4654-89E8-53B00BFE9D01}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>DataProcessing</RootNamespace>
-    <ProjectName>calcextent</ProjectName>
+    <ProjectName>createlayer</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -114,7 +114,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\source\apps\calcextent\main.cpp" />
+    <ClCompile Include="..\..\source\apps\createlayer\main.cpp" />
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp" />
     <ClCompile Include="..\..\source\core\geo\ImageLayer.cpp" />
     <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp" />
@@ -144,7 +144,6 @@
     <ClInclude Include="..\..\source\core\io\FileSystem.h" />
     <ClInclude Include="..\..\source\core\math\mathutils.h" />
     <ClInclude Include="..\..\source\core\math\vec3.h" />
-    <ClInclude Include="..\..\source\core\og.h" />
     <ClInclude Include="..\..\source\core\string\ConvertUTF.h" />
     <ClInclude Include="..\..\source\core\string\FilenameUtils.h" />
     <ClInclude Include="..\..\source\core\string\StringUtils.h" />
@@ -154,7 +153,9 @@
     <ClInclude Include="..\..\source\core\xml\xml.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\source\core\image\ImageHandler.inl" />
+    <None Include="..\..\source\core\image\ImageHandler.inl">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

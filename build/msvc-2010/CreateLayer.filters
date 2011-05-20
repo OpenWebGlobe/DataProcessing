@@ -44,10 +44,10 @@
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
       <Filter>geo</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\core\geo\ImageLayer.cpp">
+    <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp">
       <Filter>geo</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp">
+    <ClCompile Include="..\..\source\core\geo\ImageLayer.cpp">
       <Filter>geo</Filter>
     </ClCompile>
   </ItemGroup>
@@ -67,11 +67,11 @@
     <Filter Include="image\lodepng">
       <UniqueIdentifier>{009ef466-62fe-4f21-80dc-512d5666876a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="geo">
+      <UniqueIdentifier>{187f878a-1d1b-407b-ad08-c3a9803724fa}</UniqueIdentifier>
+    </Filter>
     <Filter Include="math">
       <UniqueIdentifier>{fd8fbcaf-3f9d-40a4-ac4e-a5db40bb9e3e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="geo">
-      <UniqueIdentifier>{42315fdb-7701-41c6-865c-dd78a3b3fab9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -115,19 +115,19 @@
       <Filter>image\lodepng</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\core\og.h" />
+    <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
+      <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h">
+      <Filter>geo</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\source\core\math\mathutils.h">
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\core\math\vec3.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
-      <Filter>geo</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\source\core\geo\ImageLayer.h">
-      <Filter>geo</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h">
       <Filter>geo</Filter>
     </ClInclude>
   </ItemGroup>
