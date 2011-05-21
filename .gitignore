@@ -4,6 +4,7 @@
 /bin/*.lib
 /bin/*.pdb
 /bin/*.bat
+/bin/gdal-data
 
 
 
