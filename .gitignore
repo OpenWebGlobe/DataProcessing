@@ -1,5 +1,10 @@
 /external
-/bin
+/bin/*.dll
+/bin/*.exp
+/bin/*.lib
+/bin/*.pdb
+/bin/*.bat
+
 
 
 

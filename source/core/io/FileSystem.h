@@ -19,6 +19,7 @@
 #ifndef _FILESYSTEM_H_
 #define _FILESYSTEM_H_
 
+#include "og.h"
 #include <cassert>
 #include <vector>
 #include <string>
@@ -28,7 +29,7 @@
 //! File utilities like creating directories, removing files, renaming, retrieving modification time etc.
 //! This is based on boost::filesystem (previous versions used wxWidgets and Qt)
 //! \author Martin Christen, martin.christen@fhnw.ch
-class FileSystem
+class OPENGLOBE_API FileSystem
 {
 public:
    /*!

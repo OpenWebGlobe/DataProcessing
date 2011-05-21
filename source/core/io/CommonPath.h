@@ -29,7 +29,7 @@
 //! \author Martin Christen, martin.christen@fhnw.ch
 //! \todo add more common paths (like user directory etc.)
 //! \ingroup file
-class CommonPath
+class OPENGLOBE_API CommonPath
 {
 public:
    //! \brief Retrieve full path to current working directory

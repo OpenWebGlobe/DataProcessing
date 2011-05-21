@@ -33,7 +33,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string>
 
 // If compiled as DLL, export / Import could be defined in LIBRARY_API
-#define LIBRARY_API
+#define LIBRARY_API OPENGLOBE_API
 #define API_EXPORT
 
 // you can enable utf8 and 64bit support if appropriate libraries are available

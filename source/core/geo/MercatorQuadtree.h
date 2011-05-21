@@ -33,7 +33,7 @@
 
 //! \class MercatorQuadtree
 //! \author Martin Christen, martin.christen@fhnw.ch
-class MercatorQuadtree
+class OPENGLOBE_API MercatorQuadtree
 {
 public:
    // For Earth:

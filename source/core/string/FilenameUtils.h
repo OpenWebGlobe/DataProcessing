@@ -28,7 +28,7 @@
 //! These utilities are basically string management for files. All filenames are utf8 encoded.
 //! \ingroup file string
 //! \author Martin Christen, martin.christen@fhnw.ch
-class FilenameUtils
+class OPENGLOBE_API FilenameUtils
 {
 public:
    //! \brief Append delimiter to a path

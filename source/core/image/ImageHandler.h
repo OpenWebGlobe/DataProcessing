@@ -38,7 +38,7 @@ namespace Img
 }
 
 //----------------------------------------------------------------------------
-class ImageObject
+class OPENGLOBE_API ImageObject
 {
 public:
    ImageObject();

@@ -20,11 +20,12 @@
 #ifndef _GN_COORDINATETRANSFORMATION_H_
 #define _GN_COORDINATETRANSFORMATION_H_
 
+#include "og.h"
 #include <string>
 
 //! \class CoordinateTransformation
 //! \author Martin Christen, martin.christen@fhnw.ch
-class CoordinateTransformation
+class OPENGLOBE_API CoordinateTransformation
 {
 public:
    //! Constructor using Source/Dest EPSG code
@@ -66,7 +67,7 @@ private:
 
 //! \class Mercator
 //! \author Martin Christen, martin.christen@fhnw.ch
-class Mercator
+class OPENGLOBE_API Mercator
 {
 public:
    Mercator();

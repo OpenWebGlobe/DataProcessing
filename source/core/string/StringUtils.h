@@ -28,7 +28,7 @@
 //! \brief String Manipulation Utilities
 //! \ingroup string
 //! \author Martin Christen, martin.christen@fhnw.ch
-class StringUtils
+class OPENGLOBE_API StringUtils
 {
 public:
    //! \brief Retrieve left part of a wide string.

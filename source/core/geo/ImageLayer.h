@@ -19,18 +19,20 @@
 #ifndef _IMAGELAYER_H
 #define _IMAGELAYER_H
 
+#include "og.h"
 #include <string>
 
-class ImageLayer
+class OPENGLOBE_API ImageLayer
 {
 public:
-   ImageLayer(){}
+   ImageLayer();
    virtual ~ImageLayer(){}
-
-
 
 protected:
    std::string _sLayername;
+   int         _maxlod;
+   double      _tilex0, _tiley0, _tilex1, _tiley1;
+   std::string _sPath;
 
 
 };
