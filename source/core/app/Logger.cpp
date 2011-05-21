@@ -9,12 +9,12 @@ using namespace boost::gregorian;
 
 //------------------------------------------------------------------------------
 
-Logger::Logger(const std::string& sLogPath)
+Logger::Logger(const std::string& sLogPath, const std::string& appname)
 {
    std::string sPath = FilenameUtils::DelimitPath(sLogPath);
    ptime now = microsec_clock::local_time();
    std::string timestring = to_iso_string(now);
-   sPath = sPath + timestring + ".log";
+   sPath = sPath + appname + "_" + timestring + ".log";
 
    out.open(sPath);
 }

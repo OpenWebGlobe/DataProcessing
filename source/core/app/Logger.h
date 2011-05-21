@@ -6,7 +6,7 @@
 class OPENGLOBE_API Logger
 {
 public:
-   Logger(const std::string& sLogPath);
+   Logger(const std::string& sLogPath, const std::string& appname);
    virtual ~Logger();
 
    void Warn(const std::string& warning);
