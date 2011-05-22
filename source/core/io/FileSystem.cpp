@@ -66,9 +66,16 @@ bool FileSystem::rm(const std::string& sFile)
 
 bool FileSystem::rm_all(const std::string& sDirectory)
 {
-   boost::filesystem::remove_all(sDirectory);
+   try
+   {
+      boost::filesystem::remove_all(sDirectory);
+   }
+   catch ( std::exception const & ex )
+   {
+      return false;
+   }
 
-   return !boost::filesystem::exists(sDirectory);
+   return true;
 
 }
 

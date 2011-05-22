@@ -20,21 +20,37 @@
 #define _IMAGELAYER_H
 
 #include "og.h"
+#include <boost/shared_ptr.hpp>
 #include <string>
 
-class OPENGLOBE_API ImageLayer
+class OPENGLOBE_API ImageLayerSettings
 {
 public:
-   ImageLayer();
-   virtual ~ImageLayer(){}
+   ImageLayerSettings();
+   virtual ~ImageLayerSettings(){}
+
+   // Setters/Getters:
+
+   void SetLayerName(const std::string& sLayername) {_sLayername = sLayername;} 
+   void SetMaxLod(int maxlod) {_maxlod = maxlod;}
+   void SetTileExtent(int64 x0, int64 y0, int64 x1, int64 y1) { _tilex0 = x0; _tiley0 = y0; _tilex1 = x1; _tiley1 = y1;}
+
+   // Load from XML
+   static boost::shared_ptr<ImageLayerSettings> Load(const std::string& layerdir);
+
+   // Save to XML
+   bool Save(const std::string& layerdir);
 
 protected:
    std::string _sLayername;
+   std::string _sLayertype;
    int         _maxlod;
-   double      _tilex0, _tiley0, _tilex1, _tiley1;
-   std::string _sPath;
+   std::string _srs;
+   int64       _tilex0, _tiley0, _tilex1, _tiley1;
 
-
+private:
+   static std::string _xmlsettingsfile;
+   static std::string _jsonsettingsfile;
 };
 
 

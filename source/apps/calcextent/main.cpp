@@ -18,32 +18,10 @@
 
 //------------------------------------------------------------------------------
 
-#include "gdal.h"
-#include "ogr_api.h"
-#include "cpl_conv.h"
 #include "geo/MercatorQuadtree.h"
 #include "geo/CoordinateTransformation.h"
 #include "string/FilenameUtils.h"
 #include <iostream>
-
-
-//------------------------------------------------------------------------------
-
-void init_gdal()
-{
-   GDALAllRegister();
-   CPLSetConfigOption("GDAL_CACHEMAX", "0");  
-   CPLSetConfigOption("GDAL_DATA", "gdal-data");
-   OGRRegisterAll();
-}
-
-//------------------------------------------------------------------------------
-
-void exit_gdal()
-{
-   GDALDestroyDriverManager();
-   OGRCleanupAll();
-}
 
 //------------------------------------------------------------------------------
 

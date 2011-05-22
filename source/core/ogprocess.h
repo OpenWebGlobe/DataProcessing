@@ -16,25 +16,12 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#include "ImageLayer.h"
-#include "xml/xml.h"
+#ifndef _OG_PROCESS_H
+#define _OG_PROCESS_H
 
-//------------------------------------------------------------------------------
-BeginPropertyMap(ImageLayer);
-  XMLProperty(ImageLayer, "Layername" , _sLayername);
-  XMLProperty(ImageLayer, "x0", _tilex0);
-  XMLProperty(ImageLayer, "y0", _tiley0);
-  XMLProperty(ImageLayer, "x1", _tilex1);
-  XMLProperty(ImageLayer, "y1", _tiley1);
-  XMLProperty(ImageLayer, "Path", _sPath);
-EndPropertyMap(ImageLayer);
-//------------------------------------------------------------------------------
+#include "og.h"
 
-ImageLayer::ImageLayer()
-{
-   //_sLayername;
-   _maxlod = 0;
-   _tilex0 =_tiley0 = _tilex1 = _tiley1 = 0;
-   //_sPath;
-}
 
+
+
+#endif
