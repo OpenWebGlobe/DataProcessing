@@ -66,7 +66,7 @@ CoordinateTransformation::CoordinateTransformation(unsigned int nSourceEPSG, uns
       nDestEPSG = 4326;
       _nDest2 = 3395;
    }
-   else if (nDestEPSG == 3785) // Spherical "Web-Mercator"
+   else if (nDestEPSG == 3785 || nDestEPSG == 900913 ||  nDestEPSG == 3857) // Spherical "Web-Mercator"
    {
       nDestEPSG = 4326;
       _nDest2 = 3785;
