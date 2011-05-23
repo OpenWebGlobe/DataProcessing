@@ -34,6 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <list>
 #include <map>
 #include <ostream>
+#include <typeinfo>
 
 //-----------------------------------------------------------------------------
 // One way to use offsetof is the C-offsetof for POD data on a class. This is

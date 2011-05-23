@@ -19,6 +19,8 @@ permission of Martin Christen, martin.christen@gmail.com
 #include <string/StringUtils.h>
 #endif
 
+#include <cstdlib>
+
 //---------------------------------------------------------------------------
 
 void Tokenize(std::string& sInput, char cSep, std::vector<std::string>& sOut)

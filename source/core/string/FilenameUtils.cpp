@@ -20,6 +20,7 @@
 #include "StringUtils.h"
 #include <locale>
 #include <iostream>
+#include <cmath>
 
 
 // Implementation for Wide Strings

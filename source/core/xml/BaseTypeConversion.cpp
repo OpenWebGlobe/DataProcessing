@@ -35,6 +35,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <vector>
 #include <map>
 #include <ctype.h>
+#include <cstdlib>
 
 #ifdef ENABLE_64BIT
 namespace internal

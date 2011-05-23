@@ -28,6 +28,7 @@
 #include "string/FilenameUtils.h"
 #include "string/StringUtils.h"
 #include "io/FileSystem.h"
+#include <float.h>
 #include <iostream>
 #include <ctime>
 #include <boost/program_options.hpp>
