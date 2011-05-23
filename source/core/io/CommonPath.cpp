@@ -26,6 +26,7 @@ std::string CommonPath::_sSceneRoot;
 #pragma warning(disable : 4245)
 #endif
 
+#define BOOST_FILESYSTEM_VERSION 2
 #include <boost/filesystem.hpp>
 #include <cstdlib> 
 
