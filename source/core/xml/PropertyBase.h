@@ -395,7 +395,7 @@ class API_EXPORT _Accessor_##classname : public classname, public Access::BaseCl
 
                std::string sClassName = types::GetClassNameFromTypeIdName(typeid(T).name());
 
-               std::list<T>::iterator it = pData->begin();
+               T* it = pData->begin();
                while (it!=pData->end())
                {
                   std::ostringstream sPropertyXML;
