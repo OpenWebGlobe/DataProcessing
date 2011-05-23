@@ -394,7 +394,7 @@ namespace math
    //! \ingroup math shader
    inline unsigned long Pow2(int k)
    {
-      return	(unsigned long(1) << (k));
+      return	((unsigned long)(1) << (k));
    }
    //--------------------------------------------------------------------------
    //! \ingroup math shader
