@@ -292,7 +292,7 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
    {
    public:
       static void Deserialize(std::istream& iStream, const std::string& sClassName, const std::string& sClassEnd, void* pObject, int counter = 1);
-      static std::string GetTag(std::istream& iStream, bool& bIsValueTag, bool ignoreattrib = true, std::string& attribs = std::string());
+      static std::string GetTag(std::istream& iStream, bool& bIsValueTag, bool ignoreattrib = true, std::string attribs = std::string());
       static std::vector<std::pair<std::string, std::string> > ParseAttribs(const std::string& attribs);
       static std::string GetValue(std::istream& iStream);
       static void PutBackTag(std::istream& iStream, const std::string& sTag);

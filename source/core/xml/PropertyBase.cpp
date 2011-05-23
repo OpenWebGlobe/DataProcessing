@@ -711,7 +711,7 @@ std::string ObjectFactory::ReadXML(std::istream& iStream, const std::string& sTa
 
 //--------------------------------------------------------------------------
 
-std::string ObjectFactory::GetTag(std::istream& iStream, bool& bIsValueTag, bool ignoreattrib, std::string& attribs)
+std::string ObjectFactory::GetTag(std::istream& iStream, bool& bIsValueTag, bool ignoreattrib, std::string attribs)
 {
    char ch = 'M';
    bool bSearchStartTag = true;
