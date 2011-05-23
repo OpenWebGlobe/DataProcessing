@@ -5,7 +5,7 @@
 /bin/*.pdb
 /bin/*.bat
 /bin/gdal-data
-
-
-
-
+/bin/calcextent
+/bin/createlayer
+/bin/libOpenWebGlobeProcessing.a
+*.o

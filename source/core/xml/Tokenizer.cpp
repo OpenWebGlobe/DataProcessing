@@ -19,6 +19,8 @@ permission of Martin Christen, martin.christen@gmail.com
 #include <string/StringUtils.h>
 #endif
 
+#include <cstdlib>
+
 //---------------------------------------------------------------------------
 
 void Tokenize(std::string& sInput, char cSep, std::vector<std::string>& sOut)
@@ -138,7 +140,7 @@ void Tokenize(std::string& sInput, char cSep, std::vector<int64>& sOut)
       if (cCmp == cSep)
       {
          // found separator
-         sOut.push_back(_atoi64(sCurrent.c_str()));
+         sOut.push_back(atoll(sCurrent.c_str()));
          sCurrent.clear();
       }
       else
@@ -148,7 +150,7 @@ void Tokenize(std::string& sInput, char cSep, std::vector<int64>& sOut)
    }
 
    // add last value too
-   sOut.push_back(_atoi64(sCurrent.c_str()));
+   sOut.push_back(atoll(sCurrent.c_str()));
 }
 #endif 
 //---------------------------------------------------------------------------

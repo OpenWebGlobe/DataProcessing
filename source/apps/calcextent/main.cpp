@@ -28,10 +28,12 @@
 #include "string/FilenameUtils.h"
 #include "string/StringUtils.h"
 #include "io/FileSystem.h"
+#include <float.h>
 #include <iostream>
 #include <ctime>
 #include <boost/program_options.hpp>
 #include "omp.h"
+#include <limits>
 
 
 bool init_gdal();
@@ -176,7 +178,7 @@ bool InvertGeoMatrix(double* mGeoMatrix, double* mInvGeoMatrix)
    double	det, inv_det;
    det = mGeoMatrix[1] * mGeoMatrix[5] - mGeoMatrix[2] * mGeoMatrix[4];
 
-   if( fabs(det) < DBL_EPSILON )
+   if( fabs(det) < std::numeric_limits<double>::epsilon() )
       return false;
 
    inv_det = 1.0 / det;

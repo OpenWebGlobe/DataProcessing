@@ -24,6 +24,9 @@
 #include <cmath>
 #include <float.h>
 #include <vector>
+#include <cstring>
+#include <limits>
+#include <cstdlib>
 
 namespace math
 {
@@ -55,7 +58,7 @@ namespace math
    template<>
    inline bool IsZero<double>(double a)
    {
-      return ( math::Abs<double>(a) < DBL_EPSILON);
+      return ( math::Abs<double>(a) < std::numeric_limits<double>::epsilon());
    }   
 
    template<>
@@ -391,7 +394,7 @@ namespace math
    //! \ingroup math shader
    inline unsigned long Pow2(int k)
    {
-      return	(unsigned long(1) << (k));
+      return	((unsigned long)(1) << (k));
    }
    //--------------------------------------------------------------------------
    //! \ingroup math shader

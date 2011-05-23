@@ -31,19 +31,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sstream>
 #include <cassert>
 #include <algorithm>
+#include <cstring>
 
 
 //! \defgroup xml XML
 //! \brief This module contains C++ to XML serialization and deserialization functions.
 
-namespace access
+namespace Access
 {
 
    // find variable:
 
-   inline std::list< std::pair<std::string, access::Variable> >::iterator _FindVariable(std::list< std::pair<std::string, access::Variable> >& lst, std::string key)
+   inline std::list< std::pair<std::string, Access::Variable> >::iterator _FindVariable(std::list< std::pair<std::string, Access::Variable> >& lst, std::string key)
    {
-      std::list< std::pair<std::string, access::Variable> >::iterator it = lst.begin();
+      std::list< std::pair<std::string, Access::Variable> >::iterator it = lst.begin();
 
       while (it != lst.end())
       {
@@ -54,7 +55,7 @@ namespace access
           // special case: class is serialized directly
           if ((*it).first.size() == 0)
           {
-               access::Variable var = (*it).second;
+               Access::Variable var = (*it).second;
                if (var.sClassname == key)
                   return it;
           }
@@ -86,9 +87,9 @@ namespace access
 
       // Check if "Type to String Conversion" function is available:
       std::map<std::string, TypeToStringConversionFunc>::iterator func_it;
-      func_it = access::BaseClass::GetStringConversionMap().find(sTypename);
+      func_it = Access::BaseClass::GetStringConversionMap().find(sTypename);
 
-      if (func_it != access::BaseClass::GetStringConversionMap().end())
+      if (func_it != Access::BaseClass::GetStringConversionMap().end())
       {
          // hurray! found a registered type to function converter!!
          sTypeString = (*func_it).second((void*)(size_t(pInstance)+offset));
@@ -138,9 +139,9 @@ namespace access
             // Can't convert type directly to string. Check if "Type to XML Conversion"
             // Is available
             std::map<std::string, TypeToXMLConversionFunc>::iterator xml_func_it;
-            xml_func_it = access::BaseClass::GetXMLConversionMap().find(sTypename);
+            xml_func_it = Access::BaseClass::GetXMLConversionMap().find(sTypename);
 
-            if (xml_func_it != access::BaseClass::GetXMLConversionMap().end())
+            if (xml_func_it != Access::BaseClass::GetXMLConversionMap().end())
             {
                sXML = (*xml_func_it).second((void*)(size_t(pInstance)+offset), sTag);
             }
@@ -170,9 +171,9 @@ namespace access
    {
       std::ostringstream os;
       std::map<std::string, TypeToStringConversionFunc>::iterator func_it;
-      func_it = access::BaseClass::GetStringConversionMap().find(sTypename);
+      func_it = Access::BaseClass::GetStringConversionMap().find(sTypename);
 
-      if (func_it != access::BaseClass::GetStringConversionMap().end())
+      if (func_it != Access::BaseClass::GetStringConversionMap().end())
       {
          // hurray! found a registered type to function converter!!
          return (*func_it).second((void*)(size_t(pInstance)+offset));
@@ -190,11 +191,11 @@ namespace access
    bool Variable::FromString(std::string sValue, void* pInstance)
    {
       std::map<std::string, StringToTypeConversionFunc>::iterator func_it;
-      std::map<std::string, StringToTypeConversionFunc>& sMap = access::BaseClass::GetStringToTypeConversionMap();
+      std::map<std::string, StringToTypeConversionFunc>& sMap = Access::BaseClass::GetStringToTypeConversionMap();
 
-      func_it = access::BaseClass::GetStringToTypeConversionMap().find(sTypename);
+      func_it = Access::BaseClass::GetStringToTypeConversionMap().find(sTypename);
 
-      if (func_it != access::BaseClass::GetStringToTypeConversionMap().end())
+      if (func_it != Access::BaseClass::GetStringToTypeConversionMap().end())
       {
          // hurray! found a registered type to function converter!!
          (*func_it).second((void*)(size_t(pInstance)+offset), sValue);
@@ -262,7 +263,7 @@ namespace access
 
    std::string Members::ToXML(void* pInstance, bool bAdvance)
    {
-      std::list< std::pair<std::string, access::Variable> >::iterator it = _mapNameOffset.begin();
+      std::list< std::pair<std::string, Access::Variable> >::iterator it = _mapNameOffset.begin();
 
       std::string sRet;
 
@@ -314,7 +315,7 @@ namespace access
    std::string Members::GetValue(std::string sMember, void* pInstance)
    {
 
-      std::list< std::pair<std::string, access::Variable> >::iterator it = _FindVariable(_mapNameOffset, sMember);
+      std::list< std::pair<std::string, Access::Variable> >::iterator it = _FindVariable(_mapNameOffset, sMember);
       if (it == _mapNameOffset.end())
          return std::string();
 
@@ -326,7 +327,7 @@ namespace access
 
    bool Members::SetValue(std::string sValue, std::string sMember, void* pInstance)
    {
-      std::list< std::pair<std::string, access::Variable> >::iterator it = _FindVariable(_mapNameOffset, sMember);
+      std::list< std::pair<std::string, Access::Variable> >::iterator it = _FindVariable(_mapNameOffset, sMember);
       if (it == _mapNameOffset.end())
          return false;
 
@@ -440,8 +441,8 @@ namespace access
 
    void Class::InitClass(std::string sBaseClass)
    {
-      std::map<std::string, access::BaseClass*>& classmap = access::BaseClass::GetClassMap();
-      std::map<std::string, access::BaseClass*>::iterator mapit;
+      std::map<std::string, Access::BaseClass*>& classmap = Access::BaseClass::GetClassMap();
+      std::map<std::string, Access::BaseClass*>::iterator mapit;
 
       mapit = classmap.find(sBaseClass);
       if (mapit != classmap.end())
@@ -463,7 +464,7 @@ namespace access
 
       Members& oMembers = (*it).second;
 
-      std::list< std::pair<std::string, access::Variable> >::iterator varit = _FindVariable(oMembers.GetVariableMap(),sMember);
+      std::list< std::pair<std::string, Access::Variable> >::iterator varit = _FindVariable(oMembers.GetVariableMap(),sMember);
       if (varit == oMembers.GetVariableMap().end())
          return false;
 
@@ -504,7 +505,7 @@ namespace access
 
       if (Class::GetMembers(ClassName, oMembers))
       {
-         std::list< std::pair<std::string, access::Variable> >::iterator it;
+         std::list< std::pair<std::string, Access::Variable> >::iterator it;
          it = _FindVariable(oMembers.GetVariableMap(), MemberName);
 
          if (it != oMembers.GetVariableMap().end())
@@ -627,13 +628,13 @@ void ObjectFactory::Deserialize(std::istream& iStream, const std::string& sClass
 
       if (bIsValueTag)
       {
-         if (!access::Class::SetValue(sNextValue, sClassName, sNextTag, pObject))
+         if (!Access::Class::SetValue(sNextValue, sClassName, sNextTag, pObject))
          {
-            std::string sNewClassName = access::Class::GetBaseClassName(sClassName, sNextTag);
+            std::string sNewClassName = Access::Class::GetBaseClassName(sClassName, sNextTag);
             if (sNewClassName.length() > 0)
             {
-               access::Variable outVar;
-               if (access::Class::GetVariable(sClassName, sNextTag, outVar))
+               Access::Variable outVar;
+               if (Access::Class::GetVariable(sClassName, sNextTag, outVar))
                {
                   void* newAddress = (void*)(size_t(pObject) + size_t(outVar.offset));
                   std::string sNewClassNameEnd = std::string("/") + sNewClassName;
@@ -651,13 +652,13 @@ void ObjectFactory::Deserialize(std::istream& iStream, const std::string& sClass
                std::string sXML = ObjectFactory::ReadXML(iStream, sNextTag);
 
 
-               access::Variable outVar;
-               if (access::Class::GetVariable(sClassName, sNextTag, outVar))
+               Access::Variable outVar;
+               if (Access::Class::GetVariable(sClassName, sNextTag, outVar))
                {
-                  std::map<std::string, access::XMLToTypeConversionFunc>::iterator func_it;
+                  std::map<std::string, Access::XMLToTypeConversionFunc>::iterator func_it;
 
-                  func_it = access::BaseClass::GetXMLToTypeConversionMap().find(outVar.sTypename);
-                  if (func_it != access::BaseClass::GetXMLToTypeConversionMap().end())
+                  func_it = Access::BaseClass::GetXMLToTypeConversionMap().find(outVar.sTypename);
+                  if (func_it != Access::BaseClass::GetXMLToTypeConversionMap().end())
                   {
                      void* newAddress = (void*)(size_t(pObject) + size_t(outVar.offset));
                      (*func_it).second(newAddress, sXML);
@@ -710,7 +711,7 @@ std::string ObjectFactory::ReadXML(std::istream& iStream, const std::string& sTa
 
 //--------------------------------------------------------------------------
 
-std::string ObjectFactory::GetTag(std::istream& iStream, bool& bIsValueTag, bool ignoreattrib, std::string& attribs)
+std::string ObjectFactory::GetTag(std::istream& iStream, bool& bIsValueTag, bool ignoreattrib, std::string attribs)
 {
    char ch = 'M';
    bool bSearchStartTag = true;
