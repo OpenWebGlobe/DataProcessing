@@ -97,7 +97,7 @@ public:
    /*!
    * \brief Lists all subdirectorynames in a directory and returns them in a vector. std::string
    */
-   static std::vector<std::string> FileSystem::GetSubdirsInDirectory(const std::string& sDir);
+   static std::vector<std::string> GetSubdirsInDirectory(const std::string& sDir);
 
    //! \brief Copy File to memory. Returns true if successful. vResult contains the data.
    static bool FileToMemory(const std::string& sPath, std::vector<unsigned char>& vResult);
