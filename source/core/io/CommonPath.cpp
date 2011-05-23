@@ -65,9 +65,14 @@ std::string CommonPath::GetApplicationDirectory(const std::string& appname)
 
 std::string CommonPath::GetCwd()
 {
+#if defined(__linux__)
+   std::string sPath;
+   boost::filesystem2::detail::get_current_path_api(sPath);
+#else
    std::wstring wstr;
    boost::filesystem2::detail::get_current_path_api(wstr);
    std::string sPath = StringUtils::wstring_To_Utf8(wstr);
+#endif
    std::string sPathUnified = FilenameUtils::UnifyPathDelimiter(sPath);
    return FilenameUtils::DelimitPath(sPathUnified);
 }
