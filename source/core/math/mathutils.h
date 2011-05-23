@@ -58,7 +58,7 @@ namespace math
    template<>
    inline bool IsZero<double>(double a)
    {
-      return ( math::Abs<double>(a) < DBL_EPSILON);
+      return ( math::Abs<double>(a) < std::numeric_limits<double>::epsilon());
    }   
 
    template<>
