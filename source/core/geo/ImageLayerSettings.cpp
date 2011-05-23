@@ -56,7 +56,7 @@ boost::shared_ptr<ImageLayerSettings> ImageLayerSettings::Load(const std::string
    boost::shared_ptr<ImageLayerSettings> ret;
 
    std::ifstream ifs;
-   ifs.open(FilenameUtils::DelimitPath(layerdir) + _xmlsettingsfile);
+   ifs.open((FilenameUtils::DelimitPath(layerdir) + _xmlsettingsfile).c_str());
 
    if (ifs.good())
    {
@@ -79,7 +79,7 @@ bool ImageLayerSettings::Save(const std::string& layerdir)
 {
    bool ret = true;
    std::ofstream out;
-   out.open(FilenameUtils::DelimitPath(layerdir) + _xmlsettingsfile);
+   out.open((FilenameUtils::DelimitPath(layerdir) + _xmlsettingsfile).c_str());
    if (out.good())
    {
       Access::Class::ToXML(out, "ImageLayerSettings", this);
@@ -93,7 +93,7 @@ bool ImageLayerSettings::Save(const std::string& layerdir)
 
    // write json file (for WebGL version of the globe)
    std::ofstream jout;
-   jout.open(FilenameUtils::DelimitPath(layerdir) + _jsonsettingsfile);
+   jout.open((FilenameUtils::DelimitPath(layerdir) + _jsonsettingsfile).c_str());
 
    if (jout.good())
    {
