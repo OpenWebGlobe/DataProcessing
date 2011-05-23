@@ -60,7 +60,7 @@ boost::shared_ptr<ImageLayerSettings> ImageLayerSettings::Load(const std::string
 
    if (ifs.good())
    {
-      ImageLayerSettings* pImageLayerSettings = (ImageLayerSettings*)access::Class::FromXML(ifs, "ImageLayerSettings");
+      ImageLayerSettings* pImageLayerSettings = (ImageLayerSettings*)Access::Class::FromXML(ifs, "ImageLayerSettings");
 
       if (pImageLayerSettings)
       {
@@ -82,7 +82,7 @@ bool ImageLayerSettings::Save(const std::string& layerdir)
    out.open(FilenameUtils::DelimitPath(layerdir) + _xmlsettingsfile);
    if (out.good())
    {
-      access::Class::ToXML(out, "ImageLayerSettings", this);
+      Access::Class::ToXML(out, "ImageLayerSettings", this);
    }
    else
    {

@@ -47,7 +47,7 @@ boost::shared_ptr<ProcessingSettings> ProcessingSettings::Load()
 
    if (ifs.good())
    {
-      ProcessingSettings* pProcessingSettings = (ProcessingSettings*)access::Class::FromXML(ifs, "ProcessingSettings");
+      ProcessingSettings* pProcessingSettings = (ProcessingSettings*)Access::Class::FromXML(ifs, "ProcessingSettings");
 
       if (pProcessingSettings)
       {
@@ -68,7 +68,7 @@ void ProcessingSettings::Save()
    out.open("setup.xml");
    if (out.good())
    {
-      access::Class::ToXML(out, "ProcessingSettings", this);
+      Access::Class::ToXML(out, "ProcessingSettings", this);
    }
 
    out.close();

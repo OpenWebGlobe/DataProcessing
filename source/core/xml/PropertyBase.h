@@ -64,27 +64,27 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 #define BeginPropertyMap(classname) \
    namespace internal { \
-class API_EXPORT _Accessor_##classname : public classname, public access::BaseClass \
+class API_EXPORT _Accessor_##classname : public classname, public Access::BaseClass \
       { public:  static bool _bClassInit;                                  \
       virtual ~_Accessor_##classname(){}                                \
       _Accessor_##classname() \
          { \
-         access::BaseClass::GetClassMap().insert(std::pair<std::string, access::BaseClass*>(std::string(""#classname), this));\
-         access::BaseClass::GetTypeMap().insert(std::pair<std::string, std::string>(std::string(typeid(classname).name()),std::string(""#classname)));\
+         Access::BaseClass::GetClassMap().insert(std::pair<std::string, Access::BaseClass*>(std::string(""#classname), this));\
+         Access::BaseClass::GetTypeMap().insert(std::pair<std::string, std::string>(std::string(typeid(classname).name()),std::string(""#classname)));\
          } \
          virtual void DoInit() \
          { \
          if (!_bClassInit) \
             { \
-            access::Members M; \
-            access::Variable V; \
+            Access::Members M; \
+            Access::Variable V; \
             size_t nOffset; \
             size_t nSize; \
             std::string sTypeIdName; \
             M.SetClassname(""#classname); \
             M.SetTypeId(typeid(classname).name());  
 
-#define EndPropertyMap(classname) access::Class::AddClass(std::string(""#classname), M); \
+#define EndPropertyMap(classname) Access::Class::AddClass(std::string(""#classname), M); \
            } \
            _bClassInit = true; \
          } \
@@ -98,7 +98,7 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
    nSize = sizeof(var); \
    sTypeIdName = typeid(var).name();\
    V.offset = nOffset;\
-   V.sClassname = access::BaseClass::GetBaseClassName(sTypeIdName);  \
+   V.sClassname = Access::BaseClass::GetBaseClassName(sTypeIdName);  \
    V.size = nSize; \
    V.readonly = false; \
    V.sTypename = sTypeIdName; \
@@ -108,17 +108,17 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
    nSize = sizeof(var); \
    sTypeIdName = typeid(var).name();\
    V.offset = nOffset;\
-   V.sClassname = access::BaseClass::GetBaseClassName(sTypeIdName);  \
+   V.sClassname = Access::BaseClass::GetBaseClassName(sTypeIdName);  \
    V.size = nSize; \
    V.readonly = true; \
    V.sTypename = sTypeIdName; \
    M.AddVariable(std::string(varname),V);
 
 
-#define Inherits(classname) access::Members m; \
-   if (access::Class::GetMembers(std::string(""#classname), m)) \
+#define Inherits(classname) Access::Members m; \
+   if (Access::Class::GetMembers(std::string(""#classname), m)) \
    { \
-   std::list< std::pair<std::string, access::Variable> >::iterator it = m.GetVariableMap().begin(); \
+   std::list< std::pair<std::string, Access::Variable> >::iterator it = m.GetVariableMap().begin(); \
    while (it != m.GetVariableMap().end()) \
       { \
       M.AddVariable((*it).first,(*it).second); \
@@ -130,32 +130,32 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
 // Macro to define a function to convert a new type to string...
 #define TYPE_TO_STRING_CONVERSION(type, func) namespace internal { class API_EXPORT _TypeToStringConversion_##func \
 { public: \
-   _TypeToStringConversion_##func(){ access::BaseClass::GetStringConversionMap().insert(std::pair<std::string, access::TypeToStringConversionFunc>(typeid(type).name(), func));} \
+   _TypeToStringConversion_##func(){ Access::BaseClass::GetStringConversionMap().insert(std::pair<std::string, Access::TypeToStringConversionFunc>(typeid(type).name(), func));} \
    virtual ~_TypeToStringConversion_##func(){} }; _TypeToStringConversion_##func g_CreateInstance_##func; }  
 
 // Macro to define a function to convert a new type to XML
 #define TYPE_TO_XML_CONVERSION(type, func)  namespace internal { class API_EXPORT _TypeToXMLConversion_##func \
 { public: \
-   _TypeToXMLConversion_##func(){ access::BaseClass::GetXMLConversionMap().insert(std::pair<std::string, access::TypeToXMLConversionFunc>(typeid(type).name(), func));} \
+   _TypeToXMLConversion_##func(){ Access::BaseClass::GetXMLConversionMap().insert(std::pair<std::string, Access::TypeToXMLConversionFunc>(typeid(type).name(), func));} \
    virtual ~_TypeToXMLConversion_##func(){} }; _TypeToXMLConversion_##func g_CreateInstanceXML_##func; } 
 
 //-----------------------------------------------------------------------------
 // Macro to define a function to convert string to type
 #define STRING_TO_TYPE_CONVERSION(type, func)  namespace internal { class API_EXPORT _StringToTypeConversion_##func \
 { public: \
-   _StringToTypeConversion_##func(){ access::BaseClass::GetStringToTypeConversionMap().insert(std::pair<std::string, access::StringToTypeConversionFunc>(typeid(type).name(), func));} \
+   _StringToTypeConversion_##func(){ Access::BaseClass::GetStringToTypeConversionMap().insert(std::pair<std::string, Access::StringToTypeConversionFunc>(typeid(type).name(), func));} \
    virtual ~_StringToTypeConversion_##func(){} }; _StringToTypeConversion_##func g_CreateInstanceString2Type_##func; } 
 
 //-----------------------------------------------------------------------------
 // Macro to define a function to convert xml to type
 #define XML_TO_TYPE_CONVERSION(type, func)  namespace internal { class API_EXPORT _XMLToTypeConversion_##func \
 { public: \
-   _XMLToTypeConversion_##func(){ access::BaseClass::GetXMLToTypeConversionMap().insert(std::pair<std::string, \
-   access::XMLToTypeConversionFunc>(typeid(type).name(), func));} \
+   _XMLToTypeConversion_##func(){ Access::BaseClass::GetXMLToTypeConversionMap().insert(std::pair<std::string, \
+   Access::XMLToTypeConversionFunc>(typeid(type).name(), func));} \
    virtual ~_XMLToTypeConversion_##func(){} }; _XMLToTypeConversion_##func g_CreateInstanceXML2Type_##func; } 
 //-----------------------------------------------------------------------------
 
-   namespace access
+   namespace Access
    {
       typedef std::string(*TypeToStringConversionFunc)(void*);
       typedef std::string(*TypeToXMLConversionFunc)(void*, std::string);
@@ -173,7 +173,7 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
 
          static std::string GetBaseClassName(std::string sRtti);
 
-         static std::map<std::string, access::BaseClass*>& GetClassMap();
+         static std::map<std::string, Access::BaseClass*>& GetClassMap();
          static std::map<std::string, std::string>& GetTypeMap();
 
          // Type -> String or XML
@@ -237,7 +237,7 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
 
          std::string& GetTypeId();
 
-         std::list< std::pair<std::string, access::Variable> >& GetVariableMap(){return _mapNameOffset;}
+         std::list< std::pair<std::string, Access::Variable> >& GetVariableMap(){return _mapNameOffset;}
 
          std::string GetClassname(){return _sClassName;}
 
@@ -249,7 +249,7 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
       protected:
          std::string _sClassTypeId;
          std::string _sClassName;
-         std::list< std::pair<std::string, access::Variable> > _mapNameOffset;
+         std::list< std::pair<std::string, Access::Variable> > _mapNameOffset;
          static int _nXMLAdvance;
       };
 
@@ -355,7 +355,7 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
             if ((*pData).size()>0)
             {
                os << "<" <<  sTag << ">\n";
-               access::Members::IncreaseXMLAdvance();
+               Access::Members::IncreaseXMLAdvance();
 
                std::string sClassName = types::GetClassNameFromTypeIdName(typeid(T).name());
 
@@ -363,12 +363,12 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
                {
                   std::ostringstream sOutXML;
 
-                  access::Class::ToXML(sOutXML, sClassName, &((*pData)[i]), false);
+                  Access::Class::ToXML(sOutXML, sClassName, &((*pData)[i]), false);
                   os << sOutXML.str();
                }
 
-               access::Members::DecreaseXMLAdvance();
-               for (int i=0;i<access::Members::GetXMLadvance();i++)
+               Access::Members::DecreaseXMLAdvance();
+               for (int i=0;i<Access::Members::GetXMLadvance();i++)
                   os << " ";
                os << "</" << sTag << ">";
             }
@@ -391,7 +391,7 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
             if ((*pData).size()>0)
             {
                os << "<" <<  sTag << ">\n";
-               access::Members::IncreaseXMLAdvance();
+               Access::Members::IncreaseXMLAdvance();
 
                std::string sClassName = types::GetClassNameFromTypeIdName(typeid(T).name());
 
@@ -400,13 +400,13 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
                {
                   std::ostringstream sPropertyXML;
 
-                  access::Class::ToXML(sPropertyXML, sClassName, &(*it), false);
+                  Access::Class::ToXML(sPropertyXML, sClassName, &(*it), false);
                   os << sPropertyXML.str();
                   it++;
                }
 
-               access::Members::DecreaseXMLAdvance();
-               for (int i=0;i<access::Members::GetXMLadvance();i++)
+               Access::Members::DecreaseXMLAdvance();
+               for (int i=0;i<Access::Members::GetXMLadvance();i++)
                   os << " ";
                os << "</" << sTag << ">";
             }
@@ -449,7 +449,7 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
                      ObjectFactory::PutBackTag(os, sTag);
                      std::string sNewNodeXML = ObjectFactory::ReadXML(os, sTag);
                      std::istringstream sPropertyXML(sNewNodeXML);
-                     T* p = (T*)access::Class::FromXML(sPropertyXML, sClassName);
+                     T* p = (T*)Access::Class::FromXML(sPropertyXML, sClassName);
 
                      if (p)
                      {
@@ -495,7 +495,7 @@ class API_EXPORT _Accessor_##classname : public classname, public access::BaseCl
                      ObjectFactory::PutBackTag(os, sTag);
                      std::string sNewNodeXML = ObjectFactory::ReadXML(os, sTag);
                      std::istringstream sPropertyXML(sNewNodeXML);
-                     T* p = (T*)access::Class::FromXML(sPropertyXML, sClassName);
+                     T* p = (T*)Access::Class::FromXML(sPropertyXML, sClassName);
 
                      if (p)
                      {
