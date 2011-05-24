@@ -57,6 +57,10 @@ int _createlayer(const std::string& sLayerName,  const std::string& sLayerPath, 
 
 int main(int argc, char *argv[])
 {
+
+   extern void InitBaseTypeConversion(void);
+   InitBaseTypeConversion();
+
    boost::shared_ptr<Logger> qLogger;
    
    // <ogwLoadSettings>

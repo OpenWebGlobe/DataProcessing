@@ -4,8 +4,8 @@
 /bin/*.lib
 /bin/*.pdb
 /bin/*.bat
+/bin/*.o
 /bin/gdal-data
 /bin/calcextent
 /bin/createlayer
 /bin/libOpenWebGlobeProcessing.a
-*.o
