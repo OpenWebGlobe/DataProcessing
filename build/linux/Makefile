@@ -25,27 +25,87 @@ all: \
 	g++ -o $@ $(CFLAGS) $< $(LIBS)
 
 ../../bin/libOpenWebGlobeProcessing.a: \
-	../../source/core/app/Logger.o \
-	../../source/core/app/ProcessingSettings.o \
-	../../source/core/geo/CoordinateTransformation.o \
-	../../source/core/geo/ImageLayerSettings.o \
-	../../source/core/geo/MercatorQuadtree.o \
-	../../source/core/image/ImageHandler.o \
-	../../source/core/image/ImageWriter.o \
-	../../source/core/image/lodepng/lodepng.o \
-	../../source/core/io/CommonPath.o \
-	../../source/core/io/FileSystem.o \
-	../../source/core/ogprocess.o \
-	../../source/core/math/vec3.o \
-	../../source/core/string/ConvertUTF.o \
-	../../source/core/string/ConvertUTF.o \
-	../../source/core/string/FilenameUtils.o \
-	../../source/core/string/StringUtils.o \
-	../../source/core/xml/BaseTypeConversion.o \
-	../../source/core/xml/ClassExport.o \
-	../../source/core/xml/PropertyBase.o \
-	../../source/core/xml/Tokenizer.o
+	../../bin/Logger.o \
+	../../bin/ProcessingSettings.o \
+	../../bin/CoordinateTransformation.o \
+	../../bin/ImageLayerSettings.o \
+	../../bin/MercatorQuadtree.o \
+	../../bin/ImageHandler.o \
+	../../bin/ImageWriter.o \
+	../../bin/lodepng.o \
+	../../bin/CommonPath.o \
+	../../bin/FileSystem.o \
+	../../bin/ogprocess.o \
+	../../bin/vec3.o \
+	../../bin/ConvertUTF.o \
+	../../bin/ConvertUTF.o \
+	../../bin/FilenameUtils.o \
+	../../bin/StringUtils.o \
+	../../bin/BaseTypeConversion.o \
+	../../bin/ClassExport.o \
+	../../bin/PropertyBase.o \
+	../../bin/Tokenizer.o
 	ar rcs $@ $?
 
-%.o: %.cpp
+../../bin/Logger.o: ../../source/core/app/Logger.cpp
 	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ProcessingSettings.o: ../../source/core/app/ProcessingSettings.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/CoordinateTransformation.o: ../../source/core/geo/CoordinateTransformation.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ImageLayerSettings.o: ../../source/core/geo/ImageLayerSettings.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/MercatorQuadtree.o: ../../source/core/geo/MercatorQuadtree.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ImageHandler.o: ../../source/core/image/ImageHandler.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ImageWriter.o: ../../source/core/image/ImageWriter.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/lodepng.o: ../../source/core/image/lodepng/lodepng.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/CommonPath.o: ../../source/core/io/CommonPath.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/FileSystem.o: ../../source/core/io/FileSystem.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ogprocess.o: ../../source/core/ogprocess.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/vec3.o: ../../source/core/math/vec3.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ConvertUTF.o: ../../source/core/string/ConvertUTF.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/FilenameUtils.o: ../../source/core/string/FilenameUtils.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/StringUtils.o: ../../source/core/string/StringUtils.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/BaseTypeConversion.o: ../../source/core/xml/BaseTypeConversion.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ClassExport.o: ../../source/core/xml/ClassExport.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/PropertyBase.o: ../../source/core/xml/PropertyBase.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/Tokenizer.o: ../../source/core/xml/Tokenizer.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+clean:
+	rm -f ../../bin/*.o
+	rm -f ../../bin/libOpenWebGlobeProcessing.a
+	rm -f ../../bin/calcextent
+	rm -f ../../bin/createlayer
