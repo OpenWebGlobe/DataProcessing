@@ -54,11 +54,31 @@ int main(int argc, char *argv[])
        ("input", po::value< std::vector<std::string> >()->multitoken(), "list input files")
        ("verbose", "display additional information")
        ("numthreads", po::value<int>(), "forcing number of threads to use for calculation")
+       ("inputdir", po::value<std::string>(), "input directory")
+       ("filetype",  po::value<std::string>(), "file type")
        ;
 
    po::variables_map vm;
    po::store(po::parse_command_line(argc, argv, desc), vm);
    po::notify(vm);
+
+   bool bVerbose = false;
+
+   if (vm.count("verbose"))
+   {
+      bVerbose = true;
+   }
+
+   if (vm.count("numthreads"))
+   {
+      int nthreads = vm["numthreads"].as<int>();
+      if (nthreads>=1)
+      {
+         std::cout << "forcing number of threads: " << nthreads << "\n";
+         omp_set_num_threads(nthreads);
+      }
+   }
+
 
    if ((vm.count("wgs84") && !vm.count("maxlod")) || (!vm.count("wgs84") && vm.count("maxlod")))
    {
@@ -115,21 +135,21 @@ int main(int argc, char *argv[])
    {
       std::vector<std::string> vecFiles = vm["input"].as< std::vector<std::string> >();
       std::string srs = vm["srs"].as<std::string>();
-      bool bVerbose = false;
 
-      if (vm.count("verbose"))
-      {
-         bVerbose = true;
-      }
+      return _frominput(vecFiles, srs, bVerbose);
+   }
+   else if (vm.count("srs") && vm.count("inputdir") && vm.count("filetype"))
+   {
+      std::string srs = vm["srs"].as<std::string>();
+      std::string inputdir = vm["inputdir"].as<std::string>();
+      std::string filetype = vm["filetype"].as<std::string>();
 
-      if (vm.count("numthreads"))
+      std::vector<std::string> vecFiles = FileSystem::GetFilesInDirectory(inputdir, filetype);
+
+      if (vecFiles.size() == 0)
       {
-         int nthreads = vm["numthreads"].as<int>();
-         if (nthreads>=1)
-         {
-            std::cout << "forcing number of threads: " << nthreads << "\n";
-            omp_set_num_threads(nthreads);
-         }
+         std::cout << "No files found!\n";
+         return 1;
       }
 
       return _frominput(vecFiles, srs, bVerbose);
@@ -259,8 +279,10 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
          pDataset[i].nBands = s_fh->GetRasterCount();
          pDataset[i].nSizeX = s_fh->GetRasterXSize();
          pDataset[i].nSizeY = s_fh->GetRasterYSize();
+
+         GDALClose(s_fh);
       }
-      GDALClose(s_fh);
+      
 
       //------------------------------------------------------------------------
       if (pDataset[i].bGood)

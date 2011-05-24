@@ -142,6 +142,13 @@ void Tokenize(std::string& sInput, char cSep, std::vector<unsigned int>& sOut)
 
 //---------------------------------------------------------------------------
 #ifdef ENABLE_64BIT
+
+namespace internal
+{
+   int64 atoi64(const char *nptr);
+   uint64 atoui64(const char *nptr);
+}
+
 void Tokenize(std::string& sInput, char cSep, std::vector<int64>& sOut)
 {
    sOut.clear();
@@ -152,7 +159,7 @@ void Tokenize(std::string& sInput, char cSep, std::vector<int64>& sOut)
       if (cCmp == cSep)
       {
          // found separator
-         sOut.push_back(atoll(sCurrent.c_str()));
+         sOut.push_back(internal::atoi64(sCurrent.c_str()));
          sCurrent.clear();
       }
       else
@@ -162,7 +169,7 @@ void Tokenize(std::string& sInput, char cSep, std::vector<int64>& sOut)
    }
 
    // add last value too
-   sOut.push_back(atoll(sCurrent.c_str()));
+   sOut.push_back(internal::atoi64(sCurrent.c_str()));
 }
 #endif 
 //---------------------------------------------------------------------------
