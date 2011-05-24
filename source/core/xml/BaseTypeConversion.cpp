@@ -612,13 +612,3 @@ void XMLToWStringVector(void* pAddress, std::string sXML)
 }
 XML_TO_TYPE_CONVERSION(std::vector<std::wstring>, XMLToWStringVector)
 #endif
-
-// This source file relies on static initialization to initialize the global
-// string to type conversion map.  However, since none of the functions defined
-// here are called directly, the GNU toolchain on Linux optimizers out linking
-// of this source file to the main program.  Hence, the static initializers are
-// never called and the global string to type conversion map is never
-// initialized.  Here we provide a function to be called from main() to ensure
-// that this source file is linked into the final program so that the static
-// initialization is called.
-void InitBaseTypeConversion(void) {}
