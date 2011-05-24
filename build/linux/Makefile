@@ -2,7 +2,7 @@ BOOST=../../external/boost_1_46_1
 CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal
 # FIXME there are far too many hardcode paths in the line below
 LIBS=\
-     ../../bin/libOpenWebGlobeProcessing.a \
+     -Wl,--whole-archive ../../bin/libOpenWebGlobeProcessing.a -Wl,--no-whole-archive \
      $(BOOST)/bin.v2/libs/date_time/build/gcc-4.4.3/release/link-static/threading-multi/libboost_date_time.a \
      $(BOOST)/bin.v2/libs/filesystem/build/gcc-4.4.3/release/link-static/threading-multi/libboost_filesystem.a \
      $(BOOST)/bin.v2/libs/program_options/build/gcc-4.4.3/release/link-static/threading-multi/libboost_program_options.a \
