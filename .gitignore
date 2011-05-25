@@ -6,6 +6,7 @@
 /bin/*.bat
 /bin/*.o
 /bin/gdal-data
+/bin/adddata
 /bin/calcextent
 /bin/createlayer
 /bin/libOpenWebGlobeProcessing.a

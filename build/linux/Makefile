@@ -11,8 +11,14 @@ LIBS=\
      -lxerces-c
 
 all: \
+	../../bin/adddata \
 	../../bin/calcextent \
 	../../bin/createlayer
+
+../../bin/adddata: \
+	../../source/apps/adddata/main.cpp \
+	../../bin/libOpenWebGlobeProcessing.a
+	g++ -o $@ $(CFLAGS) $< $(LIBS)
 
 ../../bin/calcextent: \
 	../../source/apps/calcextent/main.cpp \
@@ -107,5 +113,6 @@ all: \
 clean:
 	rm -f ../../bin/*.o
 	rm -f ../../bin/libOpenWebGlobeProcessing.a
+	rm -f ../../bin/adddata
 	rm -f ../../bin/calcextent
 	rm -f ../../bin/createlayer
