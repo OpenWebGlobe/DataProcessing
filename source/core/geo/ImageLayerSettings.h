@@ -22,6 +22,7 @@
 #include "og.h"
 #include <boost/shared_ptr.hpp>
 #include <string>
+#include <vector>
 
 class OPENGLOBE_API ImageLayerSettings
 {
@@ -30,10 +31,9 @@ public:
    virtual ~ImageLayerSettings(){}
 
    // Setters/Getters:
-
    void SetLayerName(const std::string& sLayername) {_sLayername = sLayername;} 
    void SetMaxLod(int maxlod) {_maxlod = maxlod;}
-   void SetTileExtent(int64 x0, int64 y0, int64 x1, int64 y1) { _tilex0 = x0; _tiley0 = y0; _tilex1 = x1; _tiley1 = y1;}
+   void SetTileExtent(int64 x0, int64 y0, int64 x1, int64 y1) { _tilecoord[0] = x0; _tilecoord[1] = y0; _tilecoord[2] = x1; _tilecoord[3] = y1;}
 
    // Load from XML
    static boost::shared_ptr<ImageLayerSettings> Load(const std::string& layerdir);
@@ -46,7 +46,8 @@ protected:
    std::string _sLayertype;
    int         _maxlod;
    std::string _srs;
-   int64       _tilex0, _tiley0, _tilex1, _tiley1;
+   std::vector<int64> _tilecoord;
+   
 
 private:
    static std::string _xmlsettingsfile;

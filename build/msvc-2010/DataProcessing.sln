@@ -11,7 +11,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "createlayer", "CreateLayer.
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_OpenWebGlobeProcessing", "OpenWebGlobeProcessing.vcxproj", "{7720B169-3379-4765-9216-6DBB2722588E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenWebGlobeProcessing", "OpenWebGlobeProcessing.vcxproj", "{7720B169-3379-4765-9216-6DBB2722588E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adddata", "AddData.vcxproj", "{53BD189F-1BD8-4654-89E8-53B00BFE9D02}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +36,10 @@ Global
 		{7720B169-3379-4765-9216-6DBB2722588E}.Debug|Win32.Build.0 = Debug|Win32
 		{7720B169-3379-4765-9216-6DBB2722588E}.Release|Win32.ActiveCfg = Release|Win32
 		{7720B169-3379-4765-9216-6DBB2722588E}.Release|Win32.Build.0 = Release|Win32
+		{53BD189F-1BD8-4654-89E8-53B00BFE9D02}.Debug|Win32.ActiveCfg = Debug|Win32
+		{53BD189F-1BD8-4654-89E8-53B00BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
+		{53BD189F-1BD8-4654-89E8-53B00BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
+		{53BD189F-1BD8-4654-89E8-53B00BFE9D02}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

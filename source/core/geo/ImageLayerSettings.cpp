@@ -21,16 +21,16 @@
 #include "string/FilenameUtils.h"
 #include <fstream>
 
+// enable std::vector<int64> serialization 
+SerializeVector(int64);
+
 //------------------------------------------------------------------------------
 BeginPropertyMap(ImageLayerSettings);
-  XMLProperty(ImageLayerSettings, "Layername" , _sLayername);
-  XMLProperty(ImageLayerSettings, "Layertype" , _sLayertype);
-  XMLProperty(ImageLayerSettings, "SRS", _srs);
-  XMLProperty(ImageLayerSettings, "MaxLOD", _maxlod);
-  XMLProperty(ImageLayerSettings, "TileX0", _tilex0);
-  XMLProperty(ImageLayerSettings, "TileY0", _tiley0);
-  XMLProperty(ImageLayerSettings, "TileX1", _tilex1);
-  XMLProperty(ImageLayerSettings, "TileY1", _tiley1);
+  XMLProperty(ImageLayerSettings, "name" , _sLayername);
+  XMLProperty(ImageLayerSettings, "type" , _sLayertype);
+  XMLProperty(ImageLayerSettings, "srs", _srs);
+  XMLProperty(ImageLayerSettings, "maxlod", _maxlod);
+  XMLProperty(ImageLayerSettings, "extent", _tilecoord);
 EndPropertyMap(ImageLayerSettings);
 //------------------------------------------------------------------------------
 
@@ -43,9 +43,11 @@ ImageLayerSettings::ImageLayerSettings()
    //_sLayername; // empty
    _sLayertype = "image";
    _maxlod = 0;
-   _tilex0 =_tiley0 = _tilex1 = _tiley1 = 0;
    _srs = "EPSG:3857";
-
+   _tilecoord.push_back(0);
+   _tilecoord.push_back(0);
+   _tilecoord.push_back(0);
+   _tilecoord.push_back(0);
 }
 
 
@@ -102,7 +104,7 @@ bool ImageLayerSettings::Save(const std::string& layerdir)
       jout << "   name   : " << _sLayername << ",\n";
       jout << "   type   : " << _sLayertype << ",\n";
       jout << "   maxlod : " << _maxlod << ",\n";
-      jout << "   extent : " << "[" << _tilex0 << ", " << _tiley0 << ", " << _tilex1 << ", " << _tiley1 << "]\n";
+      jout << "   extent : " << "[" << _tilecoord[0] << ", " << _tilecoord[1] << ", " << _tilecoord[2] << ", " << _tilecoord[3] << "]\n";
       jout << "}\n";
    }
 

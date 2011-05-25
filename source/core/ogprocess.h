@@ -20,8 +20,74 @@
 #define _OG_PROCESS_H
 
 #include "og.h"
+#include "app/Logger.h"
+#include "app/ProcessingSettings.h"
+#include "geo/CoordinateTransformation.h"
+#include <limits>
+#include <string>
 
 
+
+struct DataSetInfo
+{
+   double   dest_ulx;
+   double   dest_lry;
+   double   dest_lrx;
+   double   dest_uly;
+   double   affineTransformation[6];
+   double   affineTransformation_inverse[6];
+   double   pixelsize;
+   int      nBands;
+   int      nSizeX;
+   int      nSizeY;
+   bool     bGood;     // true if this data is valid, otherwise couldn't load or failed some way
+};
+
+namespace ProcessingUtils
+{
+   //---------------------------------------------------------------------------
+   inline bool InvertGeoMatrix(double* mGeoMatrix, double* mInvGeoMatrix)
+   {
+      double det, inv_det;
+      det = mGeoMatrix[1] * mGeoMatrix[5] - mGeoMatrix[2] * mGeoMatrix[4];
+
+      if( fabs(det) < std::numeric_limits<double>::epsilon() )
+         return false;
+
+      inv_det = 1.0 / det;
+
+      mInvGeoMatrix[1] =  mGeoMatrix[5] * inv_det;
+      mInvGeoMatrix[4] = -mGeoMatrix[4] * inv_det;
+      mInvGeoMatrix[2] = -mGeoMatrix[2] * inv_det;
+      mInvGeoMatrix[5] =  mGeoMatrix[1] * inv_det;
+      mInvGeoMatrix[0] = ( mGeoMatrix[2] * mGeoMatrix[3] - mGeoMatrix[0] * mGeoMatrix[5]) * inv_det;
+      mInvGeoMatrix[3] = (-mGeoMatrix[1] * mGeoMatrix[3] + mGeoMatrix[0] * mGeoMatrix[4]) * inv_det;
+
+      return true;
+   }
+   //---------------------------------------------------------------------------
+   // initialize gdal
+   OPENGLOBE_API bool init_gdal();
+
+   //---------------------------------------------------------------------------
+   // clean up gdal
+   OPENGLOBE_API void exit_gdal();
+   //---------------------------------------------------------------------------
+
+   OPENGLOBE_API void RetrieveDatasetInfo(const std::string& filename, CoordinateTransformation* pCT, DataSetInfo* pDataset, bool bVerbose=false);
+   //---------------------------------------------------------------------------
+
+   OPENGLOBE_API boost::shared_ptr<ProcessingSettings> LoadAppSettings();
+
+   //---------------------------------------------------------------------------
+
+   OPENGLOBE_API boost::shared_ptr<Logger> CreateLogger(const std::string& appname, boost::shared_ptr<ProcessingSettings> qSettings);
+
+   //---------------------------------------------------------------------------
+   
+
+
+}
 
 
 #endif

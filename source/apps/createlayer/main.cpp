@@ -17,10 +17,7 @@
 *******************************************************************************/
 //------------------------------------------------------------------------------
 
-#include "og.h"
-#include "gdal.h"
-#include "ogr_api.h"
-#include "cpl_conv.h"
+#include "ogprocess.h"
 #include "app/ProcessingSettings.h"
 #include "geo/MercatorQuadtree.h"
 #include "geo/CoordinateTransformation.h"
@@ -30,11 +27,10 @@
 #include "app/Logger.h"
 #include <iostream>
 #include <boost/program_options.hpp>
+#include <sstream>
 
 //-----------------------------------------------------------------------------
 
-bool init_gdal();
-void exit_gdal();
 int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std::string& processpath);
 int _createlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
 
@@ -57,44 +53,24 @@ int _createlayer(const std::string& sLayerName,  const std::string& sLayerPath, 
 
 int main(int argc, char *argv[])
 {
-   boost::shared_ptr<Logger> qLogger;
-   
-   // <ogwLoadSettings>
-   boost::shared_ptr<ProcessingSettings> qSettings;
-   qSettings = ProcessingSettings::Load();
-   std::string sPath;
-   std::string sLogPath;
+   boost::shared_ptr<ProcessingSettings> qSettings =  ProcessingUtils::LoadAppSettings();
 
-   if (qSettings)
+   if (!qSettings)
    {
-      sPath = qSettings->GetPath();
-      sLogPath = qSettings->GetLogPath();
-
-      if (!FileSystem::DirExists(sLogPath))
-      {
-         std::cerr << "ERROR: logging path doesn't exist. Please edit setup.xml.\n"; 
-         return ERROR_CONFIG;
-      }
-
-      qLogger = boost::shared_ptr<Logger>(new Logger(sLogPath, "createlayer"));
-      qLogger->Info("Logging started");
-
-      if (!FileSystem::DirExists(sPath))
-      {
-         qLogger->Error("Processing path doesn't exist. Please edit setup.xml");
-         std::cerr << "ERROR: Processing path doesn't exist. Please edit setup.xml.\n"; 
-         return ERROR_CONFIG;
-      }
-   }
-   else
-   {
-      std::cerr << "ERROR: Can't find setup.xml file!\n";
-      return 1;
+      return ERROR_CONFIG;
    }
 
-   // </ogwLoadSettings>
+   //---------------------------------------------------------------------------
 
-   return _start(argc, argv, qLogger, sPath);
+   boost::shared_ptr<Logger> qLogger =  ProcessingUtils::CreateLogger("createlayer", qSettings);
+
+   if (!qLogger)
+   {
+      return ERROR_CONFIG;
+   }
+
+
+   return _start(argc, argv, qLogger, qSettings->GetPath());
    return 0;
 }
 
@@ -104,6 +80,7 @@ namespace po = boost::program_options;
 
 int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std::string& processpath)
 {
+   bool bError = false;
 
    po::options_description desc("Program-Options");
    desc.add_options()
@@ -113,16 +90,23 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
        ("force", "force creation. (Warning: if this layer already exists it will be deleted)")
        ;
 
-   po::variables_map vm;
-   po::store(po::parse_command_line(argc, argv, desc), vm);
-   po::notify(vm);
+   try
+   {
+      po::variables_map vm;
+      po::store(po::parse_command_line(argc, argv, desc), vm);
+      po::notify(vm);
+   }
+   catch (std::exception& e)
+   {
+      bError = true;
+   }
 
    std::string sLayerName;
    int nLod = 0;
    std::vector<int64> vecExtent;
    bool bForce = false;
 
-   bool bError = false;
+   
    if (!vm.count("name"))
    {
       qLogger->Error("layer name is not specified!");
@@ -170,14 +154,13 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
 
    if (bError)
    {
-      qLogger->out << desc << "\n";
+      qLogger->Error("Wrong parameters!");
+      std::ostringstream sstr;
+      sstr << desc;
+      qLogger->Info("\n" + sstr.str());
+
       return ERROR_PARAMS;
    }
-
-   qLogger->Info("Command arguments:");
-   qLogger->out << "Layername = " << sLayerName << "\n";
-   qLogger->out << "lod = " << nLod << "\n";
-   qLogger->out << "extent = (" << vecExtent[0] << ", " << vecExtent[1] << ", " << vecExtent[2] << ", " << vecExtent[3] << ")" << "\n";
 
    std::string sLayerPath = FilenameUtils::DelimitPath(processpath) + sLayerName;
    qLogger->Info("Target directory: " + sLayerPath);
@@ -187,7 +170,7 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
       if (!bForce)
       {
          qLogger->Error("Layer already exists!!");
-         qLogger->out << "the directory " << sLayerPath << " already exists. Please delete manually or choose another layer name or use the --force option\n";
+         qLogger->Error("the directory " + sLayerPath + " already exists. Please delete manually or choose another layer name or use the --force option");
          return ERROR_LAYEREXISTS;
       }
       else
@@ -209,39 +192,11 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
 }
 
 //------------------------------------------------------------------------------
-bool init_gdal()
-{
-/*
-   // find gdal-data directory
-   bool has_data_dir = FileSystem::DirExists("gdal-data");
-
-   GDALAllRegister();
-   //CPLSetConfigOption("GDAL_CACHEMAX", "0");
-   if (has_data_dir) 
-   {
-      CPLSetConfigOption("GDAL_DATA", "gdal-data");
-   }
-   OGRRegisterAll();
-
-   return has_data_dir;
-*/
-   return true;
-}
-//------------------------------------------------------------------------------
-
-void exit_gdal()
-{
-  /*
-   GDALDestroyDriverManager();
-   OGRCleanupAll();
-  */
-}
-//------------------------------------------------------------------------------
 
 int _createlayer(const std::string& sLayerName, const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger)
 {
    int retcode = 0;
-   if (!init_gdal())
+   if (!ProcessingUtils::init_gdal())
    {
       qLogger->Warn("'gdal-data'-directory not found! This may result in wrong processing!");
    }
@@ -249,12 +204,12 @@ int _createlayer(const std::string& sLayerName, const std::string& sLayerPath, i
    if (!FileSystem::makedir(sLayerPath))
    {
       qLogger->Error("Can't create directory " + sLayerPath);
-      exit_gdal();
+      ProcessingUtils::exit_gdal();
       return ERROR_LAYERDIR;
    }
 
    boost::shared_ptr<ImageLayerSettings> qImageLayerSettings = boost::shared_ptr<ImageLayerSettings>(new ImageLayerSettings());
-   if (!qImageLayerSettings) {exit_gdal(); return ERROR_OUTOFMEMORY;}
+   if (!qImageLayerSettings) {ProcessingUtils::exit_gdal(); return ERROR_OUTOFMEMORY;}
 
    qImageLayerSettings->SetLayerName(sLayerName);
    qImageLayerSettings->SetMaxLod(nLod);
@@ -263,13 +218,13 @@ int _createlayer(const std::string& sLayerName, const std::string& sLayerPath, i
    if (!qImageLayerSettings->Save(sLayerPath))
    {
       qLogger->Error("Can't write into layer path: " + sLayerPath);
-      exit_gdal();
+      ProcessingUtils::exit_gdal();
       return ERROR_WRITE_PERMISSION;
    }
 
    // Create Quadtree (default constructor represents WebMercator: EPSG 3857)
    boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
-   if (!qQuadtree) {exit_gdal(); return ERROR_OUTOFMEMORY;}
+   if (!qQuadtree) {ProcessingUtils::exit_gdal(); return ERROR_OUTOFMEMORY;}
 
    // now iterate through all tiles and create required subdirectories
 
@@ -295,7 +250,7 @@ int _createlayer(const std::string& sLayerName, const std::string& sLayerPath, i
    qLogger->Info("All required subdirectories created...");
 
    
-   exit_gdal();
+   ProcessingUtils::exit_gdal();
    return retcode;
 }
 

@@ -9,8 +9,9 @@ using namespace boost::gregorian;
 
 //------------------------------------------------------------------------------
 
-Logger::Logger(const std::string& sLogPath, const std::string& appname)
+Logger::Logger(const std::string& sLogPath, const std::string& appname, bool bCloneOutput)
 {
+   _bCloneOutput = bCloneOutput;
    std::string sPath = FilenameUtils::DelimitPath(sLogPath);
    ptime now = microsec_clock::local_time();
    std::string timestring = to_iso_string(now);
@@ -34,6 +35,10 @@ void Logger::Warn(const std::string& warning)
  std::string sNow = "[" + to_simple_string(now) + "] WARNING: ";
 
  out << sNow << warning.c_str() << "\n";
+ if (_bCloneOutput)
+ {
+   std::cout << sNow << warning.c_str() << "\n";
+ }
 
 }
 
@@ -45,6 +50,10 @@ void Logger::Info(const std::string& info)
  std::string sNow = "[" + to_simple_string(now) + "]: ";
 
  out << sNow << info.c_str() << "\n";
+ if (_bCloneOutput)
+ {
+   std::cout << sNow << info.c_str() << "\n";
+ }
 }
 
 //------------------------------------------------------------------------------
@@ -55,6 +64,10 @@ void Logger::Error(const std::string& error)
  std::string sNow = "[" + to_simple_string(now) + "] ERROR: ";
 
  out << sNow << error.c_str() << "\n";
+ if (_bCloneOutput)
+ {
+   std::cout << sNow << error.c_str() << "\n";
+ }
 }
 
 //------------------------------------------------------------------------------
