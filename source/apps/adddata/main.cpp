@@ -198,14 +198,16 @@ int main(int argc, char *argv[])
    }
 
    int lod = qImageLayerSettings->GetMaxLod();
-   int64 tx0, ty0, tx1, ty1;
-   qImageLayerSettings->GetTileExtent(tx0, ty0, tx1, ty1);
+   int64 layerTileX0, layerTileY0, layerTileX1, layerTileY1;
+   qImageLayerSettings->GetTileExtent(layerTileX0, layerTileY0, layerTileX1, layerTileY1);
 
-   oss << "Image Layer:\n";
-   oss << "     name = " << qImageLayerSettings->GetLayerName() << "\n";
-   oss << "   maxlod = " << lod << "\n";
-   oss << "   extent = " << tx0 << ", " << ty0 << ", " << tx1 << ", " << ty1 << "\n";
- 
+   if (bVerbose)
+   {
+      oss << "\nImage Layer:\n";
+      oss << "     name = " << qImageLayerSettings->GetLayerName() << "\n";
+      oss << "   maxlod = " << lod << "\n";
+      oss << "   extent = " << layerTileX0 << ", " << layerTileY0 << ", " << layerTileX1 << ", " << layerTileY1 << "\n";
+   }
 
 
    //---------------------------------------------------------------------------
@@ -223,10 +225,13 @@ int main(int argc, char *argv[])
       qLogger->Error("Failed retrieving info!");
    }
 
-   
-   oss << "Loaded image info:\nImage Size: w= " << oInfo.nSizeX << ", h= " << oInfo.nSizeY << "\n";
-   oss << "dest: " << oInfo.dest_lrx << ", " << oInfo.dest_lry << ", " << oInfo.dest_ulx << ", " << oInfo.dest_uly << "\n";
-   qLogger->Info(oss.str());
+   if (bVerbose)
+   {
+      oss << "Loaded image info:\n   Image Size: w= " << oInfo.nSizeX << ", h= " << oInfo.nSizeY << "\n";
+      oss << "   dest: " << oInfo.dest_lrx << ", " << oInfo.dest_lry << ", " << oInfo.dest_ulx << ", " << oInfo.dest_uly << "\n";
+      qLogger->Info(oss.str());
+      oss.str("");
+   }
 
    boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
   
@@ -234,8 +239,53 @@ int main(int argc, char *argv[])
    qQuadtree->MercatorToPixel(oInfo.dest_ulx, oInfo.dest_uly, lod, px0, py0);
    qQuadtree->MercatorToPixel(oInfo.dest_lrx, oInfo.dest_lry, lod, px1, py1);
 
+   int64 imageTileX0, imageTileY0, imageTileX1, imageTileY1;
+   qQuadtree->PixelToTileCoord(px0, py0, imageTileX0, imageTileY0);
+   qQuadtree->PixelToTileCoord(px1, py1, imageTileX1, imageTileY1);
+
+   if (bVerbose)
+   {
+      oss << "\nTile Coords (image):";
+      oss << "   (" << imageTileX0 << ", " << imageTileY0 << ")-(" << imageTileX1 << ", " << imageTileY1 << ")\n";
+      qLogger->Info(oss.str());
+      oss.str("");
+   }
+
+   // check if image is outside layer
+   if (imageTileX0 > layerTileX1 || 
+       imageTileY0 > layerTileY1 ||
+       imageTileX1 < layerTileX0 ||
+       imageTileY1 < layerTileY0)
+   {
+      qLogger->Info("The dataset is outside of the layer and not being added!");
+      ProcessingUtils::exit_gdal();
+      return 0;
+   }
+
+   // clip tiles to layer extent
+   imageTileX0 = math::Max<int64>(imageTileX0, layerTileX0);
+   imageTileY0 = math::Max<int64>(imageTileY0, layerTileY0);
+   imageTileX1 = math::Min<int64>(imageTileX1, layerTileX1);
+   imageTileY1 = math::Min<int64>(imageTileY1, layerTileY1);
 
 
+   // iterate through all tiles and create them
+   for (int64 xx = imageTileX0; xx <= imageTileX1; ++xx)
+   {
+      for (int64 yy = imageTileY0; yy <= imageTileY1; ++yy)
+      {
+         std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
+
+         if (bVerbose)
+         {
+            std::stringstream sst;
+            sst << "processing " << sQuadcode << " (" << xx << ", " << yy << ")";
+            qLogger->Info(sst.str());
+         }
+
+         // #todo: insert tile creation code
+      }
+   }
 
    //---------------------------------------------------------------------------
 

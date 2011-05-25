@@ -7,7 +7,7 @@
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--numthreads 1 --layer LayerName --image C:\data\TestMosaik\462825.0_47675.0.tif --srs EPSG:21781 --fill</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--verbose --numthreads 1 --layer LayerName --image C:\data\TestMosaik\462825.0_47675.0.tif --srs EPSG:21781 --fill</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

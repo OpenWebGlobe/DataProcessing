@@ -375,7 +375,7 @@ namespace Access
       if (bHeader)
       {
          stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << "\n";
-         stream << "<!-- Created by i3D OpenGlobe XML Serializer Version 2.1 -->\n";
+         stream << "<!-- Created by i3D OpenWebGlobe XML Serializer Version 2.1 -->\n";
       }
 
       stream << sRet;
