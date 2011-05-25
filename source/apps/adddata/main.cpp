@@ -27,7 +27,7 @@
 #include "app/Logger.h"
 #include <iostream>
 #include <boost/program_options.hpp>
-#include <strstream>
+#include <sstream>
 #include <omp.h>
 
 //-----------------------------------------------------------------------------
