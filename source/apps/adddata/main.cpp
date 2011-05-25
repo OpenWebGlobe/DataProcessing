@@ -27,6 +27,7 @@
 #include "app/Logger.h"
 #include <iostream>
 #include <boost/program_options.hpp>
+#include <strstream>
 #include <omp.h>
 
 //-----------------------------------------------------------------------------
@@ -119,16 +120,29 @@ int main(int argc, char *argv[])
 
    if (!qSettings)
    {
+      std::cout << "Error in configuration! Check setup.xml\n";
       return ERROR_CONFIG;
    }
 
    //---------------------------------------------------------------------------
 
-   boost::shared_ptr<Logger> qLogger =  ProcessingUtils::CreateLogger("createlayer", qSettings);
+   boost::shared_ptr<Logger> qLogger =  ProcessingUtils::CreateLogger("adddata", qSettings);
 
    if (!qLogger)
    {
+      std::cout << "Error in configuration! Check setup.xml\n";
       return ERROR_CONFIG;
+   }
+
+   //---------------------------------------------------------------------------
+   if (bError)
+   {
+      qLogger->Error("Wrong parameters!");
+      std::ostringstream sstr;
+      sstr << desc;
+      qLogger->Info("\n" + sstr.str());
+
+      return ERROR_PARAMS;
    }
 
    //---------------------------------------------------------------------------

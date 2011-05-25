@@ -209,17 +209,19 @@ namespace ProcessingUtils
    {
       boost::shared_ptr<Logger> qLogger;
 
-         std::string sPath = qSettings->GetPath();
-         std::string sLogPath = qSettings->GetLogPath();
+      std::string sPath = qSettings->GetPath();
+      std::string sLogPath = qSettings->GetLogPath();
 
-         if (!FileSystem::DirExists(sLogPath))
-         {
-            std::cerr << "ERROR: logging path doesn't exist. Please edit setup.xml.\n"; 
-            return qLogger;
-         }
+      if (!FileSystem::DirExists(sLogPath))
+      {
+         std::cerr << "ERROR: logging path doesn't exist. Please edit setup.xml.\n"; 
+         return qLogger;
+      }
 
-         qLogger = boost::shared_ptr<Logger>(new Logger(sLogPath, appname, true));
-         qLogger->Info("Logging started");
+      qLogger = boost::shared_ptr<Logger>(new Logger(sLogPath, appname, true));
+      qLogger->Info("Logging started");
+
+      return qLogger;
    }
 
    //---------------------------------------------------------------------------
