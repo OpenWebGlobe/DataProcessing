@@ -33,6 +33,7 @@
 // ERROR CODES:
 
 // App Specific:
+#define ERROR_GDAL               2;    // gdal-data directory not found
 #define ERROR_CONFIG             3;    // wrong configuration (setup.xml) (processing path or log-path is wrong)
 #define ERROR_PARAMS             4;    // wrong parameters
 
@@ -53,12 +54,13 @@ int main(int argc, char *argv[])
        ("layer", po::value<std::string>(), "name of layer to add the data")
        ("fill", "fill empty parts, don't overwrite already existing data")
        ("overwrite", "overwrite existing data")
-       ("verbose", "display additional information in std::cout")
+       ("verbose", "verbose output")
        ;
+
+   po::variables_map vm;
 
    try
    {
-      po::variables_map vm;
       po::store(po::parse_command_line(argc, argv, desc), vm);
       po::notify(vm);
    }
@@ -68,8 +70,49 @@ int main(int argc, char *argv[])
       return ERROR_PARAMS;
    }
 
+
+   bool bError = false;
+
+   std::string sImagefile;
+   std::string sSRS;
+   std::string sLayer;
+   bool bFill = false;
+   bool bOverwrite = false;
    bool bVerbose = false;
 
+
+   if (!vm.count("image") || !vm.count("srs") || vm.count("layer"))
+   {
+      bError = true;
+   }
+
+   if (vm.count("verbose"))
+   {
+      bVerbose = true;
+   }
+
+   if (vm.count("overwrite") && vm.count("fill"))
+   {
+      bError = true; // can't overwrite and fill at same time!
+   }
+
+   if (vm.count("overwrite"))
+   {
+      bOverwrite = true;
+   }
+
+   if (vm.count("fill"))
+   {
+      bFill = true;
+   }
+
+   if (!bFill && !bOverwrite)
+   {
+      bError = true; // needs atleast one option (fill or overwrite)
+   }
+
+
+   //---------------------------------------------------------------------------
    // init options:
 
    boost::shared_ptr<ProcessingSettings> qSettings =  ProcessingUtils::LoadAppSettings();
@@ -88,6 +131,22 @@ int main(int argc, char *argv[])
       return ERROR_CONFIG;
    }
 
+   //---------------------------------------------------------------------------
+
+   DataSetInfo oInfo;
+
+   if (!ProcessingUtils::init_gdal())
+   {
+      qLogger->Error("gdal-data directory not found!");
+      return ERROR_GDAL;
+   } 
+
+   //---------------------------------------------------------------------------
+
+
+
+
+   ProcessingUtils::exit_gdal();
 
    return 0;
 }

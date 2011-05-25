@@ -90,9 +90,10 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
        ("force", "force creation. (Warning: if this layer already exists it will be deleted)")
        ;
 
+   po::variables_map vm;
+
    try
    {
-      po::variables_map vm;
       po::store(po::parse_command_line(argc, argv, desc), vm);
       po::notify(vm);
    }

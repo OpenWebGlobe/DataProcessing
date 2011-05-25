@@ -50,13 +50,14 @@ int main(int argc, char *argv[])
        ("filetype",  po::value<std::string>(), "file type")
        ;
 
+   po::variables_map vm;
+
    try
    {
-      po::variables_map vm;
       po::store(po::parse_command_line(argc, argv, desc), vm);
       po::notify(vm);
    }
-   catch (std::exception& e)
+   catch (std::exception&)
    {
       std::cout << desc;
       return 4;
