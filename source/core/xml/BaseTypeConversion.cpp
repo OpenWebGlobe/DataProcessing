@@ -323,6 +323,27 @@ std::string UnsignedIntVecToXML(void* pAddress, std::string sTag)
 TYPE_TO_XML_CONVERSION(std::vector<unsigned int>, UnsignedIntVecToXML)
 
 //-----------------------------------------------------------------------------
+std::string Int64VecToXML(void* pAddress, std::string sTag)
+{
+   std::ostringstream os;
+   std::vector<int64>* pData = (std::vector<int64>*)(pAddress);
+
+   if (pData->size()>0) // only write this tag if there is actually data!
+   {
+      os << "<" << sTag << ">";
+
+      for (size_t i=0;i<pData->size();i++)
+      {
+         os << (*pData)[i];
+         if (i!=pData->size()-1) os << " ";
+      }
+      os << "</" << sTag << ">";
+   }
+   return os.str();
+}
+TYPE_TO_XML_CONVERSION(std::vector<int64>, Int64VecToXML)
+
+//-----------------------------------------------------------------------------
 
 //=============================================================================
 // PART 3: CONVERT STRING TO CUSTOM TYPE
@@ -509,6 +530,24 @@ void XMLToUnsignedIntVec(void* pAddress, std::string sXML)
    Tokenize(sValue, ' ', *pData);
 }
 XML_TO_TYPE_CONVERSION(std::vector<unsigned int>, XMLToUnsignedIntVec)
+
+//-----------------------------------------------------------------------------
+
+void XMLToInt64Vec(void* pAddress, std::string sXML)
+{
+   std::stringstream os;
+   os << sXML;
+
+   std::vector<int64>* pData = (std::vector<int64>*)(pAddress);
+   pData->clear();
+
+   bool bValueTag;
+   std::string sTag = ObjectFactory::GetTag(os, bValueTag);
+   std::string sValue = ObjectFactory::GetValue(os);
+
+   Tokenize(sValue, ' ', *pData);
+}
+XML_TO_TYPE_CONVERSION(std::vector<int64>, XMLToInt64Vec)
 
 //-----------------------------------------------------------------------------
 

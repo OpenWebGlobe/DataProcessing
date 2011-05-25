@@ -35,6 +35,10 @@ public:
    void SetMaxLod(int maxlod) {_maxlod = maxlod;}
    void SetTileExtent(int64 x0, int64 y0, int64 x1, int64 y1) { _tilecoord[0] = x0; _tilecoord[1] = y0; _tilecoord[2] = x1; _tilecoord[3] = y1;}
 
+   std::string GetLayerName(){return _sLayername;}
+   int GetMaxLod(){return _maxlod;}
+   void GetTileExtent(int64& x0, int64& y0, int64& x1, int64& y1){x0 = _tilecoord[0]; y0 = _tilecoord[1]; x1 = _tilecoord[2]; y1 = _tilecoord[3];}
+
    // Load from XML
    static boost::shared_ptr<ImageLayerSettings> Load(const std::string& layerdir);
 

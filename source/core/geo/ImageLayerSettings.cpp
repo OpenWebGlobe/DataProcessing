@@ -21,9 +21,6 @@
 #include "string/FilenameUtils.h"
 #include <fstream>
 
-// enable std::vector<int64> serialization 
-SerializeVector(int64);
-
 //------------------------------------------------------------------------------
 BeginPropertyMap(ImageLayerSettings);
   XMLProperty(ImageLayerSettings, "name" , _sLayername);

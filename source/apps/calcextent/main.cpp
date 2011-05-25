@@ -32,7 +32,7 @@
 
 
 int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs, bool bVerbose);
-
+void _calcfromwgs84(int, double, double, double, double);
 //------------------------------------------------------------------------------
 
 namespace po = boost::program_options;
@@ -104,20 +104,7 @@ int main(int argc, char *argv[])
       if (lod < 4) { std::cout << "error: level of detail must be atleast 4\n"; return 0; }
 
 
-      MercatorQuadtree* pQuadtree = new MercatorQuadtree();
-
-      int64 px0, py0, px1, py1, tx0, ty0, tx1, ty1;
-      pQuadtree->WGS84ToPixel(lng0, lat0, lod, px0, py1);
-      pQuadtree->WGS84ToPixel(lng1, lat1, lod, px1, py0);
-
-      std::cout << "Number of pixels in specified range: " << (px1-px0+1)*(py1-py0+1) << "\n";
-
-      pQuadtree->PixelToTileCoord(px0, py0, tx0, ty0);
-      pQuadtree->PixelToTileCoord(px1, py1, tx1, ty1);
-
-      std::cout << "Tile Coords: (" << tx0 << ", " << ty0 << ")-(" << tx1 << ", " << ty1 << ")\n";
-
-      delete pQuadtree;
+      _calcfromwgs84(lod, lng0, lat0, lng1, lat1);
 
       return 0;
    }
@@ -225,15 +212,24 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
    MercatorQuadtree* pQuadtree = new MercatorQuadtree();
    double x,y;
 
+   double lng0, lat0, lng1, lat1;
    x = total_dest_ulx; y = total_dest_lry;
-   pQuadtree->MercatorToWGS84(x, y);
-   std::cout << "       lng0: " << x << "\n";
+   pQuadtree->MercatorToWGS84(x, y); 
+   lng0 = x; lat0 = y;
+   std::cout << "       lng0: " << x << "\n";  
    std::cout << "       lat0: " << y << "\n";
    x = total_dest_lrx; y = total_dest_uly;
    pQuadtree->MercatorToWGS84(x, y);
+   lng1 = x; lat1 = y;
    std::cout << "       lng1: " << x << "\n";
    std::cout << "       lat1: " << y << "\n";
    std::cout << " pixelsize : " << pixelsize * 6378137.0 << " m\n"; 
+
+   for (int i=1;i<23;i++)
+   {
+      std::cout << "LEVEL OF DETAIL " << i << ": ";
+      _calcfromwgs84(i, lng0, lat0, lng1, lat1);
+   }
 
    delete pQuadtree;
 
@@ -248,3 +244,21 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
 
 //------------------------------------------------------------------------------
 
+void _calcfromwgs84(int lod, double lng0, double lat0, double lng1, double lat1)
+{
+   MercatorQuadtree* pQuadtree = new MercatorQuadtree();
+   
+   int64 px0, py0, px1, py1, tx0, ty0, tx1, ty1;
+   pQuadtree->WGS84ToPixel(lng0, lat0, lod, px0, py1);
+   pQuadtree->WGS84ToPixel(lng1, lat1, lod, px1, py0);
+   
+   //std::cout << "Number of pixels in specified range: " << (px1-px0+1)*(py1-py0+1) << "\n";
+   
+   pQuadtree->PixelToTileCoord(px0, py0, tx0, ty0);
+   pQuadtree->PixelToTileCoord(px1, py1, tx1, ty1);
+   
+   std::cout << "Tile Coords: (" << tx0 << ", " << ty0 << ")-(" << tx1 << ", " << ty1 << ")\n";
+   
+   delete pQuadtree;
+
+}
