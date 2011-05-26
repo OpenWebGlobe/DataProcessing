@@ -23,6 +23,8 @@
 #include "app/Logger.h"
 #include "app/ProcessingSettings.h"
 #include "geo/CoordinateTransformation.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 #include <limits>
 #include <string>
 #include <cmath>
@@ -31,17 +33,18 @@
 
 struct DataSetInfo
 {
-   double   dest_ulx;
-   double   dest_lry;
-   double   dest_lrx;
-   double   dest_uly;
-   double   affineTransformation[6];
-   double   affineTransformation_inverse[6];
-   double   pixelsize;
-   int      nBands;
-   int      nSizeX;
-   int      nSizeY;
-   bool     bGood;     // true if this data is valid, otherwise couldn't load or failed some way
+   double      dest_ulx;
+   double      dest_lry;
+   double      dest_lrx;
+   double      dest_uly;
+   double      affineTransformation[6];
+   double      affineTransformation_inverse[6];
+   double      pixelsize;
+   int         nBands;
+   int         nSizeX;
+   int         nSizeY;
+   bool        bGood;     // true if this data is valid, otherwise couldn't load or failed some way
+   std::string sFilename;
 };
 
 namespace ProcessingUtils
@@ -85,6 +88,13 @@ namespace ProcessingUtils
    OPENGLOBE_API boost::shared_ptr<Logger> CreateLogger(const std::string& appname, boost::shared_ptr<ProcessingSettings> qSettings);
 
    //---------------------------------------------------------------------------
+   // Load image with 3 channels to RGB.
+   OPENGLOBE_API boost::shared_array<unsigned char> ImageToMemoryRGB(const DataSetInfo& oDataset);
+
+
+   //---------------------------------------------------------------------------
+
+
    
 
 
