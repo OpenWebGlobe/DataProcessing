@@ -25,6 +25,7 @@
 #include "string/StringUtils.h"
 #include "geo/ImageLayerSettings.h"
 #include "io/FileSystem.h"
+#include "image/ImageWriter.h"
 #include "app/Logger.h"
 #include "math/mathutils.h"
 #include <iostream>
@@ -444,7 +445,7 @@ int main(int argc, char *argv[])
             qLogger->Info("Storing tile: " + sTilefile);
          }
 
-         // #todo actually save pTile in sTilefile as PNG
+         ImageWriter::WritePNG(sTilefile, pTile, tilesize, tilesize);
       }
    }
 

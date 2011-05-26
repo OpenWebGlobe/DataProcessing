@@ -15,3 +15,30 @@
 ********************************************************************************
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
+
+#include "ImageWriter.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+//------------------------------------------------------------------------------
+
+ImageWriter::ImageWriter()
+{
+}
+
+//------------------------------------------------------------------------------
+
+ImageWriter::~ImageWriter()
+{
+}
+
+//------------------------------------------------------------------------------
+
+
+void ImageWriter::WritePNG(const std::string& sFilename, unsigned char* buffer_rbga, int width, int height)
+{
+   stbi_write_png(sFilename.c_str(), width, height, 4, buffer_rbga, 4*width);
+}
+
+
