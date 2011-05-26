@@ -22,6 +22,7 @@
 #ifdef _MSC_VER
 #pragma warning(disable:4251)
 #pragma warning(disable:4275)
+#define OS_WINDOWS
 #ifndef OPENGLOBE_API
  #ifdef BUILD_OPENGLOBELIB
  #define OPENGLOBE_API __declspec(dllexport)

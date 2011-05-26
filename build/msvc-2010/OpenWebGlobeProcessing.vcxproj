@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\source\core\app\Logger.cpp" />
+    <ClCompile Include="..\..\source\core\app\ProcessingSettings.cpp" />
+    <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp" />
+    <ClCompile Include="..\..\source\core\geo\ImageLayerSettings.cpp" />
+    <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp" />
+    <ClCompile Include="..\..\source\core\image\ImageHandler.cpp" />
+    <ClCompile Include="..\..\source\core\image\ImageLoader.cpp" />
+    <ClCompile Include="..\..\source\core\image\ImageWriter.cpp" />
+    <ClCompile Include="..\..\source\core\io\CommonPath.cpp" />
+    <ClCompile Include="..\..\source\core\io\FileSystem.cpp" />
+    <ClCompile Include="..\..\source\core\ogprocess.cpp" />
+    <ClCompile Include="..\..\source\core\string\ConvertUTF.cpp" />
+    <ClCompile Include="..\..\source\core\string\FilenameUtils.cpp" />
+    <ClCompile Include="..\..\source\core\string\StringUtils.cpp" />
+    <ClCompile Include="..\..\source\core\xml\BaseTypeConversion.cpp" />
+    <ClCompile Include="..\..\source\core\xml\ClassExport.cpp" />
+    <ClCompile Include="..\..\source\core\xml\PropertyBase.cpp" />
+    <ClCompile Include="..\..\source\core\xml\Tokenizer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\source\core\app\Logger.h" />
+    <ClInclude Include="..\..\source\core\app\ProcessingSettings.h" />
+    <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h" />
+    <ClInclude Include="..\..\source\core\geo\ImageLayerSettings.h" />
+    <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h" />
+    <ClInclude Include="..\..\source\core\image\ImageHandler.h" />
+    <ClInclude Include="..\..\source\core\image\ImageLoader.h" />
+    <ClInclude Include="..\..\source\core\image\ImageWriter.h" />
+    <ClInclude Include="..\..\source\core\image\lodepng\lodepng.h" />
+    <ClInclude Include="..\..\source\core\image\stb_image_write.h" />
+    <ClInclude Include="..\..\source\core\io\CommonPath.h" />
+    <ClInclude Include="..\..\source\core\io\FileSystem.h" />
+    <ClInclude Include="..\..\source\core\math\mathutils.h" />
+    <ClInclude Include="..\..\source\core\math\vec3.h" />
+    <ClInclude Include="..\..\source\core\og.h" />
+    <ClInclude Include="..\..\source\core\ogprocess.h" />
+    <ClInclude Include="..\..\source\core\string\ConvertUTF.h" />
+    <ClInclude Include="..\..\source\core\string\FilenameUtils.h" />
+    <ClInclude Include="..\..\source\core\string\StringUtils.h" />
+    <ClInclude Include="..\..\source\core\xml\ClassExport.h" />
+    <ClInclude Include="..\..\source\core\xml\PropertyBase.h" />
+    <ClInclude Include="..\..\source\core\xml\Tokenizer.h" />
+    <ClInclude Include="..\..\source\core\xml\xml.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\source\core\image\ImageHandler.inl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7720B169-3379-4765-9216-6DBB2722588E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>OpenWebGlobeProcessing</RootNamespace>
+    <ProjectName>OpenWebGlobeProcessing</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)lib\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)tmp\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)lib\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)tmp\$(ProjectName)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)d</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>BUILD_OPENGLOBELIB;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Lib>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)lib\$(Configuration)\$(ProjectName)d.dll  $(SolutionDir)\..\..\bin
+copy $(SolutionDir)lib\$(Configuration)\$(ProjectName)d.pdb  $(SolutionDir)\..\..\bin
+copy $(SolutionDir)\..\..\external\win32\*.dll $(SolutionDir)\..\..\bin</Command>
+      <Message>Copy DLLs</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>BUILD_OPENGLOBELIB;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Lib>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)lib\$(Configuration)\$(ProjectName).dll  $(SolutionDir)\..\..\bin
+copy $(SolutionDir)\..\..\external\win32\*.dll $(SolutionDir)\..\..\bin</Command>
+      <Message>Copy DLLs</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

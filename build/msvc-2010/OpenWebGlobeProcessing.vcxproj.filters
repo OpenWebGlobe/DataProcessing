@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="geo">
+      <UniqueIdentifier>{dd826205-551b-4208-8fe7-71cb352ef23a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xml">
+      <UniqueIdentifier>{29754e98-bfb0-4624-b2e7-057936a4ba01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="image">
+      <UniqueIdentifier>{a5e53fa9-2eb0-4409-9987-3226f4997d90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="image\lodepng">
+      <UniqueIdentifier>{cb35b8bb-beac-4615-8709-7ce620031058}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{99d6fca4-2a92-412c-b4dd-5d8465f0952f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{4efdfd06-e061-411b-a91c-83dd91f75883}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="string">
+      <UniqueIdentifier>{ab805252-3bf6-4403-99a5-47fc59b4ec8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app">
+      <UniqueIdentifier>{00c4e67b-df70-4cf8-992e-6a0331a1f0ab}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\xml\BaseTypeConversion.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\xml\ClassExport.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\xml\PropertyBase.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\xml\Tokenizer.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\image\ImageHandler.cpp">
+      <Filter>image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\image\ImageWriter.cpp">
+      <Filter>image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\CommonPath.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\FileSystem.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\string\ConvertUTF.cpp">
+      <Filter>string</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\string\FilenameUtils.cpp">
+      <Filter>string</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\string\StringUtils.cpp">
+      <Filter>string</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\app\ProcessingSettings.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\app\Logger.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\ogprocess.cpp" />
+    <ClCompile Include="..\..\source\core\geo\ImageLayerSettings.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\image\ImageLoader.cpp">
+      <Filter>image</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
+      <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h">
+      <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\xml\ClassExport.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\xml\PropertyBase.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\xml\Tokenizer.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\xml\xml.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\ImageHandler.h">
+      <Filter>image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\ImageWriter.h">
+      <Filter>image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\stb_image_write.h">
+      <Filter>image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\lodepng\lodepng.h">
+      <Filter>image\lodepng</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\CommonPath.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\FileSystem.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\mathutils.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\vec3.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\string\ConvertUTF.h">
+      <Filter>string</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\string\FilenameUtils.h">
+      <Filter>string</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\string\StringUtils.h">
+      <Filter>string</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\og.h" />
+    <ClInclude Include="..\..\source\core\app\ProcessingSettings.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\app\Logger.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\ogprocess.h" />
+    <ClInclude Include="..\..\source\core\geo\ImageLayerSettings.h">
+      <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\ImageLoader.h">
+      <Filter>image</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\source\core\image\ImageHandler.inl">
+      <Filter>image</Filter>
+    </None>
+  </ItemGroup>
+</Project>
