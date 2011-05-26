@@ -44,6 +44,10 @@
 #define ERROR_OUTOFMEMORY        101;  // not enough memory
 
 //------------------------------------------------------------------------------
+const int tilesize = 256;
+const double dHanc = 1.0/(double(tilesize)-1.0);
+const double dWanc = 1.0/(double(tilesize)-1.0);
+
 namespace po = boost::program_options;
 
 
@@ -268,6 +272,20 @@ int main(int argc, char *argv[])
    imageTileX1 = math::Min<int64>(imageTileX1, layerTileX1);
    imageTileY1 = math::Min<int64>(imageTileY1, layerTileY1);
 
+   // Load image 
+   boost::shared_array<unsigned char> vImage = ProcessingUtils::ImageToMemoryRGB(oInfo);
+   unsigned char* pImage = vImage.get();
+
+   if (!vImage)
+   {
+      qLogger->Error("Can't load image into memory!\n");
+      return ERROR_OUTOFMEMORY;
+   }
+
+   //
+   boost::shared_array<unsigned char> vTile = boost::shared_array<unsigned char>(new unsigned char[tilesize*tilesize*4]);
+   unsigned char* pTile = vTile.get();
+   if (!vTile) { return ERROR_OUTOFMEMORY;}
 
    // iterate through all tiles and create them
    for (int64 xx = imageTileX0; xx <= imageTileX1; ++xx)
@@ -300,10 +318,13 @@ int main(int argc, char *argv[])
          double anchor_Dx = ulx; 
          double anchor_Dy = uly;
 
+         // avoid calculating transformation per pixel using anchor point method
          qCT->TransformBackwards(&anchor_Ax, &anchor_Ay);
          qCT->TransformBackwards(&anchor_Bx, &anchor_By);
          qCT->TransformBackwards(&anchor_Cx, &anchor_Cy);
          qCT->TransformBackwards(&anchor_Dx, &anchor_Dy);
+
+         
 
          if (bVerbose)
          {
@@ -314,6 +335,43 @@ int main(int argc, char *argv[])
                                << "\nD(" << anchor_Dx << ", " << anchor_Dy << ")\n";
             qLogger->Info(sst.str());
          }
+
+         // write current tile
+         for (int ty=0;ty<tilesize;++ty)
+         {
+            for (int tx=0;tx<tilesize;++tx)
+            {
+                double dx = (double)tx*dWanc;
+                double dy = (double)ty*dHanc;
+                double xd = (anchor_Ax*(1.0-dx)*(1.0-dy)+anchor_Bx*dx*(1.0-dy)+anchor_Dx*(1.0-dx)*dy+anchor_Cx*dx*dy);
+                double yd = (anchor_Ay*(1.0-dx)*(1.0-dy)+anchor_By*dx*(1.0-dy)+anchor_Dy*(1.0-dx)*dy+anchor_Cy*dx*dy);
+
+                // pixel coordinate in original image
+                double dPixelX = (oInfo.affineTransformation_inverse[0] + xd * oInfo.affineTransformation_inverse[1] + yd * oInfo.affineTransformation_inverse[2]);
+                double dPixelY = (oInfo.affineTransformation_inverse[3] + xd * oInfo.affineTransformation_inverse[4] + yd * oInfo.affineTransformation_inverse[5]);
+                unsigned char r,g,b,a;
+
+                // out of image -> set transparent
+                if (dPixelX<0 || dPixelX>oInfo.nSizeX ||
+                    dPixelY<0 || dPixelY>oInfo.nSizeY)
+                {
+                     r = g = b = a = 0;
+                }
+                else
+                {
+                     // #todo: read pixel in image pImage[dPixelX, dPixelY] (biliear, bicubic or nearest neighbour)
+                     // and store as r,g,b, a=255
+                }
+
+                size_t adr=4*ty*tilesize+4*tx; // currently RGB for testing purposes!
+                pTile[adr+0] = b;  
+                pTile[adr+1] = g;  
+                pTile[adr+2] = r; 
+                pTile[adr+3] = a;
+
+            }
+         }
+
       }
    }
 
