@@ -67,6 +67,8 @@ inline void _ReadImageDataMem(unsigned char* buffer, int bufferwidth, int buffer
    *a = 255;
 }
 
+//------------------------------------------------------------------------------
+
 inline void _ReadImageValueBilinear(unsigned char* buffer, int bufferwidth, int bufferheight, double x, double y, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a)
 {
    double uf = math::Fract<double>(x);
@@ -178,10 +180,12 @@ int main(int argc, char *argv[])
    {
       bError = true;
    }
-
-   sImagefile = vm["image"].as<std::string>();
-   sSRS = vm["srs"].as<std::string>();
-   sLayer = vm["layer"].as<std::string>();
+   else
+   {
+      sImagefile = vm["image"].as<std::string>();
+      sSRS = vm["srs"].as<std::string>();
+      sLayer = vm["layer"].as<std::string>();
+   }
 
    if (vm.count("verbose"))
    {
@@ -369,6 +373,20 @@ int main(int argc, char *argv[])
             sst << "processing " << sQuadcode << " (" << xx << ", " << yy << ")";
             qLogger->Info(sst.str());
          }
+
+         //---------------------------------------------------------------------
+         // #todo: LOCK this tile
+         // #todo: if tile is LOCKED -> wait
+         //---------------------------------------------------------------------
+
+         //---------------------------------------------------------------------
+         // #todo:
+         // if mode is --fill: (bFill)
+         //      * load possibly existing tile into vTile
+         // ...  * if there is none, clear vTile (memset with 0)
+         // if mode is --overwrite (bOverwrite)
+         //      * just overwrite tiles
+         //_--------------------------------------------------------------------
 
          double px0m, py0m, px1m, py1m;
          qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0m, py0m, px1m, py1m);
