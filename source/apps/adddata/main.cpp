@@ -283,7 +283,37 @@ int main(int argc, char *argv[])
             qLogger->Info(sst.str());
          }
 
-         // #todo: insert tile creation code
+         double px0m, py0m, px1m, py1m;
+         qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0m, py0m, px1m, py1m);
+
+         double ulx = px0m;
+         double uly = py1m;
+         double lrx = px1m;
+         double lry = py0m;
+
+         double anchor_Ax = ulx; 
+         double anchor_Ay = lry;
+         double anchor_Bx = lrx; 
+         double anchor_By = lry;
+         double anchor_Cx = lrx; 
+         double anchor_Cy = uly;
+         double anchor_Dx = ulx; 
+         double anchor_Dy = uly;
+
+         qCT->TransformBackwards(&anchor_Ax, &anchor_Ay);
+         qCT->TransformBackwards(&anchor_Bx, &anchor_By);
+         qCT->TransformBackwards(&anchor_Cx, &anchor_Cy);
+         qCT->TransformBackwards(&anchor_Dx, &anchor_Dy);
+
+         if (bVerbose)
+         {
+            std::stringstream sst;
+            sst << "Anchor points:\nA(" << anchor_Ax << ", " << anchor_Ay << ")" 
+                               << "\nB(" << anchor_Bx << ", " << anchor_By << ")" 
+                               << "\nC(" << anchor_Cx << ", " << anchor_Cy << ")"
+                               << "\nD(" << anchor_Dx << ", " << anchor_Dy << ")\n";
+            qLogger->Info(sst.str());
+         }
       }
    }
 
