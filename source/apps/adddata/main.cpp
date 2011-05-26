@@ -26,6 +26,7 @@
 #include "geo/ImageLayerSettings.h"
 #include "io/FileSystem.h"
 #include "app/Logger.h"
+#include "math/mathutils.h"
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <sstream>
@@ -48,8 +49,72 @@ const int tilesize = 256;
 const double dHanc = 1.0/(double(tilesize)-1.0);
 const double dWanc = 1.0/(double(tilesize)-1.0);
 
-namespace po = boost::program_options;
 
+//------------------------------------------------------------------------------
+// Image Operations (will be moved)
+
+inline void _ReadImageDataMem(unsigned char* buffer, int bufferwidth, int bufferheight, int x, int y, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a)
+{
+   if (x<0) x = 0;
+   if (y<0) y = 0;
+   if (x>bufferwidth-1) x = bufferwidth-1;
+   if (y>bufferheight-1) y = bufferheight-1;
+
+   *r = buffer[bufferwidth*3*y+3*x];
+   *g = buffer[bufferwidth*3*y+3*x+1];
+   *b = buffer[bufferwidth*3*y+3*x+2];
+   *a = 255;
+}
+
+inline void _ReadImageValueBilinear(unsigned char* buffer, int bufferwidth, int bufferheight, double x, double y, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a)
+{
+   double uf = math::Fract<double>(x);
+   double vf = math::Fract<double>(y);
+   int nPixelX = int(x);
+   int nPixelY = int(y);
+
+   int u00,v00,u10,v10,u01,v01,u11,v11;
+   u00 = nPixelX;
+   v00 = nPixelY;
+   u10 = nPixelX+1;
+   v10 = nPixelY;
+   u01 = nPixelX;
+   v01 = nPixelY+1;
+   u11 = nPixelX+1;
+   v11 = nPixelY+1;
+
+   unsigned char r00,g00,b00,a00;
+   unsigned char r10,g10,b10,a10;
+   unsigned char r01,g01,b01,a01;
+   unsigned char r11,g11,b11,a11;
+
+   _ReadImageDataMem(buffer, bufferwidth, bufferheight, u00,v00,&r00,&g00,&b00,&a00);
+   _ReadImageDataMem(buffer, bufferwidth, bufferheight, u10,v10,&r10,&g10,&b10,&a10);
+   _ReadImageDataMem(buffer, bufferwidth, bufferheight, u01,v01,&r01,&g01,&b01,&a01);
+   _ReadImageDataMem(buffer, bufferwidth, bufferheight, u11,v11,&r11,&g11,&b11,&a11);
+
+   double rd, gd, bd, ad;
+
+   rd = (double(r00)*(1-uf)*(1-vf)+double(r10)*uf*(1-vf)+double(r01)*(1-uf)*vf+double(r11)*uf*vf)+0.5;
+   gd = (double(g00)*(1-uf)*(1-vf)+double(g10)*uf*(1-vf)+double(g01)*(1-uf)*vf+double(g11)*uf*vf)+0.5;
+   bd = (double(b00)*(1-uf)*(1-vf)+double(b10)*uf*(1-vf)+double(b01)*(1-uf)*vf+double(b11)*uf*vf)+0.5;
+   ad = (double(a00)*(1-uf)*(1-vf)+double(a10)*uf*(1-vf)+double(a01)*(1-uf)*vf+double(a11)*uf*vf)+0.5;
+
+   rd = math::Clamp<double>(rd, 0.0, 255.0);
+   gd = math::Clamp<double>(gd, 0.0, 255.0);
+   bd = math::Clamp<double>(bd, 0.0, 255.0);
+   ad = math::Clamp<double>(ad, 0.0, 255.0);
+
+   *r = (unsigned char) rd;
+   *g = (unsigned char) gd;
+   *b = (unsigned char) bd;
+   *a = (unsigned char) ad;
+}
+
+
+//------------------------------------------------------------------------------
+
+namespace po = boost::program_options;
 
 int main(int argc, char *argv[])
 {
@@ -192,6 +257,7 @@ int main(int argc, char *argv[])
    std::ostringstream oss;
 
    std::string sImageLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
+   std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sImageLayerDir) + "tiles");
 
    boost::shared_ptr<ImageLayerSettings> qImageLayerSettings = ImageLayerSettings::Load(sImageLayerDir);
    if (!qImageLayerSettings)
@@ -293,6 +359,8 @@ int main(int argc, char *argv[])
       for (int64 yy = imageTileY0; yy <= imageTileY1; ++yy)
       {
          std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
+         std::string sTilefile = sTileDir + sQuadcode + ".png";
+         sTilefile = FilenameUtils::MakeHierarchicalFileName(sTilefile, 2);
 
          if (bVerbose)
          {
@@ -324,9 +392,7 @@ int main(int argc, char *argv[])
          qCT->TransformBackwards(&anchor_Cx, &anchor_Cy);
          qCT->TransformBackwards(&anchor_Dx, &anchor_Dy);
 
-         
-
-         if (bVerbose)
+         /*if (bVerbose)
          {
             std::stringstream sst;
             sst << "Anchor points:\nA(" << anchor_Ax << ", " << anchor_Ay << ")" 
@@ -334,7 +400,7 @@ int main(int argc, char *argv[])
                                << "\nC(" << anchor_Cx << ", " << anchor_Cy << ")"
                                << "\nD(" << anchor_Dx << ", " << anchor_Dy << ")\n";
             qLogger->Info(sst.str());
-         }
+         }*/
 
          // write current tile
          for (int ty=0;ty<tilesize;++ty)
@@ -359,8 +425,9 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                     // #todo: read pixel in image pImage[dPixelX, dPixelY] (biliear, bicubic or nearest neighbour)
-                     // and store as r,g,b, a=255
+                     // read pixel in image pImage[dPixelX, dPixelY] (biliear, bicubic or nearest neighbour)
+                     // and store as r,g,b
+                     _ReadImageValueBilinear(pImage, oInfo.nSizeX, oInfo.nSizeY, dPixelX, dPixelY, &r, &g, &b, &a);
                 }
 
                 size_t adr=4*ty*tilesize+4*tx; // currently RGB for testing purposes!
@@ -368,10 +435,16 @@ int main(int argc, char *argv[])
                 pTile[adr+1] = g;  
                 pTile[adr+2] = r; 
                 pTile[adr+3] = a;
-
             }
          }
 
+         // save tile (pTile)
+         if (bVerbose)
+         {
+            qLogger->Info("Storing tile: " + sTilefile);
+         }
+
+         // #todo actually save pTile in sTilefile as PNG
       }
    }
 
