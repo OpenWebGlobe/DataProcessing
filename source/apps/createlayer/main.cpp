@@ -97,7 +97,7 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
       po::store(po::parse_command_line(argc, argv, desc), vm);
       po::notify(vm);
    }
-   catch (std::exception& e)
+   catch (std::exception&)
    {
       bError = true;
    }
