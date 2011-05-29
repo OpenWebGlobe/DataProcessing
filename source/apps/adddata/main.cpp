@@ -25,6 +25,7 @@
 #include "string/StringUtils.h"
 #include "geo/ImageLayerSettings.h"
 #include "io/FileSystem.h"
+#include "image/ImageLoader.h"
 #include "image/ImageWriter.h"
 #include "app/Logger.h"
 #include "math/mathutils.h"
@@ -123,14 +124,16 @@ int main(int argc, char *argv[])
 {
    po::options_description desc("Program-Options");
    desc.add_options()
-       ("image", po::value<std::string>(), "image to add")
-       ("srs", po::value<std::string>(), "spatial reference system for input files")
+       ("image", po::value<std::string>(), "image(s) to add")
+       ("srs", po::value<std::string>(), "spatial reference system for input file(s)")
        ("layer", po::value<std::string>(), "name of layer to add the data")
        ("fill", "fill empty parts, don't overwrite already existing data")
        ("overwrite", "overwrite existing data")
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "verbose output")
        ;
+
+   // #todo: image -> vector<std::string> : allow multiple images per application
 
    po::variables_map vm;
 
@@ -255,7 +258,7 @@ int main(int argc, char *argv[])
    {
       qLogger->Error("gdal-data directory not found!");
       return ERROR_GDAL;
-   } 
+   }
 
    //---------------------------------------------------------------------------
    // Retrieve ImageLayerSettings:
@@ -352,17 +355,13 @@ int main(int argc, char *argv[])
       qLogger->Error("Can't load image into memory!\n");
       return ERROR_OUTOFMEMORY;
    }
-
-   //
-   boost::shared_array<unsigned char> vTile = boost::shared_array<unsigned char>(new unsigned char[tilesize*tilesize*4]);
-   unsigned char* pTile = vTile.get();
-   if (!vTile) { return ERROR_OUTOFMEMORY;}
-
    // iterate through all tiles and create them
    for (int64 xx = imageTileX0; xx <= imageTileX1; ++xx)
    {
       for (int64 yy = imageTileY0; yy <= imageTileY1; ++yy)
       {
+         boost::shared_array<unsigned char> vTile;
+
          std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
          std::string sTilefile = sTileDir + sQuadcode + ".png";
          sTilefile = FilenameUtils::MakeHierarchicalFileName(sTilefile, 2);
@@ -375,19 +374,49 @@ int main(int argc, char *argv[])
          }
 
          //---------------------------------------------------------------------
-         // #todo: LOCK this tile
-         // #todo: if tile is LOCKED -> wait
+         // LOCK this tile. If this tile is currently locked 
+         //     -> wait until lock is removed.
+         int lockhandle = FileSystem::Lock(sTilefile);
+        
          //---------------------------------------------------------------------
-
-         //---------------------------------------------------------------------
-         // #todo:
          // if mode is --fill: (bFill)
          //      * load possibly existing tile into vTile
-         // ...  * if there is none, clear vTile (memset with 0)
+         // ...  * if there is none, clear vTile (memset 0)
          // if mode is --overwrite (bOverwrite)
-         //      * just overwrite tiles
+         //      * load possibly existing tile into vTile
+         //      * if there is none, clear vTile (memset 0)
+         //      * overwrite
          //_--------------------------------------------------------------------
 
+         // load tile:
+
+         // tile already exists ?
+         bool bCreateNew = true;
+
+         if (FileSystem::FileExists(sTilefile))
+         {
+            qLogger->Info(sTilefile + " already exists, updating");
+            ImageObject outputimage;
+            if (ImageLoader::LoadFromDisk(Img::Format_PNG, sTilefile, Img::PixelFormat_RGBA, outputimage))
+            {
+               if (outputimage.GetHeight() == tilesize && outputimage.GetWidth() == tilesize)
+               {
+                  vTile = outputimage.GetRawData();
+                  bCreateNew = false;
+               }
+            }
+         }
+         
+         if (bCreateNew)
+         {
+            // create new tile memory and clear to fully transparent
+            vTile = boost::shared_array<unsigned char>(new unsigned char[tilesize*tilesize*4]);
+            memset(vTile.get(),0,tilesize*tilesize*4);
+         }
+
+         unsigned char* pTile = vTile.get();
+
+         // Copy image to tile:
          double px0m, py0m, px1m, py1m;
          qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0m, py0m, px1m, py1m);
 
@@ -450,9 +479,9 @@ int main(int argc, char *argv[])
                 }
 
                 size_t adr=4*ty*tilesize+4*tx; // currently RGB for testing purposes!
-                pTile[adr+0] = b;  
+                pTile[adr+0] = r;  
                 pTile[adr+1] = g;  
-                pTile[adr+2] = r; 
+                pTile[adr+2] = b; 
                 pTile[adr+3] = a;
             }
          }
@@ -464,6 +493,9 @@ int main(int argc, char *argv[])
          }
 
          ImageWriter::WritePNG(sTilefile, pTile, tilesize, tilesize);
+
+         // unlock file. Other computers/processes/threads can access it again.
+         FileSystem::Unlock(sTilefile, lockhandle);
       }
    }
 

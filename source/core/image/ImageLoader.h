@@ -59,7 +59,6 @@ namespace Img
 public:
    ImageLoader() {}
    virtual ~ImageLoader() {}
-     
    // synchrousous loading from disk
    static bool LoadFromDisk(Img::FileFormat eFormat, const std::string& sFilename, Img::PixelFormat eDestPixelFormat, ImageObject& outputimage);
    
