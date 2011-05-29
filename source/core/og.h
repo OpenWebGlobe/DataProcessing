@@ -22,7 +22,6 @@
 #ifdef _MSC_VER
 #pragma warning(disable:4251)
 #pragma warning(disable:4275)
-#define OS_WINDOWS
 #ifndef OPENGLOBE_API
  #ifdef BUILD_OPENGLOBELIB
  #define OPENGLOBE_API __declspec(dllexport)
@@ -33,6 +32,38 @@
 #else
 #define OPENGLOBE_API
 #endif
+
+#ifndef OS_NAME
+#if defined(macintosh)
+#  define OS_MACOS
+#  define OS_NAME L"MacOS Classic"
+#elif defined(__APPLE__) && defined(__MACH__)
+#  define OS_MACOSX
+#  define OS_NAME L"MacOS X"
+#elif defined(WINDOWS) || defined(_WIN32)
+#  define OS_WINDOWS
+#ifdef _WIN64
+#  define OS_WINDOWS64
+#  define OS_NAME L"Windows 64bit"
+#else 
+#  define OS_WINDOWS32
+#  define OS_NAME L"Windows"
+#endif
+#elif defined(linux)
+#  define OS_LINUX
+#  define OS_NAME L"Linux"
+#elif defined(__FreeBSD__)
+#  define OS_FREEBSD
+#  define OS_NAME L"FreeBSD"
+#elif defined(__sun__)
+#  define OS_SUN
+#  define OS_NAME L"SunOS"
+#else
+#  define OS_UNKNOWN
+#  define OS_NAME L"Unsupported OS"
+#endif
+#endif
+
 
 #ifndef LLCONST
 #ifdef _MSC_EXTENSIONS
