@@ -356,18 +356,22 @@ std::vector<std::string> FileSystem::LinesToVector(const std::string& sPath)
    return vOut;
 }
 //------------------------------------------------------------------------------
+// lock mechanism implemented according to:
+// http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO/avoid-race.html
+// http://wiki.lustre.org/index.php/Architecture_-_External_File_Locking
 
-void FileSystem::Lock(const std::string& file)
+int FileSystem::Lock(const std::string& file)
 {
    std::string sLockFile = file + ".lock";
 
-   int open_flags = O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | O_EXCL;
+  
+   int open_flags =  O_CREAT|O_EXCL;
 
    int fd = -1;
    
    while (fd == -1)
    {
-      fd = open (sLockFile.c_str(), open_flags);
+      fd = open (sLockFile.c_str(), open_flags, 660);
 
 #     ifdef OS_WINDOWS
          Sleep(1);
@@ -375,16 +379,15 @@ void FileSystem::Lock(const std::string& file)
          sleep(1);
 #     endif
    }
-   close(fd);
-}
 
-bool FileSystem::Unlock(const std::string& file)
+   return fd;
+}
+//------------------------------------------------------------------------------
+void FileSystem::Unlock(const std::string& file, int handle)
 {
    std::string sLockFile = file + ".lock";
-   if (!FileSystem::rm(sLockFile))
-   {
-      return false;
-   }
-
-   return true;
+   close(handle);
+   unlink(sLockFile.c_str());
+   
 }
+//------------------------------------------------------------------------------

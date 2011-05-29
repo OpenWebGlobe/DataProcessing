@@ -18,6 +18,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adddata", "AddData.vcxproj"
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "filelocktest", "FileLock_StressTest.vcxproj", "{E382EFB1-1751-4797-B4CB-D8DFD6434768}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -40,6 +45,10 @@ Global
 		{53BD189F-1BD8-4654-89E8-53B00BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
 		{53BD189F-1BD8-4654-89E8-53B00BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
 		{53BD189F-1BD8-4654-89E8-53B00BFE9D02}.Release|Win32.Build.0 = Release|Win32
+		{E382EFB1-1751-4797-B4CB-D8DFD6434768}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E382EFB1-1751-4797-B4CB-D8DFD6434768}.Debug|Win32.Build.0 = Debug|Win32
+		{E382EFB1-1751-4797-B4CB-D8DFD6434768}.Release|Win32.ActiveCfg = Release|Win32
+		{E382EFB1-1751-4797-B4CB-D8DFD6434768}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

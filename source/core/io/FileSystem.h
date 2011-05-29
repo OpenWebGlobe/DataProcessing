@@ -124,16 +124,16 @@ public:
    * If file is already locked, waits until the file can be accessed.
    * This function can be used on clusters.
    * \param file the filename of the file to be locked.
-   * \return handle to the lock
+   * \return handle
    */
-   static   void Lock(const std::string& file);
+   static   int Lock(const std::string& file);
    //---------------------------------------------------------------------------
    /*!
-   * \brief unlocks a previously locked file. Other computers / processes / threads can access the file again. 
+   * \brief unlocks a previously locked file. Other computers / processes / threads can access the file again.
+   * \param file the filename
    * \param handle the handle created by Lock
-   * \return false if deleting the temporary .lock failed.
    */
-   static   bool Unlock(const std::string& file);
+   static   void Unlock(const std::string& file, int handle);
    //---------------------------------------------------------------------------
 
 };
