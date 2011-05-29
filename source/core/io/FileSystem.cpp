@@ -21,6 +21,16 @@
 #include <fstream>
 #define BOOST_FILESYSTEM_VERSION 2
 #include <boost/filesystem.hpp>
+#include <cstdio>
+#include <cstdlib>
+#include <fcntl.h>
+#include <share.h>
+#include <io.h>
+
+#ifdef OS_WINDOWS
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -71,7 +81,7 @@ bool FileSystem::rm_all(const std::string& sDirectory)
    {
       boost::filesystem::remove_all(sDirectory);
    }
-   catch ( std::exception const & ex )
+   catch ( std::exception const& )
    {
       return false;
    }
@@ -84,8 +94,6 @@ bool FileSystem::rm_all(const std::string& sDirectory)
 
 bool FileSystem::rename(const std::string& sFile1, const std::string& sFile2)
 {
-   //return ::wxRenameFile(sFile1.c_str(), sFile2.c_str());
-
    boost::filesystem::rename(sFile1, sFile2);
    return (!boost::filesystem::exists(sFile1) && boost::filesystem::exists(sFile2));
 }
@@ -346,4 +354,37 @@ std::vector<std::string> FileSystem::LinesToVector(const std::string& sPath)
 
    myfile.close();
    return vOut;
+}
+//------------------------------------------------------------------------------
+
+void FileSystem::Lock(const std::string& file)
+{
+   std::string sLockFile = file + ".lock";
+
+   int open_flags = O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | O_EXCL;
+
+   int fd = -1;
+   
+   while (fd == -1)
+   {
+      fd = open (sLockFile.c_str(), open_flags);
+
+#     ifdef OS_WINDOWS
+         Sleep(1);
+#     else
+         sleep(1);
+#     endif
+   }
+   close(fd);
+}
+
+bool FileSystem::Unlock(const std::string& file)
+{
+   std::string sLockFile = file + ".lock";
+   if (!FileSystem::rm(sLockFile))
+   {
+      return false;
+   }
+
+   return true;
 }
