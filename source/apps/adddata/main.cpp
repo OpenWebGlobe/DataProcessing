@@ -356,6 +356,7 @@ int main(int argc, char *argv[])
       return ERROR_OUTOFMEMORY;
    }
    // iterate through all tiles and create them
+#pragma omp parallel for
    for (int64 xx = imageTileX0; xx <= imageTileX1; ++xx)
    {
       for (int64 yy = imageTileY0; yy <= imageTileY1; ++yy)
