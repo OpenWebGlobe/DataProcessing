@@ -479,11 +479,29 @@ int main(int argc, char *argv[])
                      _ReadImageValueBilinear(pImage, oInfo.nSizeX, oInfo.nSizeY, dPixelX, dPixelY, &r, &g, &b, &a);
                 }
 
-                size_t adr=4*ty*tilesize+4*tx; // currently RGB for testing purposes!
-                pTile[adr+0] = r;  
-                pTile[adr+1] = g;  
-                pTile[adr+2] = b; 
-                pTile[adr+3] = a;
+                size_t adr=4*ty*tilesize+4*tx;
+
+                if (a>0)
+                {
+                   if (bFill)
+                   {
+                      if (pTile[adr+3] == 0)
+                      {
+                         pTile[adr+0] = r;  
+                         pTile[adr+1] = g;  
+                         pTile[adr+2] = b; 
+                         pTile[adr+3] = a;
+                      }
+                   }
+                   else // if (bOverwrite)
+                   {
+                      // currently RGB for testing purposes!
+                      pTile[adr+0] = r;  
+                      pTile[adr+1] = g;  
+                      pTile[adr+2] = b; 
+                      pTile[adr+3] = a;
+                   }
+                }
             }
          }
 
