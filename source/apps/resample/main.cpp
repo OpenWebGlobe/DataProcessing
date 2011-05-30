@@ -64,6 +64,15 @@ public:
 };
 //------------------------------------------------------------------------------
 
+inline std::string GetTilePath(const std::string& sBaseTilePath, const std::string& sExtension, int lod, int64 tx, int64 ty)
+{
+   std::ostringstream oss;
+   oss << sBaseTilePath << lod << "/" << tx << "/" << ty << sExtension;
+   return oss.str();
+}
+
+//------------------------------------------------------------------------------
+
 inline void _getInterpolatedColor(const unsigned char* rgbData, const size_t adr0, const size_t adr1, const size_t adr2, const size_t adr3, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a)
 {
    int red = 0;
@@ -331,20 +340,24 @@ int main(int argc, char *argv[])
             qc2 = qcCurrent + '2';
             qc3 = qcCurrent + '3';
 
-            std::string sCurrentTile = sTileDir + qcCurrent + ".png";
-            sCurrentTile = FilenameUtils::MakeHierarchicalFileName(sCurrentTile, 2);
+            int64 _tx, _ty;
+            int tmp_lod;
+            
+            qQuadtree->QuadKeyToTileCoord(qcCurrent, _tx, _ty, tmp_lod);
+            std::string sCurrentTile = GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
 
-            std::string sTilefile0 = sTileDir + qc0 + ".png";
-            sTilefile0 = FilenameUtils::MakeHierarchicalFileName(sTilefile0, 2);
+            qQuadtree->QuadKeyToTileCoord(qc0, _tx, _ty, tmp_lod);
+            std::string sTilefile0 = GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
+            
+            qQuadtree->QuadKeyToTileCoord(qc1, _tx, _ty, tmp_lod);
+            std::string sTilefile1 = GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
+            
+            qQuadtree->QuadKeyToTileCoord(qc2, _tx, _ty, tmp_lod);
+            std::string sTilefile2 = GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
+            
+            qQuadtree->QuadKeyToTileCoord(qc3, _tx, _ty, tmp_lod);
+            std::string sTilefile3 = GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
 
-            std::string sTilefile1 = sTileDir + qc1 + ".png";
-            sTilefile1 = FilenameUtils::MakeHierarchicalFileName(sTilefile1, 2);
-
-            std::string sTilefile2 = sTileDir + qc2 + ".png";
-            sTilefile2 = FilenameUtils::MakeHierarchicalFileName(sTilefile2, 2);
-
-            std::string sTilefile3 = sTileDir + qc3 + ".png";
-            sTilefile3 = FilenameUtils::MakeHierarchicalFileName(sTilefile3, 2);
             
             ImageObject IH0, IH1, IH2, IH3;
 

@@ -15,6 +15,14 @@
 ********************************************************************************
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
+
+//------------------------------------------------------------------------------
+// createlayer must be called before adding data to a layer, it does:
+//   1) create info files for tile layout (JSON and XML)
+//   2) create all directories for tile layout. 
+//
+// Note: The tile layout is compatible to the OpenStreetMap tile layout.
+// [This application is designed to run on one compute node only.]
 //------------------------------------------------------------------------------
 
 #include "ogprocess.h"
@@ -22,12 +30,14 @@
 #include "geo/MercatorQuadtree.h"
 #include "geo/CoordinateTransformation.h"
 #include "string/FilenameUtils.h"
+#include "string/StringUtils.h"
 #include "geo/ImageLayerSettings.h"
 #include "io/FileSystem.h"
 #include "app/Logger.h"
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <sstream>
+#include <omp.h>
 
 //-----------------------------------------------------------------------------
 
@@ -88,6 +98,7 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
        ("lod", po::value<int>(), "desired level of detail (integer)")
        ("extent", po::value< std::vector<int64> >()->multitoken(), "desired level of detail (tx0 ty0 tx1 ty1)")
        ("force", "force creation. (Warning: if this layer already exists it will be deleted)")
+       ("numthreads", po::value<int>(), "force number of threads")
        ;
 
    po::variables_map vm;
@@ -153,6 +164,18 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
       }
    }
 
+   if (vm.count("numthreads"))
+   {
+      int n = vm["numthreads"].as<int>();
+      if (n>0 && n<65)
+      {
+         std::ostringstream oss; 
+         oss << "Forcing number of threads to " << n;
+         qLogger->Info(oss.str());
+         omp_set_num_threads(n);
+      }
+   }
+
    if (bError)
    {
       qLogger->Error("Wrong parameters!");
@@ -193,6 +216,7 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
 }
 
 //------------------------------------------------------------------------------
+//#define OLD_APPROACH
 
 int _createlayer(const std::string& sLayerName, const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger)
 {
@@ -231,22 +255,54 @@ int _createlayer(const std::string& sLayerName, const std::string& sLayerPath, i
 
    std::string targetdir = FilenameUtils::DelimitPath(sLayerPath);
    std::string tiledir = FilenameUtils::DelimitPath(targetdir + "tiles");
+   FileSystem::makedir(tiledir);
    std::string quadcode;
    std::string newfile;
    std::string newdir;
 
    qLogger->Info("Creating all required subdirectories...");
 
-   for (int64 y=vecExtent[1];y<=vecExtent[3];y++)
+   //
+   std::string qc0 = qQuadtree->TileCoordToQuadkey(vecExtent[0], vecExtent[1], nLod);
+   std::string qc1 = qQuadtree->TileCoordToQuadkey(vecExtent[2], vecExtent[3], nLod);
+
+   std::cout << qc0 << "\n";
+   std::cout << qc1 << "\n";
+
+   clock_t t0,t1;
+   t0 = clock();
+
+   for (int nLevelOfDetail = 1; nLevelOfDetail<=nLod; nLevelOfDetail+=1)
    {
-      for (int64 x=vecExtent[0];x<=vecExtent[2];x++)
-      {
-         quadcode = qQuadtree->TileCoordToQuadkey(x,y,nLod);
-         newfile =  FilenameUtils::MakeHierarchicalFileName(tiledir + quadcode + ".tmp", 2);
-         newdir = FilenameUtils::GetFileRoot(newfile);
-         FileSystem::makeallsubdirs(newdir);
-      }
+      std::string qq0 = StringUtils::Left(qc0, nLevelOfDetail);
+      std::string qq1 = StringUtils::Left(qc1, nLevelOfDetail);
+
+      int64 tx0,ty0,tx1,ty1;
+      int tmp_lod;
+      qQuadtree->QuadKeyToTileCoord(qq0, tx0, ty0, tmp_lod);
+      qQuadtree->QuadKeyToTileCoord(qq1, tx1, ty1, tmp_lod);
+
+      std::ostringstream oss1;
+      oss1 << tiledir << nLevelOfDetail;
+      qLogger->Info("creating LOD directory: " + oss1.str());
+      
+      FileSystem::makedir(oss1.str());
+
+      // Creating directories in parallel speeds up the whole thing!
+
+#        pragma omp parallel for
+         for (int64 x=tx0;x<=tx1;x+=1)
+         {
+            std::ostringstream oss2;
+            oss2 << tiledir << nLevelOfDetail << "/" << x;
+            FileSystem::makedir(oss2.str());
+         }
    }
+
+   t1=clock();
+   std::ostringstream out;
+   out << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
+   qLogger->Info(out.str());
 
    qLogger->Info("All required subdirectories created...");
 
@@ -256,4 +312,5 @@ int _createlayer(const std::string& sLayerName, const std::string& sLayerPath, i
 }
 
 //------------------------------------------------------------------------------
+
 

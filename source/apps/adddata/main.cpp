@@ -115,6 +115,14 @@ inline void _ReadImageValueBilinear(unsigned char* buffer, int bufferwidth, int 
    *a = (unsigned char) ad;
 }
 
+//------------------------------------------------------------------------------
+
+inline std::string GetTilePath(const std::string& sBaseTilePath, const std::string& sExtension, int lod, int64 tx, int64 ty)
+{
+   std::ostringstream oss;
+   oss << sBaseTilePath << lod << "/" << tx << "/" << ty << sExtension;
+   return oss.str();
+}
 
 //------------------------------------------------------------------------------
 
@@ -364,8 +372,7 @@ int main(int argc, char *argv[])
          boost::shared_array<unsigned char> vTile;
 
          std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
-         std::string sTilefile = sTileDir + sQuadcode + ".png";
-         sTilefile = FilenameUtils::MakeHierarchicalFileName(sTilefile, 2);
+         std::string sTilefile = GetTilePath(sTileDir, ".png" , lod, xx, yy);
 
          if (bVerbose)
          {
