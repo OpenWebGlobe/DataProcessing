@@ -14,6 +14,7 @@
     <ClCompile Include="..\..\source\core\app\Logger.cpp" />
     <ClCompile Include="..\..\source\core\app\ProcessingSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp" />
+    <ClCompile Include="..\..\source\core\geo\ElevationLayerSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\ImageLayerSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageHandler.cpp" />
@@ -34,6 +35,7 @@
     <ClInclude Include="..\..\source\core\app\Logger.h" />
     <ClInclude Include="..\..\source\core\app\ProcessingSettings.h" />
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h" />
+    <ClInclude Include="..\..\source\core\geo\ElevationLayerSettings.h" />
     <ClInclude Include="..\..\source\core\geo\ImageLayerSettings.h" />
     <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h" />
     <ClInclude Include="..\..\source\core\image\ImageHandler.h" />

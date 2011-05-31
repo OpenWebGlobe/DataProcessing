@@ -79,6 +79,9 @@
     <ClCompile Include="..\..\source\core\image\ImageLoader.cpp">
       <Filter>image</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\geo\ElevationLayerSettings.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
@@ -145,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\image\ImageLoader.h">
       <Filter>image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\geo\ElevationLayerSettings.h">
+      <Filter>geo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

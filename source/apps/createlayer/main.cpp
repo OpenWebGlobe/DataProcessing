@@ -32,6 +32,7 @@
 #include "string/FilenameUtils.h"
 #include "string/StringUtils.h"
 #include "geo/ImageLayerSettings.h"
+#include "geo/ElevationLayerSettings.h"
 #include "io/FileSystem.h"
 #include "app/Logger.h"
 #include <iostream>
@@ -43,6 +44,9 @@
 
 int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std::string& processpath);
 int _createimagelayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
+int _createelevationlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
+int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod); 
+
 
 //-----------------------------------------------------------------------------
 // ERROR CODES:
@@ -258,6 +262,10 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
    {
       return _createimagelayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger);
    }
+   else if (eLayer == ELEVATION_LAYER)
+   {
+      return _createelevationlayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger);
+   }
    else
    {
       return ERROR_UNSUPPORTED;
@@ -269,21 +277,14 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
 
 int _createimagelayer(const std::string& sLayerName, const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger)
 {
-   int retcode = 0;
-   if (!ProcessingUtils::init_gdal())
-   {
-      qLogger->Warn("'gdal-data'-directory not found! This may result in wrong processing!");
-   }
-   
    if (!FileSystem::makedir(sLayerPath))
    {
       qLogger->Error("Can't create directory " + sLayerPath);
-      ProcessingUtils::exit_gdal();
       return ERROR_LAYERDIR;
    }
 
    boost::shared_ptr<ImageLayerSettings> qImageLayerSettings = boost::shared_ptr<ImageLayerSettings>(new ImageLayerSettings());
-   if (!qImageLayerSettings) {ProcessingUtils::exit_gdal(); return ERROR_OUTOFMEMORY;}
+   if (!qImageLayerSettings) {return ERROR_OUTOFMEMORY;}
 
    qImageLayerSettings->SetLayerName(sLayerName);
    qImageLayerSettings->SetMaxLod(nLod);
@@ -292,13 +293,46 @@ int _createimagelayer(const std::string& sLayerName, const std::string& sLayerPa
    if (!qImageLayerSettings->Save(sLayerPath))
    {
       qLogger->Error("Can't write into layer path: " + sLayerPath);
-      ProcessingUtils::exit_gdal();
       return ERROR_WRITE_PERMISSION;
    }
 
+   return _createDirectories(sLayerPath, qLogger, vecExtent, nLod);
+}
+
+//------------------------------------------------------------------------------
+
+int _createelevationlayer(const std::string& sLayerName, const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger)
+{
+   if (!FileSystem::makedir(sLayerPath))
+   {
+      qLogger->Error("Can't create directory " + sLayerPath);
+      return ERROR_LAYERDIR;
+   }
+
+   boost::shared_ptr<ElevationLayerSettings> qElevationLayerSettings = boost::shared_ptr<ElevationLayerSettings>(new ElevationLayerSettings());
+   if (!qElevationLayerSettings) {return ERROR_OUTOFMEMORY;}
+
+   qElevationLayerSettings->SetLayerName(sLayerName);
+   qElevationLayerSettings->SetMaxLod(nLod);
+   qElevationLayerSettings->SetTileExtent(vecExtent[0], vecExtent[1], vecExtent[2], vecExtent[3]);
+
+   if (!qElevationLayerSettings->Save(sLayerPath))
+   {
+      qLogger->Error("Can't write into layer path: " + sLayerPath);
+      return ERROR_WRITE_PERMISSION;
+   }
+
+   return _createDirectories(sLayerPath, qLogger, vecExtent, nLod);
+
+}
+
+//------------------------------------------------------------------------------
+
+int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod) 
+{
    // Create Quadtree (default constructor represents WebMercator: EPSG 3857)
    boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
-   if (!qQuadtree) {ProcessingUtils::exit_gdal(); return ERROR_OUTOFMEMORY;}
+   if (!qQuadtree) {return ERROR_OUTOFMEMORY;}
 
    // now iterate through all tiles and create required subdirectories
 
@@ -334,18 +368,18 @@ int _createimagelayer(const std::string& sLayerName, const std::string& sLayerPa
       std::ostringstream oss1;
       oss1 << tiledir << nLevelOfDetail;
       qLogger->Info("creating LOD directory: " + oss1.str());
-      
+
       FileSystem::makedir(oss1.str());
 
       // Creating directories in parallel speeds up the whole thing!
 
 #        pragma omp parallel for
-         for (int64 x=tx0;x<=tx1;x+=1)
-         {
-            std::ostringstream oss2;
-            oss2 << tiledir << nLevelOfDetail << "/" << x;
-            FileSystem::makedir(oss2.str());
-         }
+      for (int64 x=tx0;x<=tx1;x+=1)
+      {
+         std::ostringstream oss2;
+         oss2 << tiledir << nLevelOfDetail << "/" << x;
+         FileSystem::makedir(oss2.str());
+      }
    }
 
    t1=clock();
@@ -355,11 +389,7 @@ int _createimagelayer(const std::string& sLayerName, const std::string& sLayerPa
 
    qLogger->Info("All required subdirectories created...");
 
-   
-   ProcessingUtils::exit_gdal();
-   return retcode;
+   return 0;
 }
-
-//------------------------------------------------------------------------------
 
 
