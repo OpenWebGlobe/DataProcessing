@@ -25,6 +25,12 @@
     <Filter Include="app">
       <UniqueIdentifier>{00c4e67b-df70-4cf8-992e-6a0331a1f0ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="math\delaunay">
+      <UniqueIdentifier>{e21aa709-22ef-46b1-a2bb-5cd341740b3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="memory">
+      <UniqueIdentifier>{122591f2-e348-4084-a6ce-884067c44d4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
@@ -81,6 +87,30 @@
     </ClCompile>
     <ClCompile Include="..\..\source\core\geo\ElevationLayerSettings.cpp">
       <Filter>geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\math\delaunay\Predicates.cpp">
+      <Filter>math\delaunay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.cpp">
+      <Filter>math\delaunay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\math\delaunay\DelaunayMemoryManager.cpp">
+      <Filter>math\delaunay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\math\delaunay\DelaunayTriangle.cpp">
+      <Filter>math\delaunay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\math\delaunay\DelaunayTriangulation.cpp">
+      <Filter>math\delaunay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\math\delaunay\DelaunayVertex.cpp">
+      <Filter>math\delaunay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\math\ElevationPoint.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\math\vec3.cpp">
+      <Filter>math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -152,10 +182,49 @@
     <ClInclude Include="..\..\source\core\geo\ElevationLayerSettings.h">
       <Filter>geo</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\core\math\delaunay\Predicates.h">
+      <Filter>math\delaunay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.h">
+      <Filter>math\delaunay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\delaunay\DelaunayMemoryManager.h">
+      <Filter>math\delaunay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\delaunay\DelaunayTriangle.h">
+      <Filter>math\delaunay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\delaunay\DelaunayTriangulation.h">
+      <Filter>math\delaunay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\delaunay\DelaunayVertex.h">
+      <Filter>math\delaunay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\ElevationPoint.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\memory\ReferenceCounter.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\ElevationPointUtils.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\vec2.h">
+      <Filter>math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\source\core\image\ImageHandler.inl">
       <Filter>image</Filter>
+    </None>
+    <None Include="..\..\source\core\math\delaunay\DelaunayLocationKdTree.inl">
+      <Filter>math\delaunay</Filter>
+    </None>
+    <None Include="..\..\source\core\math\delaunay\DelaunayLocationLinear.inl">
+      <Filter>math\delaunay</Filter>
+    </None>
+    <None Include="..\..\source\core\math\delaunay\DelaunayLocationQuadtree.inl">
+      <Filter>math\delaunay</Filter>
     </None>
   </ItemGroup>
 </Project>

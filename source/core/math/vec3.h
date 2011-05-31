@@ -35,8 +35,6 @@
 #define MAX(a,b) ((a)>(b)?(a):(b))                                               
 #endif
 
-
-// Tobe removed soon:
 #define AGEPI       3.1415926535897932384626433832795028841971693993751
 #define AGEHALFPI   1.5707963267948966192313216916395
 #define rad2deg(x)  ((180.0*x)/AGEPI)

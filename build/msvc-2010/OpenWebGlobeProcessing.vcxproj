@@ -22,6 +22,14 @@
     <ClCompile Include="..\..\source\core\image\ImageWriter.cpp" />
     <ClCompile Include="..\..\source\core\io\CommonPath.cpp" />
     <ClCompile Include="..\..\source\core\io\FileSystem.cpp" />
+    <ClCompile Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.cpp" />
+    <ClCompile Include="..\..\source\core\math\delaunay\DelaunayMemoryManager.cpp" />
+    <ClCompile Include="..\..\source\core\math\delaunay\DelaunayTriangle.cpp" />
+    <ClCompile Include="..\..\source\core\math\delaunay\DelaunayTriangulation.cpp" />
+    <ClCompile Include="..\..\source\core\math\delaunay\DelaunayVertex.cpp" />
+    <ClCompile Include="..\..\source\core\math\delaunay\Predicates.cpp" />
+    <ClCompile Include="..\..\source\core\math\ElevationPoint.cpp" />
+    <ClCompile Include="..\..\source\core\math\vec3.cpp" />
     <ClCompile Include="..\..\source\core\ogprocess.cpp" />
     <ClCompile Include="..\..\source\core\string\ConvertUTF.cpp" />
     <ClCompile Include="..\..\source\core\string\FilenameUtils.cpp" />
@@ -45,8 +53,18 @@
     <ClInclude Include="..\..\source\core\image\stb_image_write.h" />
     <ClInclude Include="..\..\source\core\io\CommonPath.h" />
     <ClInclude Include="..\..\source\core\io\FileSystem.h" />
+    <ClInclude Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.h" />
+    <ClInclude Include="..\..\source\core\math\delaunay\DelaunayMemoryManager.h" />
+    <ClInclude Include="..\..\source\core\math\delaunay\DelaunayTriangle.h" />
+    <ClInclude Include="..\..\source\core\math\delaunay\DelaunayTriangulation.h" />
+    <ClInclude Include="..\..\source\core\math\delaunay\DelaunayVertex.h" />
+    <ClInclude Include="..\..\source\core\math\delaunay\Predicates.h" />
+    <ClInclude Include="..\..\source\core\math\ElevationPoint.h" />
+    <ClInclude Include="..\..\source\core\math\ElevationPointUtils.h" />
     <ClInclude Include="..\..\source\core\math\mathutils.h" />
+    <ClInclude Include="..\..\source\core\math\vec2.h" />
     <ClInclude Include="..\..\source\core\math\vec3.h" />
+    <ClInclude Include="..\..\source\core\memory\ReferenceCounter.h" />
     <ClInclude Include="..\..\source\core\og.h" />
     <ClInclude Include="..\..\source\core\ogprocess.h" />
     <ClInclude Include="..\..\source\core\string\ConvertUTF.h" />
@@ -61,6 +79,9 @@
     <None Include="..\..\source\core\image\ImageHandler.inl">
       <FileType>Document</FileType>
     </None>
+    <None Include="..\..\source\core\math\delaunay\DelaunayLocationKdTree.inl" />
+    <None Include="..\..\source\core\math\delaunay\DelaunayLocationLinear.inl" />
+    <None Include="..\..\source\core\math\delaunay\DelaunayLocationQuadtree.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7720B169-3379-4765-9216-6DBB2722588E}</ProjectGuid>
