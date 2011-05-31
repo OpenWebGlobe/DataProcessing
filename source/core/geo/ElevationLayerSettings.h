@@ -16,19 +16,19 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _IMAGELAYERSETTINGS_H
-#define _IMAGELAYERSETTINGS_H
+#ifndef _ELEVATIONLAYERSETTINGS_H
+#define _ELEVATIONLAYERSETTINGS_H
 
 #include "og.h"
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <vector>
 
-class OPENGLOBE_API ImageLayerSettings
+class OPENGLOBE_API ElevationLayerSettings
 {
 public:
-   ImageLayerSettings();
-   virtual ~ImageLayerSettings(){}
+   ElevationLayerSettings();
+   virtual ~ElevationLayerSettings(){}
 
    // Setters/Getters:
    void SetLayerName(const std::string& sLayername) {_sLayername = sLayername;} 
@@ -40,7 +40,7 @@ public:
    void GetTileExtent(int64& x0, int64& y0, int64& x1, int64& y1){x0 = _tilecoord[0]; y0 = _tilecoord[1]; x1 = _tilecoord[2]; y1 = _tilecoord[3];}
 
    // Load from XML
-   static boost::shared_ptr<ImageLayerSettings> Load(const std::string& layerdir);
+   static boost::shared_ptr<ElevationLayerSettings> Load(const std::string& layerdir);
 
    // Save to XML
    bool Save(const std::string& layerdir);
