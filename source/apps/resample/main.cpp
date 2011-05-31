@@ -273,6 +273,9 @@ int main(int argc, char *argv[])
       return ERROR_IMAGELAYERSETTINGS;
    }
 
+   clock_t t0,t1;
+   t0 = clock();
+
    //--------------------------------------------------------------------------
    // create tile blocks (for eatch thread)
    int maxthreads = omp_get_max_threads();
@@ -298,9 +301,6 @@ int main(int argc, char *argv[])
       oss << "  threads = " << maxthreads << "\n";
       qLogger->Info(oss.str());
    }
-
-   clock_t t0,t1;
-   t0 = clock();
 
    boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
 

@@ -42,7 +42,7 @@
 //-----------------------------------------------------------------------------
 
 int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std::string& processpath);
-int _createlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
+int _createimagelayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
 
 //-----------------------------------------------------------------------------
 // ERROR CODES:
@@ -54,6 +54,7 @@ int _createlayer(const std::string& sLayerName,  const std::string& sLayerPath, 
 #define ERROR_LAYERDIR           15;   // can't create directory for data processing
 #define ERROR_WRITE_PERMISSION   16;   // can't write into layer directory
 #define ERROR_DELETE_PERMISSION  17;   // can't delete file/directory
+#define ERROR_UNSUPPORTED        80;   // unsupported feature
 
 // General Errors:
 #define ERROR_OUTOFMEMORY        101;  // not enough memory
@@ -86,6 +87,16 @@ int main(int argc, char *argv[])
 
 //------------------------------------------------------------------------------
 
+enum ELayerType
+{
+   IMAGE_LAYER,
+   ELEVATION_LAYER,
+   POI_LAYER,
+   POINTCLOUD_LAYER,
+   GEOMETRY_LAYER,
+};
+//------------------------------------------------------------------------------
+
 namespace po = boost::program_options;
 
 int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std::string& processpath)
@@ -97,8 +108,9 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
        ("name", po::value<std::string>(), "layer name (string)")
        ("lod", po::value<int>(), "desired level of detail (integer)")
        ("extent", po::value< std::vector<int64> >()->multitoken(), "desired level of detail (tx0 ty0 tx1 ty1)")
-       ("force", "force creation. (Warning: if this layer already exists it will be deleted)")
-       ("numthreads", po::value<int>(), "force number of threads")
+       ("force", "[optional] force creation. (Warning: if this layer already exists it will be deleted)")
+       ("numthreads", po::value<int>(), "[optional] force number of threads")
+       ("type",  po::value<std::string>(), "[optional] layer type. This can be image, elevation, poi, pointcloud, geometry. image is default value.")
        ;
 
    po::variables_map vm;
@@ -117,6 +129,7 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
    int nLod = 0;
    std::vector<int64> vecExtent;
    bool bForce = false;
+   ELayerType eLayer = IMAGE_LAYER;
 
    
    if (!vm.count("name"))
@@ -176,6 +189,35 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
       }
    }
 
+   if (vm.count("type"))
+   {
+      std::string sLayerType = vm["type"].as< std::string >();
+      if (sLayerType == "image")
+      {
+         eLayer = IMAGE_LAYER;
+      }
+      else if (sLayerType == "elevation")
+      {
+         eLayer = ELEVATION_LAYER;
+      }
+      else if (sLayerType == "poi")
+      {
+         eLayer = POI_LAYER;
+      }
+      else if (sLayerType == "pointcloud")
+      {
+         eLayer = POINTCLOUD_LAYER;
+      }
+      else if (sLayerType == "geometry")
+      {
+         eLayer = GEOMETRY_LAYER;
+      }
+      else
+      {
+         bError = true;
+      }
+   }
+
    if (bError)
    {
       qLogger->Error("Wrong parameters!");
@@ -212,13 +254,20 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
       }
    }
 
-   return _createlayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger);
+   if (eLayer == IMAGE_LAYER)
+   {
+      return _createimagelayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger);
+   }
+   else
+   {
+      return ERROR_UNSUPPORTED;
+   }
+   
 }
 
 //------------------------------------------------------------------------------
-//#define OLD_APPROACH
 
-int _createlayer(const std::string& sLayerName, const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger)
+int _createimagelayer(const std::string& sLayerName, const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger)
 {
    int retcode = 0;
    if (!ProcessingUtils::init_gdal())
