@@ -181,12 +181,72 @@ int main(int argc, char *argv[])
    //std::cout << "rank = " << rank <<", maxlod = " << maxlod << "\n"; 
    //std::cout << "rank = " << rank <<", extent = " << tx0 << " " << ty0 << " " << tx1 << " " << ty1 << "\n";
 
-   MPI_Barrier(MPI_COMM_WORLD);
-  
+   TileBlock* pTileBlockArray = _createTileBlockArray();
+
+   boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
+   std::string qc0 = qQuadtree->TileCoordToQuadkey(tx0, ty0, maxlod);
+   std::string qc1 = qQuadtree->TileCoordToQuadkey(tx1, ty1, maxlod);
+
+   for (int nLevelOfDetail = maxlod - 1; nLevelOfDetail>0; nLevelOfDetail--)
+   {
+      std::cout << "compute node" << rank << ": processing lod " << nLevelOfDetail << "\n" << std::flush;
+
+      qc0 = StringUtils::Left(qc0, nLevelOfDetail);
+      qc1 = StringUtils::Left(qc1, nLevelOfDetail);
+
+      int tmp_lod;
+      qQuadtree->QuadKeyToTileCoord(qc0, tx0, ty0, tmp_lod);
+      qQuadtree->QuadKeyToTileCoord(qc1, tx1, ty1, tmp_lod);
+
+      //------------------------------------------------------------------------
+      // PARTITION TILE LAYOUT:
+      double w = double(tx1-tx0+1);
+      double h = double(ty1-ty0+1);
+
+      int64 startx = tx0;
+      int64 px0 = -1;
+      int64 py0 = -1;
+      int64 px1 = -1;
+      int64 py1 = -1;
+
+      for (int i=0;i<totalnodes;i++)
+      {
+         int n = int(ceil((w-1-double(i))/double(totalnodes)));
+         if (i == rank)
+         {
+            if (n>0)
+            {
+               px0 = startx; py0 = ty0;
+               px1 = startx + n; py1 = ty1;
+            }
+         }
+         startx+=n;
+      }
+
+      //------------------------------------------------------------------------
+      if (px0 > 0)
+      {
+#        pragma omp parallel for
+         for (int64 y=py0;y<=py1;y++)
+         {
+            for (int64 x=px0;x<=px1;x++)
+            {
+               _resampleFromParent(pTileBlockArray, qQuadtree, x, y, nLevelOfDetail, sTileDir);
+            }
+         }
+      }
+
+      MPI_Barrier(MPI_COMM_WORLD);
+   }
+
 
    //std::cout << "Hello after barrier from process " << rank << " of " << totalnodes << std::endl;
 
    MPI_Finalize();
+
+   // clean up
+   _destroyTileBlockArray(pTileBlockArray);
+
    std::cout << std::flush;
 
    // output calculation time
