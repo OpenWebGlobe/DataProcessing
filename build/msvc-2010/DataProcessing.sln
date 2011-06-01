@@ -28,6 +28,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "resample", "Resample.vcxpro
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "resample_mpi", "Resample _mpi.vcxproj", "{41C1D781-2285-47BF-8116-CA756D8C2458}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -58,6 +60,10 @@ Global
 		{FF28D228-021E-4713-B3F4-50AE204EAD01}.Debug|Win32.Build.0 = Debug|Win32
 		{FF28D228-021E-4713-B3F4-50AE204EAD01}.Release|Win32.ActiveCfg = Release|Win32
 		{FF28D228-021E-4713-B3F4-50AE204EAD01}.Release|Win32.Build.0 = Release|Win32
+		{41C1D781-2285-47BF-8116-CA756D8C2458}.Debug|Win32.ActiveCfg = Debug|Win32
+		{41C1D781-2285-47BF-8116-CA756D8C2458}.Debug|Win32.Build.0 = Debug|Win32
+		{41C1D781-2285-47BF-8116-CA756D8C2458}.Release|Win32.ActiveCfg = Release|Win32
+		{41C1D781-2285-47BF-8116-CA756D8C2458}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

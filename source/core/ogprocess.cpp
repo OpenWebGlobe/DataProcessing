@@ -227,6 +227,24 @@ namespace ProcessingUtils
 
    //---------------------------------------------------------------------------
 
+   OPENGLOBE_API boost::shared_ptr<Logger> CreateLoggerIn(const std::string& appname, const std::string& sLogPath)
+   {
+      boost::shared_ptr<Logger> qLogger;
+
+      if (!FileSystem::DirExists(sLogPath))
+      {
+         std::cerr << "ERROR: logging path doesn't exist. Please edit setup.xml.\n"; 
+         return qLogger;
+      }
+
+      qLogger = boost::shared_ptr<Logger>(new Logger(sLogPath, appname, true));
+      qLogger->Info("Logging started");
+
+      return qLogger;
+   }
+
+   //---------------------------------------------------------------------------
+
    OPENGLOBE_API boost::shared_array<unsigned char> ImageToMemoryRGB(const DataSetInfo& oDataset)
    {
       boost::shared_array<unsigned char> vData;

@@ -52,16 +52,16 @@ int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger>
 // ERROR CODES:
 
 // App Specific:
-#define ERROR_CONFIG             3;    // wrong configuration (setup.xml) (processing path or log-path is wrong)
-#define ERROR_PARAMS             4;    // wrong parameters
-#define ERROR_LAYEREXISTS        10;   // layer already exists (use --force to delete old one)
-#define ERROR_LAYERDIR           15;   // can't create directory for data processing
-#define ERROR_WRITE_PERMISSION   16;   // can't write into layer directory
-#define ERROR_DELETE_PERMISSION  17;   // can't delete file/directory
-#define ERROR_UNSUPPORTED        80;   // unsupported feature
+#define ERROR_CONFIG             3     // wrong configuration (setup.xml) (processing path or log-path is wrong)
+#define ERROR_PARAMS             4     // wrong parameters
+#define ERROR_LAYEREXISTS        10    // layer already exists (use --force to delete old one)
+#define ERROR_LAYERDIR           15    // can't create directory for data processing
+#define ERROR_WRITE_PERMISSION   16    // can't write into layer directory
+#define ERROR_DELETE_PERMISSION  17    // can't delete file/directory
+#define ERROR_UNSUPPORTED        80    // unsupported feature
 
 // General Errors:
-#define ERROR_OUTOFMEMORY        101;  // not enough memory
+#define ERROR_OUTOFMEMORY        101   // not enough memory
 
 //------------------------------------------------------------------------------
 

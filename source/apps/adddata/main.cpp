@@ -38,10 +38,10 @@
 // ERROR CODES:
 
 // App Specific:
-#define ERROR_GDAL               2;    // gdal-data directory not found
-#define ERROR_CONFIG             3;    // wrong configuration (setup.xml) (processing path or log-path is wrong)
-#define ERROR_PARAMS             4;    // wrong parameters
-#define ERROR_IMAGELAYERSETTINGS 5;    // can't load imagelayersettings. (image layer probably doesn't exist)
+#define ERROR_GDAL               2     // gdal-data directory not found
+#define ERROR_CONFIG             3     // wrong configuration (setup.xml) (processing path or log-path is wrong)
+#define ERROR_PARAMS             4     // wrong parameters
+#define ERROR_IMAGELAYERSETTINGS 5     // can't load imagelayersettings. (image layer probably doesn't exist)
 
 // General Errors:
 #define ERROR_OUTOFMEMORY        101;  // not enough memory
