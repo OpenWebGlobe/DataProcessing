@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
                      double progress = double(int(10000.0*double(count)/double(total))/100.0);
 
                      if (rank == 0)
-                     //std::cout << "[PROGRESS] Compute Node " << rank << " processed " << count << "/" << total << " tiles (" << progress << "%)\n" << std::flush;
+                     std::cout << "[PROGRESS] Compute Node " << rank << " processed " << count << "/" << total << " tiles (" << progress << "%)\n" << std::flush;
 
                      tprog0 = tprog1;
                   }
@@ -301,14 +301,11 @@ int main(int argc, char *argv[])
 
       if (bVerbose)
       {
-         //std::cout << "[FINISH] Compute Node " << rank << " finished lod " << nLevelOfDetail << "\n" << std::flush;        
+         std::cout << "[FINISH] Compute Node " << rank << " finished lod " << nLevelOfDetail << "\n" << std::flush;        
       }
                  
       MPI_Barrier(MPI_COMM_WORLD);
    }
-
-
-   //std::cout << "Hello after barrier from process " << rank << " of " << totalnodes << std::endl;
 
    MPI_Finalize();
 
