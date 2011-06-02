@@ -227,9 +227,10 @@ int main(int argc, char *argv[])
       }
 
       //------------------------------------------------------------------------
-      // PARTITION TILE LAYOUT:
-      // (right now, all nodes calculate this - 
-      // this could be moved to rank 0 and then distributed).
+      // PARTITION TILE LAYOUT: (this must be rewritten, there must be a better job distribution system)
+      //
+      // The maximum (realisistic) width is 2^23 if we would process the whole world with ~1cm^2 pixel resolution
+      // A job scheduler would only need 2^24*8 bytes RAM, that would only be 1 MB RAM. 
       double w = double(tx1-tx0+1);
       double h = double(ty1-ty0+1);
 
@@ -277,19 +278,20 @@ int main(int argc, char *argv[])
             {
                _resampleFromParent(pTileBlockArray, qQuadtree, x, y, nLevelOfDetail, sTileDir);
                
+               if (bVerbose)
+               {
+#                 pragma omp atomic
+                  count++;
+               }
                // only verbose on master thread (OpenMP)
                if (bVerbose && omp_get_thread_num() == 0)
                {
-                  #pragma omp atomic
-                  count++;
-
                   tprog1 = clock();
                   double time_passed = double(tprog1-tprog0)/double(CLOCKS_PER_SEC);
                   if (time_passed > 200) // print progress report after 3.3 minutes
                   {
                      double progress = double(int(10000.0*double(count)/double(total))/100.0);
 
-                     if (rank == 0)
                      std::cout << "[PROGRESS] Compute Node " << rank << " processed " << count << "/" << total << " tiles (" << progress << "%)\n" << std::flush;
 
                      tprog0 = tprog1;
@@ -303,7 +305,7 @@ int main(int argc, char *argv[])
       {
          std::cout << "[FINISH] Compute Node " << rank << " finished lod " << nLevelOfDetail << "\n" << std::flush;        
       }
-                 
+
       MPI_Barrier(MPI_COMM_WORLD);
    }
 
