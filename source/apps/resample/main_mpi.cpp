@@ -252,8 +252,16 @@ int main(int argc, char *argv[])
       // start processing for the previously calculated tile layout:
       if (px0 > 0)
       {
+         if (bVerbose)
+         {
+            std::cout << "Compute Node " << rank << " is processing range:  [" << px0 << ", " << py0 << "]-[" << px1 << ", " << py1 << "]\n" << std::flush;
+         }
+
          clock_t tprog0, tprog1;
          tprog0 = clock();
+         int64 total = (px1-px0+1)*(py1-py0+1);
+         int64 count = 0;
+
 #        pragma omp parallel for
          for (int64 y=py0;y<=py1;y++)
          {
@@ -261,17 +269,20 @@ int main(int argc, char *argv[])
             {
                _resampleFromParent(pTileBlockArray, qQuadtree, x, y, nLevelOfDetail, sTileDir);
                
-               if (bVerbose)
+               // only verbose on master thread (OpenMP)
+               if (bVerbose && omp_get_thread_num() == 0)
                {
+                  #pragma omp atomic
+                  count++;
+
                   tprog1 = clock();
                   double time_passed = double(tprog1-tprog0)/double(CLOCKS_PER_SEC);
-                  if (time_passed > 300) // print progress report after 5 minutes
+                  if (time_passed > 200) // print progress report after 3.3 minutes
                   {
-                     int64 total = (px1-px0+1)*(py1-py0+1);
-                     int64 current = (x-px0+1)+(y-py0)*(px1-px0+1);
-                     double progress = double(int(10000.0*double(current)/double(total))/100.0);
+                     double progress = double(int(10000.0*double(count)/double(total))/100.0);
 
-                     std::cout << "[PROGRESS] Compute Node " << rank << " is at " << progress << "%\n" << std::flush;
+                     if (rank == 0)
+                     std::cout << "[PROGRESS] Compute Node " << rank << " processed " << count << "/" << total << "tiles (" << progress << "%)\n" << std::flush;
 
                      tprog0 = tprog1;
                   }
@@ -280,6 +291,12 @@ int main(int argc, char *argv[])
          }
       }
 
+      if (bVerbose)
+      {
+         std::cout << "[FINISH] Compute Node " << rank << " finished lod " << nLevelOfDetail << "\n" << std::flush;
+                   
+      }
+                 
       MPI_Barrier(MPI_COMM_WORLD);
    }
 
