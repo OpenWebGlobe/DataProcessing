@@ -209,9 +209,9 @@ int main(int argc, char *argv[])
 
    for (int nLevelOfDetail = maxlod - 1; nLevelOfDetail>0; nLevelOfDetail--)
    {
-      if (bVerbose)
+      if (bVerbose && rank == 0)
       {
-         std::cout << "[LOD] compute node" << rank << ": starting processing lod " << nLevelOfDetail << "\n" << std::flush;
+         std::cout << "[LOD] starting processing lod " << nLevelOfDetail << "\n" << std::flush;
       }
 
       qc0 = StringUtils::Left(qc0, nLevelOfDetail);
@@ -220,6 +220,11 @@ int main(int argc, char *argv[])
       int tmp_lod;
       qQuadtree->QuadKeyToTileCoord(qc0, tx0, ty0, tmp_lod);
       qQuadtree->QuadKeyToTileCoord(qc1, tx1, ty1, tmp_lod);
+
+      if (bVerbose && rank == 0)
+      {
+        std::cout << "[RANGE]: [" << tx0 << ", " << ty0 << "]-[" << tx1 << ", " << ty1 << "]\n" << std::flush;
+      }
 
       //------------------------------------------------------------------------
       // PARTITION TILE LAYOUT:
@@ -236,13 +241,16 @@ int main(int argc, char *argv[])
 
       for (int i=0;i<totalnodes;i++)
       {
-         int n = int(ceil((w-1-double(i))/double(totalnodes)));
+         int n = int(ceil((w-double(i))/double(totalnodes)));
          if (i == rank)
          {
             if (n>0)
             {
-               px0 = startx; py0 = ty0;
-               px1 = startx + n; py1 = ty1;
+               px0 = startx; 
+               py0 = ty0;
+               
+               px1 = startx + n - 1; 
+               py1 = ty1;
             }
          }
          startx+=n;
@@ -282,7 +290,7 @@ int main(int argc, char *argv[])
                      double progress = double(int(10000.0*double(count)/double(total))/100.0);
 
                      if (rank == 0)
-                     std::cout << "[PROGRESS] Compute Node " << rank << " processed " << count << "/" << total << "tiles (" << progress << "%)\n" << std::flush;
+                     //std::cout << "[PROGRESS] Compute Node " << rank << " processed " << count << "/" << total << " tiles (" << progress << "%)\n" << std::flush;
 
                      tprog0 = tprog1;
                   }
@@ -293,8 +301,7 @@ int main(int argc, char *argv[])
 
       if (bVerbose)
       {
-         std::cout << "[FINISH] Compute Node " << rank << " finished lod " << nLevelOfDetail << "\n" << std::flush;
-                   
+         //std::cout << "[FINISH] Compute Node " << rank << " finished lod " << nLevelOfDetail << "\n" << std::flush;        
       }
                  
       MPI_Barrier(MPI_COMM_WORLD);
