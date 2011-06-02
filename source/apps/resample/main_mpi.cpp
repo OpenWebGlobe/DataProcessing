@@ -57,6 +57,16 @@ void BroadcastInt64(int64& val, int sender)
 {
    MPI_Bcast(&val, 1, MPI_LONG_LONG, sender, MPI_COMM_WORLD);
 }
+//------------------------------------------------------------------------------
+void BroadcastBool(bool& val, int sender)
+{
+   MPI_Datatype bool_type;
+   if (sizeof(bool) == 1) bool_type= MPI_BYTE;
+   else if (sizeof(bool) == 2) bool_type = MPI_SHORT;
+   else if (sizeof(bool) == 4) bool_type = MPI_INT;
+   else { assert(false); return;}
+   MPI_Bcast(&val, 1, bool_type, sender, MPI_COMM_WORLD);
+}
 
 //------------------------------------------------------------------------------
 
@@ -67,6 +77,7 @@ int main(int argc, char *argv[])
    int64 tx0,ty0,tx1,ty1;
    int maxlod;
    clock_t t0,t1;
+   bool bVerbose = false;
    
 
    //---------------------------------------------------------------------------
@@ -109,8 +120,6 @@ int main(int argc, char *argv[])
       // --------------------------------------------------------------------------
       std::string sLayer;
       bool bError = false;
-      bool bVerbose = false;
-
 
       try
       {
@@ -167,6 +176,16 @@ int main(int argc, char *argv[])
       qImageLayerSettings->GetTileExtent(tx0,ty0,tx1,ty1);
       maxlod = qImageLayerSettings->GetMaxLod();
 
+
+      if (bVerbose)
+      {
+         std::cout << "\nResample Setup:\n";
+         std::cout << "         name = " << qImageLayerSettings->GetLayerName() << "\n";
+         std::cout << "       maxlod = " << maxlod << "\n";
+         std::cout << "       extent = " << tx0 << ", " << ty0 << ", " << tx1 << ", " << ty1 << "\n";
+         std::cout << "compute nodes = " << totalnodes << "\n\n" << std::flush;
+      }
+
    }
    
    BroadcastString(sTileDir, 0);
@@ -176,6 +195,7 @@ int main(int argc, char *argv[])
    BroadcastInt64(tx1, 0);
    BroadcastInt64(ty1, 0);
    BroadcastInt(maxlod, 0);
+   BroadcastBool(bVerbose, 0);
 
    //std::cout << "rank = " << rank <<", TileDir = " << sTileDir << "\n";
    //std::cout << "rank = " << rank <<", maxlod = " << maxlod << "\n"; 
@@ -189,7 +209,10 @@ int main(int argc, char *argv[])
 
    for (int nLevelOfDetail = maxlod - 1; nLevelOfDetail>0; nLevelOfDetail--)
    {
-      std::cout << "compute node" << rank << ": processing lod " << nLevelOfDetail << "\n" << std::flush;
+      if (bVerbose)
+      {
+         std::cout << "[LOD] compute node" << rank << ": starting processing lod " << nLevelOfDetail << "\n" << std::flush;
+      }
 
       qc0 = StringUtils::Left(qc0, nLevelOfDetail);
       qc1 = StringUtils::Left(qc1, nLevelOfDetail);
@@ -200,6 +223,8 @@ int main(int argc, char *argv[])
 
       //------------------------------------------------------------------------
       // PARTITION TILE LAYOUT:
+      // (right now, all nodes calculate this - 
+      // this could be moved to rank 0 and then distributed).
       double w = double(tx1-tx0+1);
       double h = double(ty1-ty0+1);
 
@@ -224,14 +249,33 @@ int main(int argc, char *argv[])
       }
 
       //------------------------------------------------------------------------
+      // start processing for the previously calculated tile layout:
       if (px0 > 0)
       {
+         clock_t tprog0, tprog1;
+         tprog0 = clock();
 #        pragma omp parallel for
          for (int64 y=py0;y<=py1;y++)
          {
             for (int64 x=px0;x<=px1;x++)
             {
                _resampleFromParent(pTileBlockArray, qQuadtree, x, y, nLevelOfDetail, sTileDir);
+               
+               if (bVerbose)
+               {
+                  tprog1 = clock();
+                  double time_passed = double(tprog1-tprog0)/double(CLOCKS_PER_SEC);
+                  if (time_passed > 300) // print progress report after 5 minutes
+                  {
+                     int64 total = (px1-px0+1)*(py1-py0+1);
+                     int64 current = (x-px0+1)+(y-py0)*(px1-px0+1);
+                     double progress = double(int(10000.0*double(current)/double(total))/100.0);
+
+                     std::cout << "[PROGRESS] Compute Node " << rank << " is at " << progress << "%\n" << std::flush;
+
+                     tprog0 = tprog1;
+                  }
+               }
             }
          }
       }
