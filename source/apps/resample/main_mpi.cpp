@@ -17,7 +17,8 @@
 *******************************************************************************/
 /*                                                                            */
 /*                  MPI Version of resample (for cluster/cloud)               */
-/*                         execute 1x per compute node                        */
+/*                          workload based distribution                       */
+/*                          execute 1x per compute node                       */
 /*                                                                            */
 /******************************************************************************/
 
@@ -28,6 +29,12 @@
 #include <boost/program_options.hpp>
 #include <ctime>
 #include <cassert>
+#include <stack>
+
+//--------------------------
+#define MAX_WORK_SIZE 1024
+//--------------------------
+
 
 namespace po = boost::program_options;
 
@@ -70,6 +77,44 @@ void BroadcastBool(bool& val, int sender)
 
 //------------------------------------------------------------------------------
 
+struct SWork
+{
+   int64 sx, sy;
+};
+
+//------------------------------------------------------------------------------
+// send work (must be called from rank 0!)
+void SendWork(int count, SWork* workarray, int target_rank)
+{
+   // send data
+   MPI_Send(workarray, count*sizeof(SWork), MPI_BYTE, target_rank, 1112, MPI_COMM_WORLD);
+}
+
+//------------------------------------------------------------------------------
+// receive work:
+void ReceiveWork(SWork* workarray, int& count)
+{
+   MPI_Status status;
+   int msglen;
+   MPI_Probe(0, 1112, MPI_COMM_WORLD, &status);
+   MPI_Get_count(&status, MPI_BYTE, &msglen);
+   count = msglen / sizeof(SWork);
+   MPI_Recv(workarray, msglen, MPI_BYTE, MPI_ANY_SOURCE, 1112, MPI_COMM_WORLD, &status);
+}
+
+//------------------------------------------------------------------------------
+
+void _worker( int workload, SWork* pWorkArray, TileBlock* pTileBlockArray, boost::shared_ptr<MercatorQuadtree> qQuadtree, int nLevelOfDetail, std::string sTileDir, bool bVerbose ) 
+{
+#     pragma omp parallel for
+      for (int i=0;i<workload;i++)
+      {
+         _resampleFromParent(pTileBlockArray, qQuadtree, pWorkArray[i].sx, pWorkArray[i].sy, nLevelOfDetail, sTileDir);
+      }
+}
+
+//------------------------------------------------------------------------------
+
 int main(int argc, char *argv[])
 {
    std::string sImageLayerDir;
@@ -78,7 +123,8 @@ int main(int argc, char *argv[])
    int maxlod;
    clock_t t0,t1;
    bool bVerbose = false;
-   
+   SWork* pWorkArray = new SWork[MAX_WORK_SIZE];
+   std::stack<SWork> workstack;
 
    //---------------------------------------------------------------------------
    // MPI Init
@@ -226,81 +272,127 @@ int main(int argc, char *argv[])
         std::cout << "[RANGE]: [" << tx0 << ", " << ty0 << "]-[" << tx1 << ", " << ty1 << "]\n" << std::flush;
       }
 
-      //------------------------------------------------------------------------
-      // PARTITION TILE LAYOUT: (this must be rewritten, there must be a better job distribution system)
-      //
-      // The maximum (realisistic) width is 2^23 if we would process the whole world with ~1cm^2 pixel resolution
-      // A job scheduler would only need 2^24*8 bytes RAM, that would only be 1 MB RAM. 
-      double w = double(tx1-tx0+1);
-      double h = double(ty1-ty0+1);
-
-      int64 startx = tx0;
-      int64 px0 = -1;
-      int64 py0 = -1;
-      int64 px1 = -1;
-      int64 py1 = -1;
-
-      for (int i=0;i<totalnodes;i++)
+      if (rank == 0)
       {
-         int n = int(ceil((w-double(i))/double(totalnodes)));
-         if (i == rank)
+         // create workstack: contains all work which will be distributed.
+         SWork work;
+
+         for (int64 y=ty0;y<=ty1;y++)
          {
-            if (n>0)
+            for (int64 x=tx0;x<=tx1;x++)
             {
-               px0 = startx; 
-               py0 = ty0;
-               
-               px1 = startx + n - 1; 
-               py1 = ty1;
+               work.sx = x; work.sy = y;
+               workstack.push(work);
             }
          }
-         startx+=n;
       }
 
-      //------------------------------------------------------------------------
-      // start processing for the previously calculated tile layout:
-      if (px0 > 0)
+      // total number of tiles:
+      int totaltiles = int((tx1-tx0+1)*(ty1-ty0+1));
+      clock_t tprog0, tprog1;
+      int count = 0;
+      tprog0 = clock();
+
+      int cnt;
+      bool bFinished = false;
+      bool* bFinishedArray = new bool[totalnodes];
+      for (int i=0;i<totalnodes;i++) bFinishedArray[i] = false;
+
+      do 
       {
-         if (bVerbose)
+         if (rank == 0)
          {
-            std::cout << "Compute Node " << rank << " is processing range:  [" << px0 << ", " << py0 << "]-[" << px1 << ", " << py1 << "]\n" << std::flush;
-         }
-
-         clock_t tprog0, tprog1;
-         tprog0 = clock();
-         int64 total = (px1-px0+1)*(py1-py0+1);
-         int64 count = 0;
-
-#        pragma omp parallel for
-         for (int64 y=py0;y<=py1;y++)
-         {
-            for (int64 x=px0;x<=px1;x++)
+            for (int i=1;i<totalnodes;i++)
             {
-               _resampleFromParent(pTileBlockArray, qQuadtree, x, y, nLevelOfDetail, sTileDir);
-               
-               if (bVerbose)
+               if (!bFinishedArray[i])
                {
-#                 pragma omp atomic
-                  count++;
-               }
-               // only verbose on master thread (OpenMP)
-               if (bVerbose && omp_get_thread_num() == 0)
-               {
-                  tprog1 = clock();
-                  double time_passed = double(tprog1-tprog0)/double(CLOCKS_PER_SEC);
-                  if (time_passed > 200) // print progress report after 3.3 minutes
+                  int workcnt = 0;
+
+                  for (int w=0;w<MAX_WORK_SIZE;w++)
                   {
-                     double progress = double(int(10000.0*double(count)/double(total))/100.0);
+                     if (workstack.size()>0)
+                     {
+                        pWorkArray[w] = workstack.top();
+                        workstack.pop();
+                        workcnt++;
+                     }
+                  }
+                  //std::cout << "sending work [" << workcnt << "]" << " to " << i << "\n" << std::flush;
+                  SendWork(workcnt, pWorkArray, i);
 
-                     std::cout << "[PROGRESS] Compute Node " << rank << " processed " << count << "/" << total << " tiles (" << progress << "%)\n" << std::flush;
-
-                     tprog0 = tprog1;
+                  if (workcnt == 0)
+                  {
+                     bFinishedArray[i] = true;
                   }
                }
+            
             }
          }
-      }
+         if (rank != 0)
+         {
+            ReceiveWork(pWorkArray, cnt);
+            if (cnt == 0)
+            {
+               bFinished = true;
+            }
+         }
+         else
+         {
+            // generate some work for rank 0: we want to use all resources.
+            // it is possible to reduce the work size for this node, but if you keep working size <= 1024 it is probably ok.
+            cnt = 0;
+            for (int w=0;w<MAX_WORK_SIZE;w++)
+            {
+               if (workstack.size()>0)
+               {
+                  pWorkArray[w] = workstack.top();
+                  workstack.pop();
+                  cnt++;
+               }
+            }
 
+            if (workstack.size() == 0)
+            {
+               bool bt = true;
+               for (int i=1;i<totalnodes;i++)
+               {
+                  bt = bt && bFinishedArray[i];
+               }
+
+               if (bt)
+               {
+                  bFinished = true;
+               }
+            }
+         }
+
+         //std::cout << "Compute Node " << rank << " received work [" << cnt << "]\n" << std::flush;
+
+         if (cnt>0)
+         {
+            count = count + cnt;
+            _worker(cnt, pWorkArray, pTileBlockArray, qQuadtree, nLevelOfDetail, sTileDir, bVerbose);
+            
+            if (bVerbose)
+            {
+               tprog1 = clock();
+               double time_passed = double(tprog1-tprog0)/double(CLOCKS_PER_SEC);
+               if (time_passed > 200) // print progress report after some time
+               {
+                  double progress = double(int(10000.0*double(count)/double(totaltiles))/100.0);
+                  std::cout << "[PROGRESS] Compute Node " << rank << " processed " << count << "/" << totaltiles << " tiles (" << progress << "%)\n" << std::flush;
+                  tprog0 = tprog1;
+               }
+            }
+         
+         
+         }
+
+      } while (!bFinished);
+
+      delete[] bFinishedArray;
+     
+    
       if (bVerbose)
       {
          std::cout << "[FINISH] Compute Node " << rank << " finished lod " << nLevelOfDetail << "\n" << std::flush;        
@@ -324,7 +416,7 @@ int main(int argc, char *argv[])
    }
 
    
-
+   delete[] pWorkArray;
    return 0;
 }
 

@@ -27,6 +27,7 @@
 #include "DelaunayLocationQuadtree.inl"
 #include "DelaunayLocationKdTree.inl"
 #include <float.h>
+#include <iostream>
 
 
 namespace math
