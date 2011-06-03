@@ -31,6 +31,9 @@
     <Filter Include="memory">
       <UniqueIdentifier>{122591f2-e348-4084-a6ce-884067c44d4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mpi">
+      <UniqueIdentifier>{f4760cf4-9ed2-4940-bb27-2b09c772a4b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
@@ -211,6 +214,9 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\math\vec2.h">
       <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\mpi\Utils.h">
+      <Filter>mpi</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

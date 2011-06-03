@@ -65,6 +65,7 @@
     <ClInclude Include="..\..\source\core\math\vec2.h" />
     <ClInclude Include="..\..\source\core\math\vec3.h" />
     <ClInclude Include="..\..\source\core\memory\ReferenceCounter.h" />
+    <ClInclude Include="..\..\source\core\mpi\Utils.h" />
     <ClInclude Include="..\..\source\core\og.h" />
     <ClInclude Include="..\..\source\core\ogprocess.h" />
     <ClInclude Include="..\..\source\core\string\ConvertUTF.h" />
