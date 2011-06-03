@@ -36,7 +36,7 @@ template<class SJob>
 class MPIJobManager
 {
 public:
-   typedef void (*CallBack_Process)(const SJob& job);
+   typedef void (*CallBack_Process)(const SJob& job, int rank);
 
    MPIJobManager(int nMaxWorkSize)
    {
@@ -92,7 +92,24 @@ public:
                }
                else
                {
-                  // do some processing
+                  // do some processing on root, only do one job per core
+                  std::vector<SJob> vJobs;
+                  for (int t=0;t<_nMaxthreads;t++)
+                  {
+                     if (_jobstack.size()>0)
+                     {
+                        vJobs.push_back(_jobstack.top());
+                        _jobstack.pop();
+                     }
+                  }
+
+#                 pragma omp parallel for
+                  for (int i=0;i<(int)vJobs.size();i++)
+                  {
+                       fnc(vJobs[i], _rank);
+                  }
+
+
                   it++;
                }
             }
@@ -117,7 +134,7 @@ public:
             #pragma omp parallel for
             for (int i=0;i<(int)vecJobs.size();i++)
             {
-                 fnc(vecJobs[i]);
+                 fnc(vecJobs[i], _rank);
             }
 
          }
