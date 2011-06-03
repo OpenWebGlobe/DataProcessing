@@ -17,12 +17,12 @@
 *******************************************************************************/
 /*                                                                            */
 /*                  MPI Version of resample (for cluster/cloud)               */
-/*                          workload based distribution                       */
-/*                          execute 1x per compute node                       */
 /*                                                                            */
 /******************************************************************************/
 
 #include "resample.h"
+#include "mpi/Utils.h"
+
 #include <mpi.h>
 #include <omp.h>
 #include <iostream>
@@ -30,11 +30,31 @@
 #include <ctime>
 #include <cassert>
 #include <stack>
+#include <iostream>
 
-//--------------------------
-#define MAX_WORK_SIZE 1024
-//--------------------------
 
+//-------------------------------------------------------------------
+// Job-Struct
+struct Job
+{
+   int64 sx, sy;
+};
+
+//------------------------------------------------------------------------------
+// globals:
+int g_Lod = 0;
+boost::shared_ptr<MercatorQuadtree> q_qQuadtree;
+TileBlock* g_pTileBlockArray = 0;
+std::string g_sTileDir;
+
+//------------------------------------------------------------------------------
+// MPI Job callback function (called every thread/compute node)
+void jobCallback(const Job& job, int rank)
+{
+   _resampleFromParent(g_pTileBlockArray, q_qQuadtree, job.sx, job.sy, g_Lod, g_sTileDir);
+}
+
+//------------------------------------------------------------------------------
 
 namespace po = boost::program_options;
 
@@ -77,54 +97,13 @@ void BroadcastBool(bool& val, int sender)
 
 //------------------------------------------------------------------------------
 
-struct SWork
-{
-   int64 sx, sy;
-};
-
-//------------------------------------------------------------------------------
-// send work (must be called from rank 0!)
-void SendWork(int count, SWork* workarray, int target_rank)
-{
-   // send data
-   MPI_Send(workarray, count*sizeof(SWork), MPI_BYTE, target_rank, 1112, MPI_COMM_WORLD);
-}
-
-//------------------------------------------------------------------------------
-// receive work:
-void ReceiveWork(SWork* workarray, int& count)
-{
-   MPI_Status status;
-   int msglen;
-   MPI_Probe(0, 1112, MPI_COMM_WORLD, &status);
-   MPI_Get_count(&status, MPI_BYTE, &msglen);
-   count = msglen / sizeof(SWork);
-   MPI_Recv(workarray, msglen, MPI_BYTE, MPI_ANY_SOURCE, 1112, MPI_COMM_WORLD, &status);
-}
-
-//------------------------------------------------------------------------------
-
-void _worker( int workload, SWork* pWorkArray, TileBlock* pTileBlockArray, boost::shared_ptr<MercatorQuadtree> qQuadtree, int nLevelOfDetail, std::string sTileDir, bool bVerbose ) 
-{
-#     pragma omp parallel for
-      for (int i=0;i<workload;i++)
-      {
-         _resampleFromParent(pTileBlockArray, qQuadtree, pWorkArray[i].sx, pWorkArray[i].sy, nLevelOfDetail, sTileDir);
-      }
-}
-
-//------------------------------------------------------------------------------
-
 int main(int argc, char *argv[])
 {
    std::string sImageLayerDir;
-   std::string sTileDir;
    int64 tx0,ty0,tx1,ty1;
    int maxlod;
    clock_t t0,t1;
    bool bVerbose = false;
-   SWork* pWorkArray = new SWork[MAX_WORK_SIZE];
-   std::stack<SWork> workstack;
 
    //---------------------------------------------------------------------------
    // MPI Init
@@ -136,6 +115,7 @@ int main(int argc, char *argv[])
    MPI_Comm_size(MPI_COMM_WORLD, &totalnodes);
    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+   MPIJobManager<Job> jobmgr(4096);
 
    // arguments are read in rank 0. The arguments 
    // are parsed and interpreted and the 
@@ -210,7 +190,7 @@ int main(int argc, char *argv[])
 
       //---------------------------------------------------------------------------
       sImageLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
-      sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sImageLayerDir) + "tiles");
+      g_sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sImageLayerDir) + "tiles");
 
       boost::shared_ptr<ImageLayerSettings> qImageLayerSettings = ImageLayerSettings::Load(sImageLayerDir);
       if (!qImageLayerSettings)
@@ -234,7 +214,7 @@ int main(int argc, char *argv[])
 
    }
    
-   BroadcastString(sTileDir, 0);
+   BroadcastString(g_sTileDir, 0);
    BroadcastString(sImageLayerDir, 0);
    BroadcastInt64(tx0, 0);
    BroadcastInt64(ty0, 0);
@@ -243,18 +223,16 @@ int main(int argc, char *argv[])
    BroadcastInt(maxlod, 0);
    BroadcastBool(bVerbose, 0);
 
-   //std::cout << "rank = " << rank <<", TileDir = " << sTileDir << "\n";
-   //std::cout << "rank = " << rank <<", maxlod = " << maxlod << "\n"; 
-   //std::cout << "rank = " << rank <<", extent = " << tx0 << " " << ty0 << " " << tx1 << " " << ty1 << "\n";
+   g_pTileBlockArray = _createTileBlockArray();
 
-   TileBlock* pTileBlockArray = _createTileBlockArray();
-
-   boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
-   std::string qc0 = qQuadtree->TileCoordToQuadkey(tx0, ty0, maxlod);
-   std::string qc1 = qQuadtree->TileCoordToQuadkey(tx1, ty1, maxlod);
+   q_qQuadtree= boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
+   std::string qc0 = q_qQuadtree->TileCoordToQuadkey(tx0, ty0, maxlod);
+   std::string qc1 = q_qQuadtree->TileCoordToQuadkey(tx1, ty1, maxlod);
 
    for (int nLevelOfDetail = maxlod - 1; nLevelOfDetail>0; nLevelOfDetail--)
    {
+      g_Lod = nLevelOfDetail;
+
       if (bVerbose && rank == 0)
       {
          std::cout << "[LOD] starting processing lod " << nLevelOfDetail << "\n" << std::flush;
@@ -264,147 +242,37 @@ int main(int argc, char *argv[])
       qc1 = StringUtils::Left(qc1, nLevelOfDetail);
 
       int tmp_lod;
-      qQuadtree->QuadKeyToTileCoord(qc0, tx0, ty0, tmp_lod);
-      qQuadtree->QuadKeyToTileCoord(qc1, tx1, ty1, tmp_lod);
+      q_qQuadtree->QuadKeyToTileCoord(qc0, tx0, ty0, tmp_lod);
+      q_qQuadtree->QuadKeyToTileCoord(qc1, tx1, ty1, tmp_lod);
 
       if (bVerbose && rank == 0)
       {
         std::cout << "[RANGE]: [" << tx0 << ", " << ty0 << "]-[" << tx1 << ", " << ty1 << "]\n" << std::flush;
       }
 
+      // Create Jobs
       if (rank == 0)
       {
          // create workstack: contains all work which will be distributed.
-         SWork work;
-
+         Job work;
+         
          for (int64 y=ty0;y<=ty1;y++)
          {
             for (int64 x=tx0;x<=tx1;x++)
             {
                work.sx = x; work.sy = y;
-               workstack.push(work);
+               jobmgr.AddJob(work);
             }
          }
       }
 
-      // total number of tiles:
-      int totaltiles = int((tx1-tx0+1)*(ty1-ty0+1));
-      clock_t tprog0, tprog1;
-      int count = 0;
-      tprog0 = clock();
-
-      int cnt;
-      bool bFinished = false;
-      bool* bFinishedArray = new bool[totalnodes];
-      for (int i=0;i<totalnodes;i++) bFinishedArray[i] = false;
-
-      do 
-      {
-         if (rank == 0)
-         {
-            for (int i=1;i<totalnodes;i++)
-            {
-               if (!bFinishedArray[i])
-               {
-                  int workcnt = 0;
-
-                  for (int w=0;w<MAX_WORK_SIZE;w++)
-                  {
-                     if (workstack.size()>0)
-                     {
-                        pWorkArray[w] = workstack.top();
-                        workstack.pop();
-                        workcnt++;
-                     }
-                  }
-                  //std::cout << "sending work [" << workcnt << "]" << " to " << i << "\n" << std::flush;
-                  SendWork(workcnt, pWorkArray, i);
-
-                  if (workcnt == 0)
-                  {
-                     bFinishedArray[i] = true;
-                  }
-               }
-            
-            }
-         }
-         if (rank != 0)
-         {
-            ReceiveWork(pWorkArray, cnt);
-            if (cnt == 0)
-            {
-               bFinished = true;
-            }
-         }
-         else
-         {
-            // generate some work for rank 0: we want to use all resources.
-            // it is possible to reduce the work size for this node, but if you keep working size <= 1024 it is probably ok.
-            cnt = 0;
-            for (int w=0;w<MAX_WORK_SIZE;w++)
-            {
-               if (workstack.size()>0)
-               {
-                  pWorkArray[w] = workstack.top();
-                  workstack.pop();
-                  cnt++;
-               }
-            }
-
-            if (workstack.size() == 0)
-            {
-               bool bt = true;
-               for (int i=1;i<totalnodes;i++)
-               {
-                  bt = bt && bFinishedArray[i];
-               }
-
-               if (bt)
-               {
-                  bFinished = true;
-               }
-            }
-         }
-
-         //std::cout << "Compute Node " << rank << " received work [" << cnt << "]\n" << std::flush;
-
-         if (cnt>0)
-         {
-            count = count + cnt;
-            _worker(cnt, pWorkArray, pTileBlockArray, qQuadtree, nLevelOfDetail, sTileDir, bVerbose);
-            
-            if (bVerbose)
-            {
-               tprog1 = clock();
-               double time_passed = double(tprog1-tprog0)/double(CLOCKS_PER_SEC);
-               if (time_passed > 200) // print progress report after some time
-               {
-                  double progress = double(int(10000.0*double(count)/double(totaltiles))/100.0);
-                  std::cout << "[PROGRESS] Compute Node " << rank << " processed " << count << "/" << totaltiles << " tiles (" << progress << "%)\n" << std::flush;
-                  tprog0 = tprog1;
-               }
-            }
-         
-         
-         }
-
-      } while (!bFinished);
-
-      delete[] bFinishedArray;
-     
-    
-      if (bVerbose)
-      {
-         std::cout << "[FINISH] Compute Node " << rank << " finished lod " << nLevelOfDetail << "\n" << std::flush;        
-      }
-
-      MPI_Barrier(MPI_COMM_WORLD);
+      jobmgr.Process(jobCallback, bVerbose);
    }
 
    MPI_Finalize();
 
    // clean up
-   _destroyTileBlockArray(pTileBlockArray);
+   _destroyTileBlockArray(g_pTileBlockArray);
 
    std::cout << std::flush;
 
@@ -415,8 +283,7 @@ int main(int argc, char *argv[])
       std::cout << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
    }
 
-   
-   delete[] pWorkArray;
    return 0;
 }
+
 

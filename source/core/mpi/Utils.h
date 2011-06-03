@@ -29,6 +29,8 @@
 #endif
 #include <stack>
 #include <vector>
+#include <iostream>
+#include <ctime>
 
 // High Performance job Manager: Distribute workload asynchronously.
 
@@ -61,10 +63,21 @@ public:
 
    // Start Processing data. For each job the specified callback function is called.
    // you can also pass some userdata to it. But please keep in mind everything must be thread safe.
-   void Process(CallBack_Process fnc)
+   void Process(CallBack_Process fnc, bool bVerbose=false)
    {
+    
       if (_rank == 0) 
       {
+         int totaljobs = (int)_jobstack.size();
+         clock_t tprog0, tprog1;
+         tprog0 = clock();
+
+         if (bVerbose)
+         {
+            std::cout << "Jobmanager is starting...\n";
+            std::cout << "Total jobs: " << totaljobs << "\n" << std::flush;
+         }
+
          for (int i=1;i<_totalnodes;i++)
          {
             _MakeJobPacket(_jobstack, i);
@@ -109,6 +122,17 @@ public:
                        fnc(vJobs[i], _rank);
                   }
 
+                  if (bVerbose)
+                  {
+                     tprog1 = clock();
+                     double time_passed = double(tprog1-tprog0)/double(CLOCKS_PER_SEC);
+                     if (time_passed > 200) // print progress report after some time
+                     {
+                        double progress = double(int(10000.0*double(_jobstack.size())/double(totaljobs))/100.0);
+                        std::cout << "[PROGRESS] Processed " << _jobstack.size() << "/" << totaljobs << " tiles (" << progress << "%)\n" << std::flush;
+                        tprog0 = tprog1;
+                     }
+                  }
 
                   it++;
                }
@@ -140,7 +164,7 @@ public:
          }
       }
 
-      MPI_Finalize();
+      MPI_Barrier(MPI_COMM_WORLD);
    }
 
    //---------------------------------------------------------------------------
