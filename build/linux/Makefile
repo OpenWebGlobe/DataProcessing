@@ -13,7 +13,9 @@ LIBS=\
 all: \
 	../../bin/adddata \
 	../../bin/calcextent \
-	../../bin/createlayer
+	../../bin/createlayer \
+	../../bin/resample \
+	../../bin/resample_mpi_homogenous
 
 ../../bin/adddata: \
 	../../source/apps/adddata/main.cpp \
@@ -30,15 +32,34 @@ all: \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< $(LIBS)
 
+../../bin/resample: \
+	../../source/apps/resample/main.cpp \
+	../../bin/resample.o \
+	../../bin/libOpenWebGlobeProcessing.a
+	g++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
+
+../../bin/resample_mpi: \
+	../../source/apps/resample/main_mpi.cpp \
+	../../bin/resample.o \
+	../../bin/libOpenWebGlobeProcessing.a
+	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
+
+../../bin/resample_mpi_homogenous: \
+	../../source/apps/resample/main_mpi_homogenous.cpp \
+	../../bin/resample.o \
+	../../bin/libOpenWebGlobeProcessing.a
+	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
+
 ../../bin/libOpenWebGlobeProcessing.a: \
 	../../bin/Logger.o \
 	../../bin/ProcessingSettings.o \
 	../../bin/CoordinateTransformation.o \
+	../../bin/ElevationLayerSettings.o \
 	../../bin/ImageLayerSettings.o \
 	../../bin/MercatorQuadtree.o \
 	../../bin/ImageHandler.o \
+	../../bin/ImageLoader.o \
 	../../bin/ImageWriter.o \
-	../../bin/lodepng.o \
 	../../bin/CommonPath.o \
 	../../bin/FileSystem.o \
 	../../bin/ogprocess.o \
@@ -62,6 +83,9 @@ all: \
 ../../bin/CoordinateTransformation.o: ../../source/core/geo/CoordinateTransformation.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/ElevationLayerSettings.o: ../../source/core/geo/ElevationLayerSettings.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/ImageLayerSettings.o: ../../source/core/geo/ImageLayerSettings.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
@@ -71,10 +95,10 @@ all: \
 ../../bin/ImageHandler.o: ../../source/core/image/ImageHandler.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
-../../bin/ImageWriter.o: ../../source/core/image/ImageWriter.cpp
+../../bin/ImageLoader.o: ../../source/core/image/ImageLoader.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
-../../bin/lodepng.o: ../../source/core/image/lodepng/lodepng.cpp
+../../bin/ImageWriter.o: ../../source/core/image/ImageWriter.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/CommonPath.o: ../../source/core/io/CommonPath.cpp
@@ -108,6 +132,9 @@ all: \
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/Tokenizer.o: ../../source/core/xml/Tokenizer.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/resample.o: ../../source/apps/resample/resample.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 clean:
