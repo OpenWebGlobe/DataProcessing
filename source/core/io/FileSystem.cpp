@@ -24,8 +24,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fcntl.h>
+#ifdef OS_WINDOWS
 #include <share.h>
 #include <io.h>
+#endif
 
 #ifdef OS_WINDOWS
 #define WIN32_LEAN_AND_MEAN
