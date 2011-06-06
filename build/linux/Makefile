@@ -34,11 +34,12 @@ all: \
 	../../bin/Logger.o \
 	../../bin/ProcessingSettings.o \
 	../../bin/CoordinateTransformation.o \
+	../../bin/ElevationLayerSettings.o \
 	../../bin/ImageLayerSettings.o \
 	../../bin/MercatorQuadtree.o \
 	../../bin/ImageHandler.o \
+	../../bin/ImageLoader.o \
 	../../bin/ImageWriter.o \
-	../../bin/lodepng.o \
 	../../bin/CommonPath.o \
 	../../bin/FileSystem.o \
 	../../bin/ogprocess.o \
@@ -62,6 +63,9 @@ all: \
 ../../bin/CoordinateTransformation.o: ../../source/core/geo/CoordinateTransformation.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/ElevationLayerSettings.o: ../../source/core/geo/ElevationLayerSettings.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/ImageLayerSettings.o: ../../source/core/geo/ImageLayerSettings.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
@@ -71,10 +75,10 @@ all: \
 ../../bin/ImageHandler.o: ../../source/core/image/ImageHandler.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
-../../bin/ImageWriter.o: ../../source/core/image/ImageWriter.cpp
+../../bin/ImageLoader.o: ../../source/core/image/ImageLoader.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
-../../bin/lodepng.o: ../../source/core/image/lodepng/lodepng.cpp
+../../bin/ImageWriter.o: ../../source/core/image/ImageWriter.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/CommonPath.o: ../../source/core/io/CommonPath.cpp
