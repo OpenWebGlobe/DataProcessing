@@ -128,8 +128,8 @@ public:
                      double time_passed = double(tprog1-tprog0)/double(CLOCKS_PER_SEC);
                      if (time_passed > 200) // print progress report after some time
                      {
-                        double progress = double(int(10000.0*double(_jobstack.size())/double(totaljobs))/100.0);
-                        std::cout << "[PROGRESS] Processed " << _jobstack.size() << "/" << totaljobs << " tiles (" << progress << "%)\n" << std::flush;
+                        double progress = double(int(10000.0*double(totaljobs-_jobstack.size())/double(totaljobs))/100.0);
+                        std::cout << "[PROGRESS] Processed " << totaljobs-_jobstack.size() << "/" << totaljobs << " jobs (" << progress << "%)\n" << std::flush;
                         tprog0 = tprog1;
                      }
                   }
