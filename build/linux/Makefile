@@ -13,7 +13,9 @@ LIBS=\
 all: \
 	../../bin/adddata \
 	../../bin/calcextent \
-	../../bin/createlayer
+	../../bin/createlayer \
+	../../bin/resample \
+	../../bin/resample_mpi_homogenous
 
 ../../bin/adddata: \
 	../../source/apps/adddata/main.cpp \
@@ -29,6 +31,24 @@ all: \
 	../../source/apps/createlayer/main.cpp \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< $(LIBS)
+
+../../bin/resample: \
+	../../source/apps/resample/main.cpp \
+	../../bin/resample.o \
+	../../bin/libOpenWebGlobeProcessing.a
+	g++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
+
+../../bin/resample_mpi: \
+	../../source/apps/resample/main_mpi.cpp \
+	../../bin/resample.o \
+	../../bin/libOpenWebGlobeProcessing.a
+	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
+
+../../bin/resample_mpi_homogenous: \
+	../../source/apps/resample/main_mpi_homogenous.cpp \
+	../../bin/resample.o \
+	../../bin/libOpenWebGlobeProcessing.a
+	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
 
 ../../bin/libOpenWebGlobeProcessing.a: \
 	../../bin/Logger.o \
@@ -112,6 +132,9 @@ all: \
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/Tokenizer.o: ../../source/core/xml/Tokenizer.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/resample.o: ../../source/apps/resample/resample.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 clean:
