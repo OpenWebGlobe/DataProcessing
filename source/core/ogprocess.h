@@ -28,7 +28,7 @@
 #include <limits>
 #include <string>
 #include <cmath>
-
+#include <sstream>
 
 
 struct DataSetInfo
@@ -49,6 +49,12 @@ struct DataSetInfo
 
 namespace ProcessingUtils
 {
+   inline std::string GetTilePath(const std::string& sBaseTilePath, const std::string& sExtension, int lod, int64 tx, int64 ty)
+   {
+      std::ostringstream oss;
+      oss << sBaseTilePath << lod << "/" << tx << "/" << ty << sExtension;
+      return oss.str();
+   }
    //---------------------------------------------------------------------------
    inline bool InvertGeoMatrix(double* mGeoMatrix, double* mInvGeoMatrix)
    {

@@ -160,6 +160,10 @@ copy $(SolutionDir)\..\..\external\win32\*.dll $(SolutionDir)\..\..\bin</Command
       <PreprocessorDefinitions>BUILD_OPENGLOBELIB;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <GlobalOptimizations>true</GlobalOptimizations>
+      <Parallelization>true</Parallelization>
+      <UseProcessorExtensions>SSE42</UseProcessorExtensions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

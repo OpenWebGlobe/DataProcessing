@@ -93,6 +93,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <OpenMPSupport>true</OpenMPSupport>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

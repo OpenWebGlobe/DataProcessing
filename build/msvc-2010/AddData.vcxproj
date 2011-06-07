@@ -93,6 +93,8 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <OpenMPSupport>true</OpenMPSupport>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OpenMP>GenerateParallelCode</OpenMP>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,7 +122,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\source\apps\adddata\elevationdata.cpp" />
+    <ClCompile Include="..\..\source\apps\adddata\imagedata.cpp" />
     <ClCompile Include="..\..\source\apps\adddata\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\source\apps\adddata\elevationdata.h" />
+    <ClInclude Include="..\..\source\apps\adddata\errors.h" />
+    <ClInclude Include="..\..\source\apps\adddata\imagedata.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -93,6 +93,11 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <OpenMPSupport>true</OpenMPSupport>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <GlobalOptimizations>true</GlobalOptimizations>
+      <Parallelization>true</Parallelization>
+      <UseProcessorExtensions>SSE42</UseProcessorExtensions>
+      <OpenMP>GenerateParallelCode</OpenMP>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
