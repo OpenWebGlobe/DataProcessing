@@ -143,3 +143,6 @@ clean:
 	rm -f ../../bin/adddata
 	rm -f ../../bin/calcextent
 	rm -f ../../bin/createlayer
+	rm -f ../../bin/resample
+	rm -f ../../bin/resample_mpi
+	rm -f ../../bin/resample_mpi_homogenous
