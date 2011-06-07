@@ -18,6 +18,9 @@
 
 
 #include "ogprocess.h"
+#include "errors.h"
+#include "imagedata.h"
+#include "elevationdata.h"
 #include "app/ProcessingSettings.h"
 #include "geo/MercatorQuadtree.h"
 #include "geo/CoordinateTransformation.h"
@@ -34,380 +37,13 @@
 #include <sstream>
 #include <omp.h>
 
-//-----------------------------------------------------------------------------
-// ERROR CODES:
 
-// App Specific:
-#define ERROR_GDAL               2     // gdal-data directory not found
-#define ERROR_CONFIG             3     // wrong configuration (setup.xml) (processing path or log-path is wrong)
-#define ERROR_PARAMS             4     // wrong parameters
-#define ERROR_IMAGELAYERSETTINGS 5     // can't load imagelayersettings. (image layer probably doesn't exist)
-
-// General Errors:
-#define ERROR_OUTOFMEMORY        101;  // not enough memory
-
-//------------------------------------------------------------------------------
-const int tilesize = 256;
-const double dHanc = 1.0/(double(tilesize)-1.0);
-const double dWanc = 1.0/(double(tilesize)-1.0);
-
-
-//------------------------------------------------------------------------------
-// Image Operations (will be moved)
-
-inline void _ReadImageDataMem(unsigned char* buffer, int bufferwidth, int bufferheight, int x, int y, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a)
+enum ELayerType
 {
-   if (x<0) x = 0;
-   if (y<0) y = 0;
-   if (x>bufferwidth-1) x = bufferwidth-1;
-   if (y>bufferheight-1) y = bufferheight-1;
+   IMAGE_LAYER,
+   ELEVATION_LAYER,
+};
 
-   *r = buffer[bufferwidth*3*y+3*x];
-   *g = buffer[bufferwidth*3*y+3*x+1];
-   *b = buffer[bufferwidth*3*y+3*x+2];
-   *a = 255;
-}
-
-//------------------------------------------------------------------------------
-
-inline void _ReadImageValueBilinear(unsigned char* buffer, int bufferwidth, int bufferheight, double x, double y, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a)
-{
-   double uf = math::Fract<double>(x);
-   double vf = math::Fract<double>(y);
-   int nPixelX = int(x);
-   int nPixelY = int(y);
-
-   int u00,v00,u10,v10,u01,v01,u11,v11;
-   u00 = nPixelX;
-   v00 = nPixelY;
-   u10 = nPixelX+1;
-   v10 = nPixelY;
-   u01 = nPixelX;
-   v01 = nPixelY+1;
-   u11 = nPixelX+1;
-   v11 = nPixelY+1;
-
-   unsigned char r00,g00,b00,a00;
-   unsigned char r10,g10,b10,a10;
-   unsigned char r01,g01,b01,a01;
-   unsigned char r11,g11,b11,a11;
-
-   _ReadImageDataMem(buffer, bufferwidth, bufferheight, u00,v00,&r00,&g00,&b00,&a00);
-   _ReadImageDataMem(buffer, bufferwidth, bufferheight, u10,v10,&r10,&g10,&b10,&a10);
-   _ReadImageDataMem(buffer, bufferwidth, bufferheight, u01,v01,&r01,&g01,&b01,&a01);
-   _ReadImageDataMem(buffer, bufferwidth, bufferheight, u11,v11,&r11,&g11,&b11,&a11);
-
-   double rd, gd, bd, ad;
-
-   rd = (double(r00)*(1-uf)*(1-vf)+double(r10)*uf*(1-vf)+double(r01)*(1-uf)*vf+double(r11)*uf*vf)+0.5;
-   gd = (double(g00)*(1-uf)*(1-vf)+double(g10)*uf*(1-vf)+double(g01)*(1-uf)*vf+double(g11)*uf*vf)+0.5;
-   bd = (double(b00)*(1-uf)*(1-vf)+double(b10)*uf*(1-vf)+double(b01)*(1-uf)*vf+double(b11)*uf*vf)+0.5;
-   ad = (double(a00)*(1-uf)*(1-vf)+double(a10)*uf*(1-vf)+double(a01)*(1-uf)*vf+double(a11)*uf*vf)+0.5;
-
-   rd = math::Clamp<double>(rd, 0.0, 255.0);
-   gd = math::Clamp<double>(gd, 0.0, 255.0);
-   bd = math::Clamp<double>(bd, 0.0, 255.0);
-   ad = math::Clamp<double>(ad, 0.0, 255.0);
-
-   *r = (unsigned char) rd;
-   *g = (unsigned char) gd;
-   *b = (unsigned char) bd;
-   *a = (unsigned char) ad;
-}
-
-//------------------------------------------------------------------------------
-
-inline std::string GetTilePath(const std::string& sBaseTilePath, const std::string& sExtension, int lod, int64 tx, int64 ty)
-{
-   std::ostringstream oss;
-   oss << sBaseTilePath << lod << "/" << tx << "/" << ty << sExtension;
-   return oss.str();
-}
-
-//------------------------------------------------------------------------------
-
-int processImageData( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, int epsg, std::string sImagefile, bool bFill ) 
-{
-   DataSetInfo oInfo;
-
-   if (!ProcessingUtils::init_gdal())
-   {
-      qLogger->Error("gdal-data directory not found!");
-      return ERROR_GDAL;
-   }
-
-   //---------------------------------------------------------------------------
-   // Retrieve ImageLayerSettings:
-   std::ostringstream oss;
-
-   std::string sImageLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
-   std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sImageLayerDir) + "tiles");
-
-   boost::shared_ptr<ImageLayerSettings> qImageLayerSettings = ImageLayerSettings::Load(sImageLayerDir);
-   if (!qImageLayerSettings)
-   {
-      qLogger->Error("Failed retrieving image layer settings! Make sure to create it using 'createlayer'.");
-      ProcessingUtils::exit_gdal();
-      return ERROR_IMAGELAYERSETTINGS;
-   }
-
-   int lod = qImageLayerSettings->GetMaxLod();
-   int64 layerTileX0, layerTileY0, layerTileX1, layerTileY1;
-   qImageLayerSettings->GetTileExtent(layerTileX0, layerTileY0, layerTileX1, layerTileY1);
-
-   if (bVerbose)
-   {
-      oss << "\nImage Layer:\n";
-      oss << "     name = " << qImageLayerSettings->GetLayerName() << "\n";
-      oss << "   maxlod = " << lod << "\n";
-      oss << "   extent = " << layerTileX0 << ", " << layerTileY0 << ", " << layerTileX1 << ", " << layerTileY1 << "\n";
-   }
-
-
-   //---------------------------------------------------------------------------
-
-   boost::shared_ptr<CoordinateTransformation> qCT;
-   qCT = boost::shared_ptr<CoordinateTransformation>(new CoordinateTransformation(epsg, 3785));
-
-   clock_t t0,t1;
-   t0 = clock();
-
-   ProcessingUtils::RetrieveDatasetInfo(sImagefile, qCT.get(), &oInfo, bVerbose);
-
-   if (!oInfo.bGood)
-   {
-      qLogger->Error("Failed retrieving info!");
-   }
-
-   if (bVerbose)
-   {
-      oss << "Loaded image info:\n   Image Size: w= " << oInfo.nSizeX << ", h= " << oInfo.nSizeY << "\n";
-      oss << "   dest: " << oInfo.dest_lrx << ", " << oInfo.dest_lry << ", " << oInfo.dest_ulx << ", " << oInfo.dest_uly << "\n";
-      qLogger->Info(oss.str());
-      oss.str("");
-   }
-
-   boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
-
-   int64 px0, py0, px1, py1;
-   qQuadtree->MercatorToPixel(oInfo.dest_ulx, oInfo.dest_uly, lod, px0, py0);
-   qQuadtree->MercatorToPixel(oInfo.dest_lrx, oInfo.dest_lry, lod, px1, py1);
-
-   int64 imageTileX0, imageTileY0, imageTileX1, imageTileY1;
-   qQuadtree->PixelToTileCoord(px0, py0, imageTileX0, imageTileY0);
-   qQuadtree->PixelToTileCoord(px1, py1, imageTileX1, imageTileY1);
-
-   if (bVerbose)
-   {
-      oss << "\nTile Coords (image):";
-      oss << "   (" << imageTileX0 << ", " << imageTileY0 << ")-(" << imageTileX1 << ", " << imageTileY1 << ")\n";
-      qLogger->Info(oss.str());
-      oss.str("");
-   }
-
-   // check if image is outside layer
-   if (imageTileX0 > layerTileX1 || 
-      imageTileY0 > layerTileY1 ||
-      imageTileX1 < layerTileX0 ||
-      imageTileY1 < layerTileY0)
-   {
-      qLogger->Info("The dataset is outside of the layer and not being added!");
-      ProcessingUtils::exit_gdal();
-      return 0;
-   }
-
-   // clip tiles to layer extent
-   imageTileX0 = math::Max<int64>(imageTileX0, layerTileX0);
-   imageTileY0 = math::Max<int64>(imageTileY0, layerTileY0);
-   imageTileX1 = math::Min<int64>(imageTileX1, layerTileX1);
-   imageTileY1 = math::Min<int64>(imageTileY1, layerTileY1);
-
-   // Load image 
-   boost::shared_array<unsigned char> vImage = ProcessingUtils::ImageToMemoryRGB(oInfo);
-   unsigned char* pImage = vImage.get();
-
-   if (!vImage)
-   {
-      qLogger->Error("Can't load image into memory!\n");
-      return ERROR_OUTOFMEMORY;
-   }
-   // iterate through all tiles and create them
-#pragma omp parallel for
-   for (int64 xx = imageTileX0; xx <= imageTileX1; ++xx)
-   {
-      for (int64 yy = imageTileY0; yy <= imageTileY1; ++yy)
-      {
-         boost::shared_array<unsigned char> vTile;
-
-         std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
-         std::string sTilefile = GetTilePath(sTileDir, ".png" , lod, xx, yy);
-
-         if (bVerbose)
-         {
-            std::stringstream sst;
-            sst << "processing " << sQuadcode << " (" << xx << ", " << yy << ")";
-            qLogger->Info(sst.str());
-         }
-
-         //---------------------------------------------------------------------
-         // LOCK this tile. If this tile is currently locked 
-         //     -> wait until lock is removed.
-         int lockhandle = FileSystem::Lock(sTilefile);
-
-         //---------------------------------------------------------------------
-         // if mode is --fill: (bFill)
-         //      * load possibly existing tile into vTile
-         // ...  * if there is none, clear vTile (memset 0)
-         // if mode is --overwrite (bOverwrite)
-         //      * load possibly existing tile into vTile
-         //      * if there is none, clear vTile (memset 0)
-         //      * overwrite
-         //_--------------------------------------------------------------------
-
-         // load tile:
-
-         // tile already exists ?
-         bool bCreateNew = true;
-
-         if (FileSystem::FileExists(sTilefile))
-         {
-            qLogger->Info(sTilefile + " already exists, updating");
-            ImageObject outputimage;
-            if (ImageLoader::LoadFromDisk(Img::Format_PNG, sTilefile, Img::PixelFormat_RGBA, outputimage))
-            {
-               if (outputimage.GetHeight() == tilesize && outputimage.GetWidth() == tilesize)
-               {
-                  vTile = outputimage.GetRawData();
-                  bCreateNew = false;
-               }
-            }
-         }
-
-         if (bCreateNew)
-         {
-            // create new tile memory and clear to fully transparent
-            vTile = boost::shared_array<unsigned char>(new unsigned char[tilesize*tilesize*4]);
-            memset(vTile.get(),0,tilesize*tilesize*4);
-         }
-
-         unsigned char* pTile = vTile.get();
-
-         // Copy image to tile:
-         double px0m, py0m, px1m, py1m;
-         qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0m, py0m, px1m, py1m);
-
-         double ulx = px0m;
-         double uly = py1m;
-         double lrx = px1m;
-         double lry = py0m;
-
-         double anchor_Ax = ulx; 
-         double anchor_Ay = lry;
-         double anchor_Bx = lrx; 
-         double anchor_By = lry;
-         double anchor_Cx = lrx; 
-         double anchor_Cy = uly;
-         double anchor_Dx = ulx; 
-         double anchor_Dy = uly;
-
-         // avoid calculating transformation per pixel using anchor point method
-         qCT->TransformBackwards(&anchor_Ax, &anchor_Ay);
-         qCT->TransformBackwards(&anchor_Bx, &anchor_By);
-         qCT->TransformBackwards(&anchor_Cx, &anchor_Cy);
-         qCT->TransformBackwards(&anchor_Dx, &anchor_Dy);
-
-         /*if (bVerbose)
-         {
-         std::stringstream sst;
-         sst << "Anchor points:\nA(" << anchor_Ax << ", " << anchor_Ay << ")" 
-         << "\nB(" << anchor_Bx << ", " << anchor_By << ")" 
-         << "\nC(" << anchor_Cx << ", " << anchor_Cy << ")"
-         << "\nD(" << anchor_Dx << ", " << anchor_Dy << ")\n";
-         qLogger->Info(sst.str());
-         }*/
-
-         // write current tile
-         for (int ty=0;ty<tilesize;++ty)
-         {
-            for (int tx=0;tx<tilesize;++tx)
-            {
-               double dx = (double)tx*dWanc;
-               double dy = (double)ty*dHanc;
-               double xd = (anchor_Ax*(1.0-dx)*(1.0-dy)+anchor_Bx*dx*(1.0-dy)+anchor_Dx*(1.0-dx)*dy+anchor_Cx*dx*dy);
-               double yd = (anchor_Ay*(1.0-dx)*(1.0-dy)+anchor_By*dx*(1.0-dy)+anchor_Dy*(1.0-dx)*dy+anchor_Cy*dx*dy);
-
-               // pixel coordinate in original image
-               double dPixelX = (oInfo.affineTransformation_inverse[0] + xd * oInfo.affineTransformation_inverse[1] + yd * oInfo.affineTransformation_inverse[2]);
-               double dPixelY = (oInfo.affineTransformation_inverse[3] + xd * oInfo.affineTransformation_inverse[4] + yd * oInfo.affineTransformation_inverse[5]);
-               unsigned char r,g,b,a;
-
-               // out of image -> set transparent
-               if (dPixelX<0 || dPixelX>oInfo.nSizeX ||
-                  dPixelY<0 || dPixelY>oInfo.nSizeY)
-               {
-                  r = g = b = a = 0;
-               }
-               else
-               {
-                  // read pixel in image pImage[dPixelX, dPixelY] (biliear, bicubic or nearest neighbour)
-                  // and store as r,g,b
-                  _ReadImageValueBilinear(pImage, oInfo.nSizeX, oInfo.nSizeY, dPixelX, dPixelY, &r, &g, &b, &a);
-               }
-
-               size_t adr=4*ty*tilesize+4*tx;
-
-               if (a>0)
-               {
-                  if (bFill)
-                  {
-                     if (pTile[adr+3] == 0)
-                     {
-                        pTile[adr+0] = r;  
-                        pTile[adr+1] = g;  
-                        pTile[adr+2] = b; 
-                        pTile[adr+3] = a;
-                     }
-                  }
-                  else // if (bOverwrite)
-                  {
-                     // currently RGB for testing purposes!
-                     pTile[adr+0] = r;  
-                     pTile[adr+1] = g;  
-                     pTile[adr+2] = b; 
-                     pTile[adr+3] = a;
-                  }
-               }
-            }
-         }
-
-         // save tile (pTile)
-         if (bVerbose)
-         {
-            qLogger->Info("Storing tile: " + sTilefile);
-         }
-
-         ImageWriter::WritePNG(sTilefile, pTile, tilesize, tilesize);
-
-         // unlock file. Other computers/processes/threads can access it again.
-         FileSystem::Unlock(sTilefile, lockhandle);
-      }
-   }
-
-   //---------------------------------------------------------------------------
-
-
-   //---------------------------------------------------------------------------
-   t1=clock();
-
-   std::ostringstream out;
-   out << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
-   qLogger->Info(out.str());
-
-   ProcessingUtils::exit_gdal();
-
-   return 0;
-}
-//------------------------------------------------------------------------------
 
 namespace po = boost::program_options;
 
@@ -415,8 +51,9 @@ int main(int argc, char *argv[])
 {
    po::options_description desc("Program-Options");
    desc.add_options()
-       ("image", po::value<std::string>(), "image(s) to add")
-       ("srs", po::value<std::string>(), "spatial reference system for input file(s)")
+       ("image", po::value<std::string>(), "image file to add")
+       ("elevation",  po::value<std::string>(), "elevation file to add")
+       ("srs", po::value<std::string>(), "spatial reference system for input file")
        ("layer", po::value<std::string>(), "name of layer to add the data")
        ("fill", "fill empty parts, don't overwrite already existing data")
        ("overwrite", "overwrite existing data")
@@ -440,12 +77,13 @@ int main(int argc, char *argv[])
       bError = true;
    }
 
-   std::string sImagefile;
+   std::string sFile;
    std::string sSRS;
    std::string sLayer;
    bool bFill = false;
    bool bOverwrite = false;
    bool bVerbose = false;
+   ELayerType eLayer = IMAGE_LAYER;
 
    //---------------------------------------------------------------------------
    // init options:
@@ -470,13 +108,33 @@ int main(int argc, char *argv[])
 
    //---------------------------------------------------------------------------
 
-   if (!vm.count("image") || !vm.count("srs") || !vm.count("layer"))
+   if (!vm.count("image") || !vm.count("elevation"))
+   {
+      bError = true;
+   }
+
+   if (vm.count("image") && vm.count("elevation"))
+   {
+      bError = true;
+   }
+
+   if (vm.count("image"))
+   {
+      eLayer = IMAGE_LAYER;
+      sFile = vm["image"].as<std::string>();
+   }
+   else if  (vm.count("elevation"))
+   {
+      eLayer = ELEVATION_LAYER;
+      sFile = vm["elevation"].as<std::string>();
+   }
+
+   if (!vm.count("srs") || !vm.count("layer"))
    {
       bError = true;
    }
    else
    {
-      sImagefile = vm["image"].as<std::string>();
       sSRS = vm["srs"].as<std::string>();
       sLayer = vm["layer"].as<std::string>();
    }
@@ -506,8 +164,6 @@ int main(int argc, char *argv[])
          qLogger->Info(oss.str());
          omp_set_num_threads(n);
       }
-
-
    }
 
    if (vm.count("fill"))
@@ -543,7 +199,14 @@ int main(int argc, char *argv[])
 
    //---------------------------------------------------------------------------
 
-   return processImageData(qLogger, qSettings, sLayer, bVerbose, epsg, sImagefile, bFill);
+   if (eLayer == IMAGE_LAYER) 
+   {
+      return ImageData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill);
+   }
+   else if (eLayer == ELEVATION_LAYER)
+   {
+      return ElevationData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill);
+   }
 }
 
 
