@@ -9,4 +9,7 @@
 /bin/adddata
 /bin/calcextent
 /bin/createlayer
+/bin/resample
+/bin/resample_mpi
+/bin/resample_mpi_homogenous
 /bin/libOpenWebGlobeProcessing.a
