@@ -17,6 +17,9 @@
 *******************************************************************************/
 /*                                                                            */
 /*                  MPI Version of resample (for cluster/cloud)               */
+/*                      asynchronous workload distribution                    */
+/*          this is the recommended version for all clusters / clouds         */
+/*                for multicore single computers use resample.cpp             */
 /*                                                                            */
 /******************************************************************************/
 
