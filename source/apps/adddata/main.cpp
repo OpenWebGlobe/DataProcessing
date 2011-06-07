@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 
    //---------------------------------------------------------------------------
 
-   if (!vm.count("image") || !vm.count("elevation"))
+   if (!vm.count("image") && !vm.count("elevation"))
    {
       bError = true;
    }
