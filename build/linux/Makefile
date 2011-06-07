@@ -19,8 +19,10 @@ all: \
 
 ../../bin/adddata: \
 	../../source/apps/adddata/main.cpp \
+	../../bin/elevationdata.o \
+	../../bin/imagedata.o \
 	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< $(LIBS)
+	g++ -o $@ $(CFLAGS) $< ../../bin/elevationdata.o ../../bin/imagedata.o $(LIBS)
 
 ../../bin/calcextent: \
 	../../source/apps/calcextent/main.cpp \
@@ -132,6 +134,12 @@ all: \
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/Tokenizer.o: ../../source/core/xml/Tokenizer.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/elevationdata.o: ../../source/apps/adddata/elevationdata.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/imagedata.o: ../../source/apps/adddata/imagedata.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/resample.o: ../../source/apps/resample/resample.cpp
