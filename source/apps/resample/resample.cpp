@@ -41,19 +41,19 @@ void _resampleFromParent( TileBlock* pTileBlockArray, boost::shared_ptr<Mercator
    int tmp_lod;
 
    qQuadtree->QuadKeyToTileCoord(qcCurrent, _tx, _ty, tmp_lod);
-   std::string sCurrentTile = GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
+   std::string sCurrentTile = ProcessingUtils::GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
 
    qQuadtree->QuadKeyToTileCoord(qc0, _tx, _ty, tmp_lod);
-   std::string sTilefile0 = GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
+   std::string sTilefile0 = ProcessingUtils::GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
 
    qQuadtree->QuadKeyToTileCoord(qc1, _tx, _ty, tmp_lod);
-   std::string sTilefile1 = GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
+   std::string sTilefile1 = ProcessingUtils::GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
 
    qQuadtree->QuadKeyToTileCoord(qc2, _tx, _ty, tmp_lod);
-   std::string sTilefile2 = GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
+   std::string sTilefile2 = ProcessingUtils::GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
 
    qQuadtree->QuadKeyToTileCoord(qc3, _tx, _ty, tmp_lod);
-   std::string sTilefile3 = GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
+   std::string sTilefile3 = ProcessingUtils::GetTilePath(sTileDir, ".png" , tmp_lod, _tx, _ty);
 
    ImageObject IH0, IH1, IH2, IH3;
 
