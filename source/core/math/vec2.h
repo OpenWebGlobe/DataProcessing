@@ -23,6 +23,11 @@
 #include <iostream>
 #include <cassert>
 
+template<typename T>
+class Math {
+   static const T ZERO_TOLERANCE;
+};
+
 //! \class vec2
 //! \brief Rational (float, double) vector class with 2 components.
 template <typename T>
