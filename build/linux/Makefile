@@ -14,6 +14,7 @@ all: \
 	../../bin/adddata \
 	../../bin/calcextent \
 	../../bin/createlayer \
+	../../bin/deploy \
 	../../bin/resample \
 	../../bin/resample_mpi_homogenous
 
@@ -31,6 +32,11 @@ all: \
 
 ../../bin/createlayer: \
 	../../source/apps/createlayer/main.cpp \
+	../../bin/libOpenWebGlobeProcessing.a
+	g++ -o $@ $(CFLAGS) $< $(LIBS)
+
+../../bin/deploy: \
+	../../source/apps/deploy/main.cpp \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< $(LIBS)
 
@@ -187,6 +193,7 @@ clean:
 	rm -f ../../bin/adddata
 	rm -f ../../bin/calcextent
 	rm -f ../../bin/createlayer
+	rm -f ../../bin/deploy
 	rm -f ../../bin/resample
 	rm -f ../../bin/resample_mpi
 	rm -f ../../bin/resample_mpi_homogenous
