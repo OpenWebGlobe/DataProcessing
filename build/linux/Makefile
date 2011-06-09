@@ -67,6 +67,12 @@ all: \
 	../../bin/FileSystem.o \
 	../../bin/TarWriter.o \
 	../../bin/ogprocess.o \
+	../../bin/DelaunayLocationStructure.o \
+	../../bin/DelaunayMemoryManager.o \
+	../../bin/DelaunayTriangle.o \
+	../../bin/DelaunayTriangulation.o \
+	../../bin/DelaunayVertex.o \
+	../../bin/Predicates.o \
 	../../bin/ElevationPoint.o \
 	../../bin/vec3.o \
 	../../bin/ConvertUTF.o \
@@ -119,6 +125,24 @@ all: \
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/ogprocess.o: ../../source/core/ogprocess.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/DelaunayLocationStructure.o: ../../source/core/math/delaunay/DelaunayLocationStructure.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/DelaunayMemoryManager.o: ../../source/core/math/delaunay/DelaunayMemoryManager.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/DelaunayTriangle.o: ../../source/core/math/delaunay/DelaunayTriangle.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/DelaunayTriangulation.o: ../../source/core/math/delaunay/DelaunayTriangulation.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/DelaunayVertex.o: ../../source/core/math/delaunay/DelaunayVertex.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/Predicates.o: ../../source/core/math/delaunay/Predicates.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/ElevationPoint.o: ../../source/core/math/ElevationPoint.cpp
