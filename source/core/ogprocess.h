@@ -30,7 +30,7 @@
 #include <string>
 #include <cmath>
 #include <sstream>
-
+#include <vector>
 
 struct DataSetInfo
 {
@@ -97,9 +97,6 @@ namespace ProcessingUtils
    //---------------------------------------------------------------------------
    // Load image with 3 channels to RGB.
    OPENGLOBE_API boost::shared_array<unsigned char> ImageToMemoryRGB(const DataSetInfo& oDataset);
-   //---------------------------------------------------------------------------
-   // Load elevation data
-   OPENGLOBE_API bool ElevationToMemory(const DataSetInfo& oInfo, std::vector<ElevationPoint>& vPoints);
    //---------------------------------------------------------------------------
 
   

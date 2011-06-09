@@ -304,23 +304,5 @@ namespace ProcessingUtils
    }
    //---------------------------------------------------------------------------
 
-   OPENGLOBE_API bool ElevationToMemory(const DataSetInfo& oDataset, std::vector<ElevationPoint>& vPoints)
-   {
-      if (!oDataset.bGood)  // invalid dataset
-      {
-         return false;
-      }
-
-      // currently only datasets with 1 bands are supported
-      if (oDataset.nBands != 1)
-      {
-         return false;
-      } 
-
-
-
-      return true;
-   }
-
 } // namespace
 

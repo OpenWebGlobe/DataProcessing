@@ -118,6 +118,9 @@
     <ClCompile Include="..\..\source\core\io\TarWriter.cpp">
       <Filter>io</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\geo\ElevationReader.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
@@ -223,6 +226,9 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\io\TarWriter.h">
       <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\geo\ElevationReader.h">
+      <Filter>geo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
