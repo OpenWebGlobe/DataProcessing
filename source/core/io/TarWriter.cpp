@@ -22,8 +22,12 @@
 #include "TarWriter.h"
 #include <sstream>
 #include <cassert>
+#include <cerrno>
+#include <cstdio>
+#include <cstring>
 #include <ctime>
 #include <iostream>
+#include <stdexcept>
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
