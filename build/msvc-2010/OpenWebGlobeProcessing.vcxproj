@@ -15,6 +15,7 @@
     <ClCompile Include="..\..\source\core\app\ProcessingSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp" />
     <ClCompile Include="..\..\source\core\geo\ElevationLayerSettings.cpp" />
+    <ClCompile Include="..\..\source\core\geo\ElevationReader.cpp" />
     <ClCompile Include="..\..\source\core\geo\ImageLayerSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageHandler.cpp" />
@@ -22,6 +23,7 @@
     <ClCompile Include="..\..\source\core\image\ImageWriter.cpp" />
     <ClCompile Include="..\..\source\core\io\CommonPath.cpp" />
     <ClCompile Include="..\..\source\core\io\FileSystem.cpp" />
+    <ClCompile Include="..\..\source\core\io\TarWriter.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayMemoryManager.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayTriangle.cpp" />
@@ -44,6 +46,7 @@
     <ClInclude Include="..\..\source\core\app\ProcessingSettings.h" />
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h" />
     <ClInclude Include="..\..\source\core\geo\ElevationLayerSettings.h" />
+    <ClInclude Include="..\..\source\core\geo\ElevationReader.h" />
     <ClInclude Include="..\..\source\core\geo\ImageLayerSettings.h" />
     <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h" />
     <ClInclude Include="..\..\source\core\image\ImageHandler.h" />
@@ -53,6 +56,7 @@
     <ClInclude Include="..\..\source\core\image\stb_image_write.h" />
     <ClInclude Include="..\..\source\core\io\CommonPath.h" />
     <ClInclude Include="..\..\source\core\io\FileSystem.h" />
+    <ClInclude Include="..\..\source\core\io\TarWriter.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayMemoryManager.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayTriangle.h" />
@@ -135,7 +139,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\boost\lib\win32-icc12;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -161,9 +165,12 @@ copy $(SolutionDir)\..\..\external\win32\*.dll $(SolutionDir)\..\..\bin</Command
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <GlobalOptimizations>true</GlobalOptimizations>
+      <GlobalOptimizations>false</GlobalOptimizations>
       <Parallelization>true</Parallelization>
       <UseProcessorExtensions>SSE42</UseProcessorExtensions>
+      <Cpp0xSupport>true</Cpp0xSupport>
+      <C99Support>false</C99Support>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -171,7 +178,7 @@ copy $(SolutionDir)\..\..\external\win32\*.dll $(SolutionDir)\..\..\bin</Command
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\boost\lib\win32-icc12;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

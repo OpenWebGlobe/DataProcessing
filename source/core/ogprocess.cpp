@@ -302,6 +302,7 @@ namespace ProcessingUtils
 
       return vData;
    }
+   //---------------------------------------------------------------------------
 
 } // namespace
 

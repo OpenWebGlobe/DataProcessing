@@ -53,15 +53,6 @@ public:
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-inline std::string GetTilePath(const std::string& sBaseTilePath, const std::string& sExtension, int lod, int64 tx, int64 ty)
-{
-   std::ostringstream oss;
-   oss << sBaseTilePath << lod << "/" << tx << "/" << ty << sExtension;
-   return oss.str();
-}
-
-//------------------------------------------------------------------------------
-
 inline void _getInterpolatedColor(const unsigned char* rgbData, const size_t adr0, const size_t adr1, const size_t adr2, const size_t adr3, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a)
 {
    int red = 0;
