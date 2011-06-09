@@ -67,6 +67,7 @@ all: \
 	../../bin/FileSystem.o \
 	../../bin/TarWriter.o \
 	../../bin/ogprocess.o \
+	../../bin/ElevationPoint.o \
 	../../bin/vec3.o \
 	../../bin/ConvertUTF.o \
 	../../bin/ConvertUTF.o \
@@ -118,6 +119,9 @@ all: \
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/ogprocess.o: ../../source/core/ogprocess.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ElevationPoint.o: ../../source/core/math/ElevationPoint.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/vec3.o: ../../source/core/math/vec3.cpp
