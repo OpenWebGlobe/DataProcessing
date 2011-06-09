@@ -57,6 +57,7 @@ all: \
 	../../bin/ProcessingSettings.o \
 	../../bin/CoordinateTransformation.o \
 	../../bin/ElevationLayerSettings.o \
+	../../bin/ElevationReader.o \
 	../../bin/ImageLayerSettings.o \
 	../../bin/MercatorQuadtree.o \
 	../../bin/ImageHandler.o \
@@ -86,6 +87,9 @@ all: \
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/ElevationLayerSettings.o: ../../source/core/geo/ElevationLayerSettings.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ElevationReader.o: ../../source/core/geo/ElevationReader.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/ImageLayerSettings.o: ../../source/core/geo/ImageLayerSettings.cpp
