@@ -65,6 +65,7 @@ all: \
 	../../bin/ImageWriter.o \
 	../../bin/CommonPath.o \
 	../../bin/FileSystem.o \
+	../../bin/TarWriter.o \
 	../../bin/ogprocess.o \
 	../../bin/vec3.o \
 	../../bin/ConvertUTF.o \
@@ -111,6 +112,9 @@ all: \
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/FileSystem.o: ../../source/core/io/FileSystem.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/TarWriter.o: ../../source/core/io/TarWriter.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/ogprocess.o: ../../source/core/ogprocess.cpp
