@@ -22,6 +22,7 @@
     <ClCompile Include="..\..\source\core\image\ImageWriter.cpp" />
     <ClCompile Include="..\..\source\core\io\CommonPath.cpp" />
     <ClCompile Include="..\..\source\core\io\FileSystem.cpp" />
+    <ClCompile Include="..\..\source\core\io\TarWriter.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayMemoryManager.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayTriangle.cpp" />
@@ -53,6 +54,7 @@
     <ClInclude Include="..\..\source\core\image\stb_image_write.h" />
     <ClInclude Include="..\..\source\core\io\CommonPath.h" />
     <ClInclude Include="..\..\source\core\io\FileSystem.h" />
+    <ClInclude Include="..\..\source\core\io\TarWriter.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayMemoryManager.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayTriangle.h" />
@@ -161,9 +163,12 @@ copy $(SolutionDir)\..\..\external\win32\*.dll $(SolutionDir)\..\..\bin</Command
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <GlobalOptimizations>true</GlobalOptimizations>
+      <GlobalOptimizations>false</GlobalOptimizations>
       <Parallelization>true</Parallelization>
       <UseProcessorExtensions>SSE42</UseProcessorExtensions>
+      <Cpp0xSupport>true</Cpp0xSupport>
+      <C99Support>false</C99Support>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

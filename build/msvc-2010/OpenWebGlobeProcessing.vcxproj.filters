@@ -115,6 +115,9 @@
     <ClCompile Include="..\..\source\core\math\vec3.cpp">
       <Filter>math</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\io\TarWriter.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
@@ -217,6 +220,9 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\mpi\Utils.h">
       <Filter>mpi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\TarWriter.h">
+      <Filter>io</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

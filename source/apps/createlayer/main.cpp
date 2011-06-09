@@ -221,6 +221,10 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
          bError = true;
       }
    }
+   else
+   {
+       qLogger->Warn("It is highly recommended to use --type! Using default --type image");
+   }
 
    if (bError)
    {

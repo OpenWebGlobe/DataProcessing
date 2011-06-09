@@ -23,6 +23,7 @@
 #include "app/Logger.h"
 #include "app/ProcessingSettings.h"
 #include "geo/CoordinateTransformation.h"
+#include "math/ElevationPoint.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
 #include <limits>
@@ -96,14 +97,12 @@ namespace ProcessingUtils
    //---------------------------------------------------------------------------
    // Load image with 3 channels to RGB.
    OPENGLOBE_API boost::shared_array<unsigned char> ImageToMemoryRGB(const DataSetInfo& oDataset);
-
-
+   //---------------------------------------------------------------------------
+   // Load elevation data
+   OPENGLOBE_API bool ElevationToMemory(const DataSetInfo& oInfo, std::vector<ElevationPoint>& vPoints);
    //---------------------------------------------------------------------------
 
-
-   
-
-
+  
 }
 
 

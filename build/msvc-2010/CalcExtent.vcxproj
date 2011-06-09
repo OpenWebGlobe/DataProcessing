@@ -94,6 +94,8 @@
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <OpenMPSupport>false</OpenMPSupport>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <Parallelization>true</Parallelization>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
