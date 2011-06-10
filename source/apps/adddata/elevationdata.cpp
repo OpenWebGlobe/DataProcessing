@@ -27,6 +27,7 @@
 #include "math/ElevationPoint.h"
 #include "geo/ElevationReader.h"
 #include <sstream>
+#include <fstream>
 #include <ctime>
 
 namespace ElevationData
@@ -106,7 +107,6 @@ namespace ElevationData
          oss.str("");
       }
 
-
       boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
 
       int64 px0, py0, px1, py1;
@@ -151,38 +151,39 @@ namespace ElevationData
          for (int64 yy = elvTileY0; yy <= elvTileY1; ++yy)
          {
             std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
-            std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, xx, yy);
+            std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".obj" , lod, xx, yy);
             
             double x0, y0, x1, y1;
             qQuadtree->QuadKeyToMercatorCoord(sQuadcode, x0, y1, x1, y0);
             double len = y1-y0;
 
-            double xx0 = x0-len;
-            double xx1 = x1+len;
-            double yy0 = y0-len;
-            double yy1 = y1+len;
+            double xx0 = x0-0.05*len;
+            double xx1 = x1+0.05*len;
+            double yy0 = y0-0.05*len;
+            double yy1 = y1+0.05*len;
 
             math::DelaunayTriangulation oTriangulation(x0-2.0*len, y0-2.0*len, x1+2.0*len, y1+2.0*len);
 
+            int cnt=0;
             for (size_t i=0;i<vPoints.size();i++)
             {
                if (vPoints[i].x > xx0 && vPoints[i].x < xx1 &&
                    vPoints[i].y > yy0 && vPoints[i].y < yy1)
                 {
-                  //oTriangulation.InsertPoint(vPoints[i]);
+                  oTriangulation.InsertPoint(vPoints[i]);
+                  cnt++;
                 }
             }
+
+            //oTriangulation.Reduce(cnt/2); // thin out 50%
+
+            std::string str = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
+            std::ofstream fout(sTilefile);
+            fout << str;
+            fout.close();
           
          }
       }  
-
-
-      /*math::DelaunayTriangulation oTriangulation(-1, -1, 1, 1);
-
-      for (size_t i=0;i<vPoints.size();i++)
-      {
-         oTriangulation.InsertPoint(vPoints[i]);
-      }*/
 
 
       // finished, print stats:
@@ -198,3 +199,23 @@ namespace ElevationData
 
 }
 
+
+
+
+/*
+// Demo Triangulation Code
+// Triangulate a Dataset and write Wavefront OBJ file.
+
+math::DelaunayTriangulation oTriangulation(xmin-0.000001, ymin-0.000001, xmax+0.000001, ymax+000001);
+oTriangulation.SetEpsilon(DBL_EPSILON);
+
+for (size_t i=0;i<vPoints.size();i++)
+{
+oTriangulation.InsertPoint(vPoints[i]);
+}
+
+std::string str = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
+std::ofstream fout("c:/out.obj");
+fout << str;
+fout.close();
+*/

@@ -125,6 +125,10 @@ namespace math
       // Get Vertices around a point in CCW Order
       void GetCCWVertices(DelaunayTriangle* pTri, int vertex_index, std::vector<DelaunayVertex*>& outputVertices);
 
+      // create Wavefront OBJ 3D-Object of current triangulation
+      std::string CreateOBJ(double xmin, double ymin, double xmax, double ymax);
+
+
    protected:
       void _RemoveVertex(DelaunayTriangle* pTri, int vtx);
       void _CreateSurroundingPolygon(DelaunayTriangle* pTri, int vertex_index, std::vector<ElevationPoint>& outputPolygon);
