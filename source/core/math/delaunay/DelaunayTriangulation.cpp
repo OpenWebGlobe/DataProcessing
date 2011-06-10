@@ -37,6 +37,8 @@ namespace math
       assert(_xmin<_xmax);
       assert(_ymin<_ymax);
 
+      _pt1 = _pt2 = 0;
+
       _Init();
    }
 
@@ -1389,6 +1391,90 @@ namespace math
 
 
       return oss.str();
+   }
+
+   //---------------------------------------------------------------------------
+
+   void DelaunayTriangulation::_LineTraversal(DelaunayTriangle* pTri)
+   {
+      double t;
+
+      DelaunayVertex* pVertex0 = pTri->GetVertex(0);
+      DelaunayVertex* pVertex1 = pTri->GetVertex(1);
+      DelaunayVertex* pVertex2 = pTri->GetVertex(2);
+
+      ElevationPoint pt;
+
+      if (math::FindOrientedIntersection(pVertex0->x(), pVertex0->y(), pVertex1->x(), pVertex1->y(), _pt1->x, _pt1->y, _pt2->x, _pt2->y,t))
+      {
+         pt.x = pVertex0->x() + t * (pVertex1->x() - pVertex0->x());
+         pt.y = pVertex0->y() + t * (pVertex1->y() - pVertex0->y());
+         pt.elevation = pVertex0->elevation() + t * (pVertex1->elevation() - pVertex0->elevation());
+         pt.weight = -2;
+         _vecEdgePoints.push_back(pt);
+      }
+
+      if (math::FindOrientedIntersection(pVertex1->x(), pVertex1->y(), pVertex2->x(), pVertex2->y(), _pt1->x, _pt1->y, _pt2->x, _pt2->y,t))
+      {
+         pt.x = pVertex1->x() + t * (pVertex2->x() - pVertex1->x());
+         pt.y = pVertex1->y() + t * (pVertex2->y() - pVertex1->y());
+         pt.elevation = pVertex1->elevation() + t * (pVertex2->elevation() - pVertex1->elevation());
+         pt.weight = -2;
+         _vecEdgePoints.push_back(pt);
+      }
+
+      if (math::FindOrientedIntersection(pVertex2->x(), pVertex2->y(), pVertex0->x(), pVertex0->y(), _pt1->x, _pt1->y, _pt2->x, _pt2->y,t))
+      {
+         pt.x = pVertex2->x() + t * (pVertex0->x() - pVertex2->x());
+         pt.y = pVertex2->y() + t * (pVertex0->y() - pVertex2->y());
+         pt.elevation = pVertex2->elevation() + t * (pVertex0->elevation() - pVertex2->elevation());
+         pt.weight = -2;
+         _vecEdgePoints.push_back(pt);
+      }
+
+   }
+
+   //--------------------------------------------------------------------------
+
+   void DelaunayTriangulation::InsertLine(double x0, double y0, double x1, double y1)
+   {
+      ElevationPoint p1;
+      ElevationPoint p2;
+      p1.x = x0;
+      p1.y = y0;
+      p2.x = x1;
+      p2.y = y1;
+
+      ElevationQuery query_result;
+      double elv = GetElevationAt(x0, y0, query_result);
+      if (query_result == EQ_INTERIOR) { p1.elevation = elv;}
+      else { p1.elevation = 0;}
+
+      elv = GetElevationAt(x1, y1, query_result);
+      if (query_result == EQ_INTERIOR) { p2.elevation = elv;}
+      else { p2.elevation = 0;}
+
+      p1.weight = -3; // corner point
+      p2.weight = -3; // corner point
+
+      InsertPoint(p1);
+      InsertPoint(p2);
+
+      _pt1 = &p1;
+      _pt2 = &p2;
+
+
+      _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_LineTraversal, this, _1));
+
+      std::cout << "num edge points: " << _vecEdgePoints.size() << "\n";
+
+      for (size_t i=0;i<_vecEdgePoints.size();i++)
+      {
+         InsertPoint(_vecEdgePoints[i]);
+      }
+
+      _vecEdgePoints.clear();
+
    }
 
 } // namespace

@@ -128,6 +128,8 @@ namespace math
       // create Wavefront OBJ 3D-Object of current triangulation
       std::string CreateOBJ(double xmin, double ymin, double xmax, double ymax);
 
+      // Insert Line in Delaunay Triangulation.
+      void InsertLine(double x0, double y0, double x1, double y1);
 
    protected:
       void _RemoveVertex(DelaunayTriangle* pTri, int vtx);
@@ -146,6 +148,7 @@ namespace math
       void _GetVertexAt(double x, double y, DelaunayTriangle*& pTri, int& idx);
       void _GetCCWVertices(DelaunayTriangle* pTri, int vertex_index, std::vector<DelaunayVertex*>& outputVertices);
       void _UpdateMinError();
+      void _LineTraversal(DelaunayTriangle* pTri);
 
       DelaunayTriangle*  _pStartTriangle;
 
@@ -161,6 +164,10 @@ namespace math
       bool     _bError; // true if errors are calculated and ok. false -> call CalculateVertexErrors() to have valid errors!
       double _minError;
       STriangleVertex  _oVertexMinError; // holds triangle / vertex with minimum error (only valid if _bError is true!!)
+      
+      ElevationPoint* _pt1;
+      ElevationPoint* _pt2;
+      std::vector<ElevationPoint> _vecEdgePoints;
 
    private:
       DelaunayTriangulation(){}

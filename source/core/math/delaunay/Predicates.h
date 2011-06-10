@@ -53,6 +53,44 @@ namespace math
       return false;
    }
 
+   //---------------------------------------------------------------------------
+
+   inline bool FindOrientedIntersection(double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy, double& t)
+   {
+      const double epsilon = DBL_EPSILON;
+
+      double a1 = math::SignedTriArea(ax,ay,bx,by,dx,dy);
+
+      if (a1 < 0.0)
+         return false;
+
+      double a2 = math::SignedTriArea(ax,ay,bx,by,cx,cy);
+
+      if (fabs(a1)<epsilon)
+         return false;
+
+      if (fabs(a2)<epsilon)
+         return false;
+
+      if (a1*a2 < 0.0)
+      {
+         double a3 = math::SignedTriArea(cx,cy,dx,dy,ax,ay);
+
+         if (fabs(a3)<epsilon)
+            return false;
+
+         double a4 = a3 + a2 - a1;
+
+         if (a3*a4 < 0.0)
+         {
+            t = a3 / (a3 - a4);
+            return true;
+         }
+      }
+
+      return false;
+   }
+
 }
 
 #endif
