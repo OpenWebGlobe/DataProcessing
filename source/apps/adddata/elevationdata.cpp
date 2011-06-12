@@ -157,10 +157,10 @@ namespace ElevationData
             qQuadtree->QuadKeyToMercatorCoord(sQuadcode, x0, y1, x1, y0);
             double len = y1-y0;
 
-            double xx0 = x0-0.05*len;
-            double xx1 = x1+0.05*len;
-            double yy0 = y0-0.05*len;
-            double yy1 = y1+0.05*len;
+            double xx0 = x0-0.10*len;
+            double xx1 = x1+0.10*len;
+            double yy0 = y0-0.10*len;
+            double yy1 = y1+0.10*len;
 
             math::DelaunayTriangulation oTriangulation(x0-2.0*len, y0-2.0*len, x1+2.0*len, y1+2.0*len);
 
@@ -175,7 +175,16 @@ namespace ElevationData
                 }
             }
 
-            //oTriangulation.Reduce(cnt/2); // thin out 50%
+             oTriangulation.Reduce(cnt/2); // thin out 50%
+
+            // cut!
+            oTriangulation.InsertLine(x0,y0,x1,y0);
+            oTriangulation.InsertLine(x1,y0,x1,y1);
+            oTriangulation.InsertLine(x1,y1,x0,y1);
+            oTriangulation.InsertLine(x0,y1,x0,y0);
+            oTriangulation.InvalidateVertices(x0,y0,x1,y1);
+
+            
 
             std::string str = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
             std::ofstream fout(sTilefile);

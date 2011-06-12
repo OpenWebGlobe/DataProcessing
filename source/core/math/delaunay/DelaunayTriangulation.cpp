@@ -1346,21 +1346,7 @@ namespace math
       GetPointVec(vPoints);
       GetTriangleIndices(vIndices);
 
-      /*double xmin = 1e20;
-      double xmax = -1e20;
-      double ymin = 1e20;
-      double ymax = -1e20;
 
-      for (size_t i=0;i<vIndices.size();i++)
-      {
-         ElevationPoint& A = vPoints[vIndices[i]];
-         
-         xmax = math::Max<double>(xmax, A.x);
-         ymax = math::Max<double>(ymax, A.y);
-         xmin = math::Min<double>(xmin, A.x);
-         ymin = math::Min<double>(ymin, A.y);
-      }
-      */
       double xoffset = xmin + (xmax - xmin) * 0.5;
       double yoffset = ymin + (ymax - ymin) * 0.5;
 
@@ -1463,10 +1449,7 @@ namespace math
       _pt1 = &p1;
       _pt2 = &p2;
 
-
       _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_LineTraversal, this, _1));
-
-      std::cout << "num edge points: " << _vecEdgePoints.size() << "\n";
 
       for (size_t i=0;i<_vecEdgePoints.size();i++)
       {
@@ -1474,6 +1457,49 @@ namespace math
       }
 
       _vecEdgePoints.clear();
+
+   }
+   //---------------------------------------------------------------------------
+   void DelaunayTriangulation::_SuperSimplexTraversal(DelaunayTriangle* pTri)
+   {
+      DelaunayVertex* pVertex0 = pTri->GetVertex(0);
+      DelaunayVertex* pVertex1 = pTri->GetVertex(1);
+      DelaunayVertex* pVertex2 = pTri->GetVertex(2);
+
+
+      if (pVertex0->x() < _x0 ||
+          pVertex0->x() > _x1 ||
+          pVertex0->y() < _y0 ||
+          pVertex0->y() > _y1)
+      {
+         pVertex0->GetElevationPoint().weight = -1;
+      }
+
+      if (pVertex1->x() < _x0 ||
+          pVertex1->x() > _x1 ||
+          pVertex1->y() < _y0 ||
+          pVertex1->y() > _y1)
+      {
+         pVertex1->GetElevationPoint().weight = -1;
+      }
+
+      if (pVertex2->x() < _x0 ||
+          pVertex2->x() > _x1 ||
+          pVertex2->y() < _y0 ||
+          pVertex2->y() > _y1)
+      {
+         pVertex2->GetElevationPoint().weight = -1;
+      }
+   }
+   //---------------------------------------------------------------------------
+   void DelaunayTriangulation::InvalidateVertices(double x0, double y0, double x1, double y1)
+   {
+      _x0 = x0-1e-12;
+      _y0 = y0-1e-12;
+      _x1 = x1+1e-12;
+      _y1 = y1+1e-12;
+
+      _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_SuperSimplexTraversal, this, _1));
 
    }
 

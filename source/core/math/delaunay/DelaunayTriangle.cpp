@@ -261,7 +261,7 @@ namespace math
             return PointTriangle_Invalid;
          }
 
-         /*if (p2 <= edgeepsilon && p0 <= edgeepsilon)
+         if (p2 <= edgeepsilon && p0 <= edgeepsilon)
          {
             return PointTriangle_Vertex0;
          }
@@ -272,7 +272,7 @@ namespace math
          else if (p1 <= edgeepsilon && p2 <= edgeepsilon)
          {
             return PointTriangle_Vertex2;
-         }*/
+         }
 
          if (p0<=edgeepsilon)
          {
@@ -299,7 +299,6 @@ namespace math
                }
             }
 
-            //std::cout << "Failed updating edge1\n";
             return PointTriangle_Invalid;
 
             

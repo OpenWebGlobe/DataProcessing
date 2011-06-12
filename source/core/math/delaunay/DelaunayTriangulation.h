@@ -131,6 +131,9 @@ namespace math
       // Insert Line in Delaunay Triangulation.
       void InsertLine(double x0, double y0, double x1, double y1);
 
+      // All Vertices outside specified boundary will be marked as supersimplex.
+      void InvalidateVertices(double x0, double y0, double x1, double y1);
+
    protected:
       void _RemoveVertex(DelaunayTriangle* pTri, int vtx);
       void _CreateSurroundingPolygon(DelaunayTriangle* pTri, int vertex_index, std::vector<ElevationPoint>& outputPolygon);
@@ -149,6 +152,7 @@ namespace math
       void _GetCCWVertices(DelaunayTriangle* pTri, int vertex_index, std::vector<DelaunayVertex*>& outputVertices);
       void _UpdateMinError();
       void _LineTraversal(DelaunayTriangle* pTri);
+      void _SuperSimplexTraversal(DelaunayTriangle* pTri);
 
       DelaunayTriangle*  _pStartTriangle;
 
@@ -168,6 +172,8 @@ namespace math
       ElevationPoint* _pt1;
       ElevationPoint* _pt2;
       std::vector<ElevationPoint> _vecEdgePoints;
+
+      double _x0, _y0, _x1, _y1;
 
    private:
       DelaunayTriangulation(){}
