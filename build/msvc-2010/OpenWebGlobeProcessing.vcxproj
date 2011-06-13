@@ -36,6 +36,8 @@
     <ClCompile Include="..\..\source\core\string\ConvertUTF.cpp" />
     <ClCompile Include="..\..\source\core\string\FilenameUtils.cpp" />
     <ClCompile Include="..\..\source\core\string\StringUtils.cpp" />
+    <ClCompile Include="..\..\source\core\system\Timer.cpp" />
+    <ClCompile Include="..\..\source\core\system\Utils.cpp" />
     <ClCompile Include="..\..\source\core\xml\BaseTypeConversion.cpp" />
     <ClCompile Include="..\..\source\core\xml\ClassExport.cpp" />
     <ClCompile Include="..\..\source\core\xml\PropertyBase.cpp" />
@@ -75,6 +77,8 @@
     <ClInclude Include="..\..\source\core\string\ConvertUTF.h" />
     <ClInclude Include="..\..\source\core\string\FilenameUtils.h" />
     <ClInclude Include="..\..\source\core\string\StringUtils.h" />
+    <ClInclude Include="..\..\source\core\system\Timer.h" />
+    <ClInclude Include="..\..\source\core\system\Utils.h" />
     <ClInclude Include="..\..\source\core\xml\ClassExport.h" />
     <ClInclude Include="..\..\source\core\xml\PropertyBase.h" />
     <ClInclude Include="..\..\source\core\xml\Tokenizer.h" />
