@@ -15,6 +15,9 @@
 ********************************************************************************
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
+// This is the resample version without mpi intended for regular 
+// workstations. Multi cores are supported (OpenMP) and highly recommended.
+//------------------------------------------------------------------------------
 
 
 #include "resample.h"
