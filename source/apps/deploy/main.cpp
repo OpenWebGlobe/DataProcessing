@@ -21,54 +21,179 @@
 //------------------------------------------------------------------------------
 
 #include "og.h"
+#include "ogprocess.h"
 #include "io/TarWriter.h"
+#include "deploy.h"
+#include "app/ProcessingSettings.h"
 #include <system/Utils.h>
 #include <sstream>
 #include <iostream>
 #include <omp.h>
-
-
-
-//------------------------------------------------------------------------------
-
-struct ThreadInfo
-{
-   std::string  sFileName;  // filename of archive
-   TarWriter*   pTarWriter; // the writer
-};
+#include <boost/program_options.hpp>
 
 //------------------------------------------------------------------------------
 
-int main(void)
+namespace po = boost::program_options;
+
+int main(int argc, char *argv[])
 {
-   std::string sFilePath; // delimited file path where archives are written.
+   po::options_description desc("Program-Options");
+   desc.add_options()
+      ("layer", po::value<std::string>(), "name of layer to add the data")
+      ("outpath", po::value<std::string>(), "where to write the data (path must exist!)")
+      ("type", po::value<std::string>(), "[optional] image (default) or elevation.")
+      ("archive", "[optional] create deployment in tar archive. (One archive per thread)")
+      ("format", po::value<std::string>(), "[optional] elevation: json (default), image: png(default)|jpg")
+      ("numthreads", po::value<int>(), "[optional] force number of threads")
+      ;
 
-   int maxthreads = omp_get_max_threads();
+   po::variables_map vm;
+   bool bError = false;
 
-   ThreadInfo* threadinfoarray = new ThreadInfo[maxthreads];
-   if (!threadinfoarray)
+
+   try
    {
-      return 1; // very unlikely out of memory.
+      po::store(po::parse_command_line(argc, argv, desc), vm);
+      po::notify(vm);
+   }
+   catch (std::exception&)
+   {
+      bError = true;
    }
 
-   // every thread writes to another tar archive this way we can write archives in parallel
-   // store filename
-   for (int i=0;i<maxthreads;i++)
-   {
-      std::ostringstream oss;
-      oss << sFilePath << SystemUtils::ComputerName() << "_thread_" << i << ".tar";
-      threadinfoarray[i].sFileName = oss.str();
-      threadinfoarray[i].pTarWriter = 0;
+   ELayerType layertype = IMAGE_LAYER;
+   EOuputImageFormat imageformat = OUTFORMAT_PNG;
+   EOutputElevationFormat elevationformat = OUTFORMAT_JSON;
+   std::string sLayer;
+   std::string sPath;
+   bool bArchive = false;
 
-      std::cout << "archive=" <<  threadinfoarray[i].sFileName << "\n";
+   //---------------------------------------------------------------------------
+   // init options:
+
+   boost::shared_ptr<ProcessingSettings> qSettings =  ProcessingUtils::LoadAppSettings();
+
+   if (!qSettings)
+   {
+      std::cout << "Error in configuration! Check setup.xml\n";
+      return ERROR_CONFIG;
    }
 
-   // 
+   //---------------------------------------------------------------------------
+
+   boost::shared_ptr<Logger> qLogger =  ProcessingUtils::CreateLogger("deploy", qSettings);
+
+   if (!qLogger)
+   {
+      std::cout << "Error in configuration! Check setup.xml\n";
+      return ERROR_CONFIG;
+   }
+
+   //---------------------------------------------------------------------------
+   // parse options
+
+   if (vm.count("type"))
+   {
+      std::string sType = vm["type"].as<std::string>();
+
+      if (sType == "elevation")
+      {
+         layertype = ELEVATION_LAYER;
+      }
+      else if (sType == "image")
+      {
+         layertype = IMAGE_LAYER;
+      }
+      else
+      {
+         bError = true;
+      }
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("layer"))
+   {
+      sLayer = vm["layer"].as<std::string>();
+   }
+   else
+   {
+      bError = true;
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("archive"))
+   {
+      bArchive = true;
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("outpath"))
+   {
+      sPath = vm["outpath"].as<std::string>();
+   }
+   else
+   {
+      bError = true;
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("format"))
+   {
+      std::string sFormat = vm["format"].as<std::string>();
+      if (sFormat == "jpg")
+      {
+         imageformat = OUTFORMAT_JPG;
+      }
+      else if (sFormat == "png")
+      {
+         imageformat = OUTFORMAT_PNG;
+      }
+      else if (sFormat == "json")
+      {
+         elevationformat = OUTFORMAT_JSON;
+      }
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("numthreads"))
+   {
+      int n = vm["numthreads"].as<int>();
+      if (n>0 && n<65)
+      {
+         std::ostringstream oss; 
+         oss << "Forcing number of threads to " << n;
+         qLogger->Info(oss.str());
+         omp_set_num_threads(n);
+      }
+   }
+
+   if (bError)
+   {
+      qLogger->Error("Wrong parameters!");
+      std::ostringstream sstr;
+
+      sstr << desc;
+      qLogger->Info("\n" + sstr.str());
+
+      return ERROR_PARAMS;
+   }
 
 
+   //---------------------------------------------------------------------------
 
-   // Clean up
-   delete[] threadinfoarray;
+   Deploy::ThreadInfo* pThreadInfo = Deploy::GenerateThreadInfo(); 
+
+
+   if (layertype == IMAGE_LAYER)
+   {
+      Deploy::DeployImageLayer(qLogger, qSettings, sLayer, sPath, bArchive, imageformat, pThreadInfo);
+   }
+   else if (layertype == ELEVATION_LAYER)
+   {
+      Deploy::DeployElevationLayer(qLogger, qSettings, sLayer, sPath, bArchive, elevationformat, pThreadInfo);
+   }
+
+   Deploy::DestroyThreadInfo(pThreadInfo);
 
    return 0;
 }

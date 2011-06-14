@@ -11,10 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{dfc47e3a-9d7f-4002-a5e7-f29a4f47fd26}</ProjectGuid>
+    <ProjectGuid>{048834f9-8eee-4053-8655-c6c276889689}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>DataProcessing</RootNamespace>
-    <ProjectName>deploy</ProjectName>
+    <ProjectName>deploy_mpi</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -127,7 +127,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\apps\deploy\deploy.cpp" />
-    <ClCompile Include="..\..\source\apps\deploy\main.cpp" />
+    <ClCompile Include="..\..\source\apps\deploy\main_mpi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\apps\deploy\deploy.h" />
