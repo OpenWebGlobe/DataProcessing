@@ -27,8 +27,6 @@
 #include <system/Utils.h>
 #include <iostream>
 #include <fstream>
-#include <omp.h>
-
 
 enum ELayerType
 {
@@ -49,21 +47,10 @@ enum EOutputElevationFormat
 
 namespace Deploy
 {
-   //---------------------------------------------------------------------------
-   struct ThreadInfo
-   {
-      std::string    sFileName;  // filename of archive
-      std::ofstream* pFileout;
-      TarWriter*     pTarWriter; // the writer
-   };
-   //---------------------------------------------------------------------------
 
-   ThreadInfo* GenerateThreadInfo();
-   void DestroyThreadInfo(ThreadInfo* pthreadinfo);
+   void DeployImageLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOuputImageFormat imageformat);
 
-   void DeployImageLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOuputImageFormat imageformat, ThreadInfo*);
-
-   void DeployElevationLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOutputElevationFormat elevationformat, ThreadInfo*);
+   void DeployElevationLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOutputElevationFormat elevationformat);
 
 }
 

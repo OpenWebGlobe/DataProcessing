@@ -181,19 +181,14 @@ int main(int argc, char *argv[])
 
    //---------------------------------------------------------------------------
 
-   Deploy::ThreadInfo* pThreadInfo = Deploy::GenerateThreadInfo(); 
-
-
    if (layertype == IMAGE_LAYER)
    {
-      Deploy::DeployImageLayer(qLogger, qSettings, sLayer, sPath, bArchive, imageformat, pThreadInfo);
+      Deploy::DeployImageLayer(qLogger, qSettings, sLayer, sPath, bArchive, imageformat);
    }
    else if (layertype == ELEVATION_LAYER)
    {
-      Deploy::DeployElevationLayer(qLogger, qSettings, sLayer, sPath, bArchive, elevationformat, pThreadInfo);
+      Deploy::DeployElevationLayer(qLogger, qSettings, sLayer, sPath, bArchive, elevationformat);
    }
-
-   Deploy::DestroyThreadInfo(pThreadInfo);
 
    return 0;
 }

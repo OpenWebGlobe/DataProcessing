@@ -27,10 +27,19 @@
 #include <sstream>
 #include <ctime>
 #include <fstream>
+#include <omp.h>
 
 namespace Deploy
 {
    //---------------------------------------------------------------------------
+   struct ThreadInfo
+   {
+      std::string    sFileName;  // filename of archive
+      std::ofstream* pFileout;
+      TarWriter*     pTarWriter; // the writer
+   };
+   //---------------------------------------------------------------------------
+
 
    ThreadInfo* GenerateThreadInfo()
    {
@@ -70,7 +79,7 @@ namespace Deploy
 
    //---------------------------------------------------------------------------
 
-   void DeployImageLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOuputImageFormat imageformat, ThreadInfo* pThreadInfo)
+   void DeployImageLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOuputImageFormat imageformat)
    {
       std::ostringstream oss;
 
@@ -91,6 +100,8 @@ namespace Deploy
       oss << "tile extent: " << tx0 << ", " << ty0 << ", " << tx1  << ", " << ty1 << "\n";
       qLogger->Info(oss.str());
       oss.str("");
+
+      ThreadInfo* pThreadInfo = GenerateThreadInfo(); 
 
       clock_t t0,t1;
       t0 = clock();
@@ -167,6 +178,8 @@ namespace Deploy
          }
       }
 
+      DestroyThreadInfo(pThreadInfo);
+
       // output time to calculate resampling:
       t1=clock();
       oss << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
@@ -176,7 +189,7 @@ namespace Deploy
 
    //--------------------------------------------------------------------------
 
-   void DeployElevationLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOutputElevationFormat elevationformat, ThreadInfo* pThreadInfo)
+   void DeployElevationLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOutputElevationFormat elevationformat)
    {
 
    }
