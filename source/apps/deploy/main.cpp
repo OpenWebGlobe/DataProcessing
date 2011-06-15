@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
       ("type", po::value<std::string>(), "[optional] image (default) or elevation.")
       ("archive", "[optional] create deployment in tar archive. (One archive per thread)")
       ("format", po::value<std::string>(), "[optional] elevation: json (default), image: png(default)|jpg")
+      ("quality", po::value<int>(), "[optional] jpeg image quality in the range 0-100 (0 is worst quality and 100 is best).")
       ("numthreads", po::value<int>(), "[optional] force number of threads")
       ;
 
@@ -67,6 +68,7 @@ int main(int argc, char *argv[])
    std::string sLayer;
    std::string sPath;
    bool bArchive = false;
+   int quality = 50; // JPG quality
 
    //---------------------------------------------------------------------------
    // init options:
@@ -143,6 +145,9 @@ int main(int argc, char *argv[])
       if (sFormat == "jpg")
       {
          imageformat = OUTFORMAT_JPG;
+         std::ostringstream oss; 
+         oss << "writing jpg images";;
+         qLogger->Info(oss.str());
       }
       else if (sFormat == "png")
       {
@@ -152,6 +157,23 @@ int main(int argc, char *argv[])
       {
          elevationformat = OUTFORMAT_JSON;
       }
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("quality"))
+   {
+       
+       quality = vm["quality"].as<int>();
+       if (quality<0 || quality>100)
+       {
+         bError = true;
+       }
+       else
+       {
+          std::ostringstream oss; 
+          oss << "setting jpeg quality to " << quality;
+          qLogger->Info(oss.str());
+       }
    }
 
    //--------------------------------------------------------------------------
@@ -183,7 +205,7 @@ int main(int argc, char *argv[])
 
    if (layertype == IMAGE_LAYER)
    {
-      Deploy::DeployImageLayer(qLogger, qSettings, sLayer, sPath, bArchive, imageformat);
+      Deploy::DeployImageLayer(qLogger, qSettings, sLayer, sPath, bArchive, imageformat, quality);
    }
    else if (layertype == ELEVATION_LAYER)
    {

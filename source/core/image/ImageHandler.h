@@ -65,6 +65,9 @@ public:
    
    // Retrieve Raw Data (RGB, RGBA, BGR, BGRA according to PixelFormat)
    boost::shared_array<unsigned char> GetRawData() { return _qData;}
+
+   // Convert to new Pixelformat
+   void Convert(Img::PixelFormat newPixelFormat, ImageObject& out);
    
    // Export image to PPM. This is mainly for testing purposes.
    void SavePPM(std::string sFilename);

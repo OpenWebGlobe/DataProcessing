@@ -130,6 +130,9 @@
     <ClCompile Include="..\..\source\core\system\Timer.cpp">
       <Filter>system</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\image\JPEGHandler.cpp">
+      <Filter>image</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
@@ -244,6 +247,9 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\system\Timer.h">
       <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\JPEGHandler.h">
+      <Filter>image</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

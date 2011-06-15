@@ -3,11 +3,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--layer LayerName --type image --archive --outpath C:\output</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer LayerName --type image --format jpg --quality 40 --archive --outpath C:\output</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--layer LayerName --type image --archive --outpath C:/output</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer LayerName --type image --format jpg --quality 40 --archive --outpath C:\output</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

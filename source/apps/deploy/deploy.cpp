@@ -23,6 +23,9 @@
 #include "io/FileSystem.h"
 #include "string/FilenameUtils.h"
 #include "string/StringUtils.h"
+#include "image/ImageLoader.h"
+#include "image/JPEGHandler.h"
+#include "image/ImageWriter.h"
 #include "geo/MercatorQuadtree.h"
 #include <sstream>
 #include <ctime>
@@ -79,7 +82,7 @@ namespace Deploy
 
    //---------------------------------------------------------------------------
 
-   void DeployImageLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOuputImageFormat imageformat)
+   void DeployImageLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOuputImageFormat imageformat, int quality)
    {
       std::ostringstream oss;
 
@@ -151,20 +154,33 @@ namespace Deploy
                   }
                   else if (imageformat == OUTFORMAT_JPG)
                   {
-                     // #todo: convert to JPG!
-                     //   (1) load sOrigTile: std::string sOrigTile = ProcessingUtils::GetTilePath(sTileDir, ".png" , nLevelOfDetail, x, y);
-                     //   (2) extract PNG
-                     //   (3) convert JPG
-                     //   (4) store in tar archive!
-                     assert(false);
+                     std::string sOrigTile = ProcessingUtils::GetTilePath(sTileDir, ".png" , nLevelOfDetail, x, y);
+                     std::string sArchiveTile = ProcessingUtils::GetTilePath("tiles/", ".jpg" , nLevelOfDetail, x, y);
+
+                     if (FileSystem::FileExists(sOrigTile))
+                     {
+                        ImageObject img;
+                        // load as RGB as jpeg doesn't support alpha.
+                        if (ImageLoader::LoadFromDisk(Img::Format_PNG, sOrigTile, Img::PixelFormat_RGB, img))
+                        {
+                           boost::shared_array<unsigned char> outjpg;
+                           int len;
+                           JPEGHandler::RGBToJpeg(img.GetRawData().get(), img.GetWidth(), img.GetHeight(), quality, outjpg, len);
+                           pThreadInfo[i].pTarWriter->AddData(sArchiveTile.c_str(), (char*)outjpg.get(), len);
+                        }
+                     }
                   }
-
                }
-
-               // add to deploy directory...
+               else
+               {
+                  //
+               }
             }
          }
       }
+
+      // todo: put info file into first archive (pThreadInfo[0])
+      
 
       // close all streams:
 

@@ -30,8 +30,15 @@ public:
    virtual ~ImageWriter();
 
    // write rgba buffer to PNG
-   static void WritePNG(const std::string& sFilename, unsigned char* buffer_rbga, int width, int height);
+   static bool WritePNG(const std::string& sFilename, unsigned char* buffer_rbga, int width, int height);
 
+   // write imageobject to PNG (currently only RGBA images are supported)
+   static bool WritePNG(const std::string& sFilename, ImageObject& image);
+
+   // writes JPG image. Note: Image is converted to RGB.
+   static bool WriteJPG(const std::string& sFilename, ImageObject& image, int quality);
+
+ 
 };
 
 
