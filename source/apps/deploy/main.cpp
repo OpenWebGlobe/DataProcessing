@@ -14,12 +14,204 @@
 #                           martin.christen@fhnw.ch                            #
 ********************************************************************************
 *     Licensed under MIT License. Read the file LICENSE for more information   *
-*******************************************************************************/
+********************************************************************************
+/*******************************************************************************/
+// This is the deploy version without mpi (intended for regular workstations)
+// OpenMP is required. All threads write archives.
+//------------------------------------------------------------------------------
+
+#include "og.h"
+#include "ogprocess.h"
+#include "io/TarWriter.h"
+#include "deploy.h"
+#include "app/ProcessingSettings.h"
+#include <system/Utils.h>
+#include <sstream>
+#include <iostream>
+#include <omp.h>
+#include <boost/program_options.hpp>
 
 //------------------------------------------------------------------------------
 
-int main(void)
+namespace po = boost::program_options;
+
+int main(int argc, char *argv[])
 {
+   po::options_description desc("Program-Options");
+   desc.add_options()
+      ("layer", po::value<std::string>(), "name of layer to add the data")
+      ("outpath", po::value<std::string>(), "where to write the data (path must exist!)")
+      ("type", po::value<std::string>(), "[optional] image (default) or elevation.")
+      ("archive", "[optional] create deployment in tar archive. (One archive per thread)")
+      ("format", po::value<std::string>(), "[optional] elevation: json (default), image: png(default)|jpg")
+      ("quality", po::value<int>(), "[optional] jpeg image quality in the range 0-100 (0 is worst quality and 100 is best).")
+      ("numthreads", po::value<int>(), "[optional] force number of threads")
+      ;
+
+   po::variables_map vm;
+   bool bError = false;
+
+
+   try
+   {
+      po::store(po::parse_command_line(argc, argv, desc), vm);
+      po::notify(vm);
+   }
+   catch (std::exception&)
+   {
+      bError = true;
+   }
+
+   ELayerType layertype = IMAGE_LAYER;
+   EOuputImageFormat imageformat = OUTFORMAT_PNG;
+   EOutputElevationFormat elevationformat = OUTFORMAT_JSON;
+   std::string sLayer;
+   std::string sPath;
+   bool bArchive = false;
+   int quality = 50; // JPG quality
+
+   //---------------------------------------------------------------------------
+   // init options:
+
+   boost::shared_ptr<ProcessingSettings> qSettings =  ProcessingUtils::LoadAppSettings();
+
+   if (!qSettings)
+   {
+      std::cout << "Error in configuration! Check setup.xml\n";
+      return ERROR_CONFIG;
+   }
+
+   //---------------------------------------------------------------------------
+
+   boost::shared_ptr<Logger> qLogger =  ProcessingUtils::CreateLogger("deploy", qSettings);
+
+   if (!qLogger)
+   {
+      std::cout << "Error in configuration! Check setup.xml\n";
+      return ERROR_CONFIG;
+   }
+
+   //---------------------------------------------------------------------------
+   // parse options
+
+   if (vm.count("type"))
+   {
+      std::string sType = vm["type"].as<std::string>();
+
+      if (sType == "elevation")
+      {
+         layertype = ELEVATION_LAYER;
+      }
+      else if (sType == "image")
+      {
+         layertype = IMAGE_LAYER;
+      }
+      else
+      {
+         bError = true;
+      }
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("layer"))
+   {
+      sLayer = vm["layer"].as<std::string>();
+   }
+   else
+   {
+      bError = true;
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("archive"))
+   {
+      bArchive = true;
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("outpath"))
+   {
+      sPath = vm["outpath"].as<std::string>();
+   }
+   else
+   {
+      bError = true;
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("format"))
+   {
+      std::string sFormat = vm["format"].as<std::string>();
+      if (sFormat == "jpg")
+      {
+         imageformat = OUTFORMAT_JPG;
+         std::ostringstream oss; 
+         oss << "writing jpg images";;
+         qLogger->Info(oss.str());
+      }
+      else if (sFormat == "png")
+      {
+         imageformat = OUTFORMAT_PNG;
+      }
+      else if (sFormat == "json")
+      {
+         elevationformat = OUTFORMAT_JSON;
+      }
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("quality"))
+   {
+       
+       quality = vm["quality"].as<int>();
+       if (quality<0 || quality>100)
+       {
+         bError = true;
+       }
+       else
+       {
+          std::ostringstream oss; 
+          oss << "setting jpeg quality to " << quality;
+          qLogger->Info(oss.str());
+       }
+   }
+
+   //--------------------------------------------------------------------------
+   if (vm.count("numthreads"))
+   {
+      int n = vm["numthreads"].as<int>();
+      if (n>0 && n<65)
+      {
+         std::ostringstream oss; 
+         oss << "Forcing number of threads to " << n;
+         qLogger->Info(oss.str());
+         omp_set_num_threads(n);
+      }
+   }
+
+   if (bError)
+   {
+      qLogger->Error("Wrong parameters!");
+      std::ostringstream sstr;
+
+      sstr << desc;
+      qLogger->Info("\n" + sstr.str());
+
+      return ERROR_PARAMS;
+   }
+
+
+   //---------------------------------------------------------------------------
+
+   if (layertype == IMAGE_LAYER)
+   {
+      Deploy::DeployImageLayer(qLogger, qSettings, sLayer, sPath, bArchive, imageformat, quality);
+   }
+   else if (layertype == ELEVATION_LAYER)
+   {
+      Deploy::DeployElevationLayer(qLogger, qSettings, sLayer, sPath, bArchive, elevationformat);
+   }
+
    return 0;
 }
 

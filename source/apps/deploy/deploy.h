@@ -16,51 +16,43 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _IMAGELAYERSETTINGS_H
-#define _IMAGELAYERSETTINGS_H
+#ifndef _DEPLOY_H
+#define _DEPLOY_H
 
 #include "og.h"
-#include <boost/shared_ptr.hpp>
-#include <string>
-#include <vector>
+#include "errors.h"
+#include "io/TarWriter.h"
+#include "app/Logger.h"
+#include "app/ProcessingSettings.h"
+#include <system/Utils.h>
+#include <iostream>
+#include <fstream>
 
-class OPENGLOBE_API ImageLayerSettings
+enum ELayerType
 {
-public:
-   ImageLayerSettings();
-   virtual ~ImageLayerSettings(){}
-
-   // Setters/Getters:
-   void SetLayerName(const std::string& sLayername) {_sLayername = sLayername;} 
-   void SetMaxLod(int maxlod) {_maxlod = maxlod;}
-   void SetTileExtent(int64 x0, int64 y0, int64 x1, int64 y1) { _tilecoord[0] = x0; _tilecoord[1] = y0; _tilecoord[2] = x1; _tilecoord[3] = y1;}
-   // set format (short form: "png" or "jpg")
-   void SetFormat(const std::string& sFormat){_sFormat = sFormat;}
-
-   std::string GetLayerName(){return _sLayername;}
-   std::string GetFormat(){return _sFormat;}
-   int GetMaxLod(){return _maxlod;}
-   void GetTileExtent(int64& x0, int64& y0, int64& x1, int64& y1){x0 = _tilecoord[0]; y0 = _tilecoord[1]; x1 = _tilecoord[2]; y1 = _tilecoord[3];}
-
-   // Load from XML
-   static boost::shared_ptr<ImageLayerSettings> Load(const std::string& layerdir);
-
-   // Save to XML
-   bool Save(const std::string& layerdir);
-
-protected:
-   std::string _sLayername;
-   std::string _sLayertype;
-   int         _maxlod;
-   std::string _srs;
-   std::vector<int64> _tilecoord;
-   std::string  _sFormat;
-   
-
-private:
-   static std::string _xmlsettingsfile;
-   static std::string _jsonsettingsfile;
+   IMAGE_LAYER,
+   ELEVATION_LAYER,
 };
+
+enum EOuputImageFormat
+{
+   OUTFORMAT_PNG,
+   OUTFORMAT_JPG,
+};
+
+enum EOutputElevationFormat
+{
+   OUTFORMAT_JSON,
+};
+
+namespace Deploy
+{
+
+   void DeployImageLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOuputImageFormat imageformat, int quality);
+
+   void DeployElevationLayer(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, const std::string& sLayer, const std::string& sPath, bool bArchive, EOutputElevationFormat elevationformat);
+
+}
 
 
 #endif

@@ -16,51 +16,47 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _IMAGELAYERSETTINGS_H
-#define _IMAGELAYERSETTINGS_H
+#include "system/Utils.h"
 
-#include "og.h"
-#include <boost/shared_ptr.hpp>
+#ifdef OS_WINDOWS
+#include <windows.h>
+#include "string/StringUtils.h"
+#else
+#include <unistd.h>
+#endif
+
 #include <string>
-#include <vector>
+#include <iostream> 
 
-class OPENGLOBE_API ImageLayerSettings
+
+#ifdef OS_WINDOWS
+
+std::string SystemUtils::ComputerName()
 {
-public:
-   ImageLayerSettings();
-   virtual ~ImageLayerSettings(){}
-
-   // Setters/Getters:
-   void SetLayerName(const std::string& sLayername) {_sLayername = sLayername;} 
-   void SetMaxLod(int maxlod) {_maxlod = maxlod;}
-   void SetTileExtent(int64 x0, int64 y0, int64 x1, int64 y1) { _tilecoord[0] = x0; _tilecoord[1] = y0; _tilecoord[2] = x1; _tilecoord[3] = y1;}
-   // set format (short form: "png" or "jpg")
-   void SetFormat(const std::string& sFormat){_sFormat = sFormat;}
-
-   std::string GetLayerName(){return _sLayername;}
-   std::string GetFormat(){return _sFormat;}
-   int GetMaxLod(){return _maxlod;}
-   void GetTileExtent(int64& x0, int64& y0, int64& x1, int64& y1){x0 = _tilecoord[0]; y0 = _tilecoord[1]; x1 = _tilecoord[2]; y1 = _tilecoord[3];}
-
-   // Load from XML
-   static boost::shared_ptr<ImageLayerSettings> Load(const std::string& layerdir);
-
-   // Save to XML
-   bool Save(const std::string& layerdir);
-
-protected:
-   std::string _sLayername;
-   std::string _sLayertype;
-   int         _maxlod;
-   std::string _srs;
-   std::vector<int64> _tilecoord;
-   std::string  _sFormat;
    
+   TCHAR cComputerName[MAX_COMPUTERNAME_LENGTH + 1]; 
+   std::wstring result; 
+   DWORD dwBufferSize = MAX_COMPUTERNAME_LENGTH + 1; 
 
-private:
-   static std::string _xmlsettingsfile;
-   static std::string _jsonsettingsfile;
-};
+   if(GetComputerName(cComputerName,&dwBufferSize)) 
+   { 
+      // if you get an error here: make sure to compile with unicode support!
+      result = cComputerName; 
+   } 
 
+   // the string is converted to utf8!
+   return StringUtils::wstring_To_Utf8(result);
+
+}
+
+#else
+
+   std::string SystemUtils::ComputerName()
+   {
+      char cComputerName[255]; 
+      gethostname(cComputerName, 255);
+      result = cComputerName;
+      return result;
+   }
 
 #endif

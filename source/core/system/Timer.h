@@ -16,51 +16,25 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _IMAGELAYERSETTINGS_H
-#define _IMAGELAYERSETTINGS_H
+
+#ifndef _TIMER_H
+#define _TIMER_H
 
 #include "og.h"
-#include <boost/shared_ptr.hpp>
-#include <string>
-#include <vector>
 
-class OPENGLOBE_API ImageLayerSettings
+class OPENGLOBE_API Timer
 {
 public:
-   ImageLayerSettings();
-   virtual ~ImageLayerSettings(){}
+	//! initializes the real timer
+	static void initTimer();
 
-   // Setters/Getters:
-   void SetLayerName(const std::string& sLayername) {_sLayername = sLayername;} 
-   void SetMaxLod(int maxlod) {_maxlod = maxlod;}
-   void SetTileExtent(int64 x0, int64 y0, int64 x1, int64 y1) { _tilecoord[0] = x0; _tilecoord[1] = y0; _tilecoord[2] = x1; _tilecoord[3] = y1;}
-   // set format (short form: "png" or "jpg")
-   void SetFormat(const std::string& sFormat){_sFormat = sFormat;}
-
-   std::string GetLayerName(){return _sLayername;}
-   std::string GetFormat(){return _sFormat;}
-   int GetMaxLod(){return _maxlod;}
-   void GetTileExtent(int64& x0, int64& y0, int64& x1, int64& y1){x0 = _tilecoord[0]; y0 = _tilecoord[1]; x1 = _tilecoord[2]; y1 = _tilecoord[3];}
-
-   // Load from XML
-   static boost::shared_ptr<ImageLayerSettings> Load(const std::string& layerdir);
-
-   // Save to XML
-   bool Save(const std::string& layerdir);
-
-protected:
-   std::string _sLayername;
-   std::string _sLayertype;
-   int         _maxlod;
-   std::string _srs;
-   std::vector<int64> _tilecoord;
-   std::string  _sFormat;
-   
-
-private:
-   static std::string _xmlsettingsfile;
-   static std::string _jsonsettingsfile;
+	//! returns the current real time in milliseconds
+	static unsigned int getRealTime();
+	
+	//! returns the current real time in milliseconds with high precision
+	//! not available on all platforms!
+	static double getRealTimeHighPrecision();
 };
 
-
 #endif
+

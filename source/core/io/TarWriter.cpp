@@ -34,28 +34,26 @@
 #endif
 
 //------------------------------------------------------------------------------
-
 struct PosixTarHeader
-{
-   char name[100];
-   char mode[8];
-   char uid[8];
-   char gid[8];
-   char size[12];
-   char mtime[12];
-   char checksum[8];
-   char typeflag[1];
-   char linkname[100];
-   char magic[6];
-   char version[2];
-   char uname[32];
-   char gname[32];
-   char devmajor[8];
-   char devminor[8];
-   char prefix[155];
-   char pad[12];
+{                       /* byte offset */
+   char name[100];      /*   0 */
+   char mode[8];        /* 100 */
+   char uid[8];         /* 108 */
+   char gid[8];         /* 116 */
+   char size[12];       /* 124 */
+   char mtime[12];      /* 136 */
+   char chksum[8];      /* 148 */
+   char typeflag;       /* 156 */
+   char linkname[100];  /* 157 */
+   char magic[6];       /* 257 */
+   char version[2];     /* 263 */
+   char uname[32];      /* 265 */
+   char gname[32];      /* 297 */
+   char devmajor[8];    /* 329 */
+   char devminor[8];    /* 337 */
+   char prefix[155];    /* 345 */
+   char pad[12];        /* 500 */
 };
-
 
 void _init(PosixTarHeader* header);
 void _checksum(PosixTarHeader* header);
@@ -102,7 +100,7 @@ void TarWriter::AddData(const char* filename_archive,const char* content,std::si
    PosixTarHeader header;
    _init(&header);
    _filename(&header,filename_archive);
-   header.typeflag[0]=0;
+   header.typeflag=0;
    _size(&header,len);
    _checksum(&header);
    _out.write((const char*)&header,sizeof(PosixTarHeader));
@@ -129,7 +127,7 @@ void TarWriter::AddFile(const char* filename,const char* filename_archive)
    PosixTarHeader header;
    _init(&header);
    _filename(&header,filename_archive);
-   header.typeflag[0]=0;
+   header.typeflag=0;
    _size(&header,len);
    _checksum(&header);
    _out.write((const char*)&header,sizeof(PosixTarHeader));
@@ -166,7 +164,7 @@ void _checksum(PosixTarHeader* header)
    unsigned int sum = 0;
    char *p = (char *) header;
    char *q = p + sizeof(PosixTarHeader);
-   while (p < header->checksum) sum += *p++ & 0xff;
+   while (p < header->chksum) sum += *p++ & 0xff;
    for (int i = 0; i < 8; ++i)  
    {
       sum += ' ';
@@ -174,7 +172,7 @@ void _checksum(PosixTarHeader* header)
    }
    while (p < q) sum += *p++ & 0xff;
 
-   std::sprintf(header->checksum,"%06o",sum);
+   std::sprintf(header->chksum,"%06o",sum);
 }
 
 //------------------------------------------------------------------------------

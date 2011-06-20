@@ -358,3 +358,28 @@ void ImageObject::SavePPM(std::string sFilename)
 
    return 0;
  }
+
+
+ void ImageObject::Convert(Img::PixelFormat newPixelFormat, ImageObject& out)
+ {
+      out.AllocateImage(GetWidth(), GetHeight(), newPixelFormat);
+
+      if (_ePixelFormat == Img::PixelFormat_RGB)
+      {
+         out.FillFromRGB(this->GetRawData().get());
+      }
+      else if (_ePixelFormat == Img::PixelFormat_BGR)
+      {
+        // #todo
+        //out.FillFromBGR(this->GetRawData().get()); 
+      }
+      else if (_ePixelFormat == Img::PixelFormat_RGBA)
+      {
+          out.FillFromRGBA(this->GetRawData().get());
+      }
+      else if (_ePixelFormat == Img::PixelFormat_BGRA)
+      {
+         // #todo
+         //out.FillFromBGRA(this->GetRawData().get()); 
+      }
+ }

@@ -34,6 +34,9 @@
     <Filter Include="mpi">
       <UniqueIdentifier>{f4760cf4-9ed2-4940-bb27-2b09c772a4b9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="system">
+      <UniqueIdentifier>{14a3c814-d71b-4b3d-be41-4330fdd5a8b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
@@ -120,6 +123,15 @@
     </ClCompile>
     <ClCompile Include="..\..\source\core\geo\ElevationReader.cpp">
       <Filter>geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\system\Utils.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\system\Timer.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\image\JPEGHandler.cpp">
+      <Filter>image</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -229,6 +241,15 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\geo\ElevationReader.h">
       <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\system\Utils.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\system\Timer.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\image\JPEGHandler.h">
+      <Filter>image</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

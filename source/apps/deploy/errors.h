@@ -16,51 +16,17 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _IMAGELAYERSETTINGS_H
-#define _IMAGELAYERSETTINGS_H
+#ifndef _ERRORS_H
+#define _ERRORS_H
 
-#include "og.h"
-#include <boost/shared_ptr.hpp>
-#include <string>
-#include <vector>
+// App Specific:
+#define ERROR_CONFIG             3     // wrong configuration (setup.xml) (processing path or log-path is wrong)
+#define ERROR_PARAMS             4     // wrong parameters
+#define ERROR_IMAGELAYERSETTINGS 5     // can't load imagelayersettings. (image layer probably doesn't exist)
+#define ERROR_ELVLAYERSETTINGS   6     // can't load elevsation layer settings
 
-class OPENGLOBE_API ImageLayerSettings
-{
-public:
-   ImageLayerSettings();
-   virtual ~ImageLayerSettings(){}
-
-   // Setters/Getters:
-   void SetLayerName(const std::string& sLayername) {_sLayername = sLayername;} 
-   void SetMaxLod(int maxlod) {_maxlod = maxlod;}
-   void SetTileExtent(int64 x0, int64 y0, int64 x1, int64 y1) { _tilecoord[0] = x0; _tilecoord[1] = y0; _tilecoord[2] = x1; _tilecoord[3] = y1;}
-   // set format (short form: "png" or "jpg")
-   void SetFormat(const std::string& sFormat){_sFormat = sFormat;}
-
-   std::string GetLayerName(){return _sLayername;}
-   std::string GetFormat(){return _sFormat;}
-   int GetMaxLod(){return _maxlod;}
-   void GetTileExtent(int64& x0, int64& y0, int64& x1, int64& y1){x0 = _tilecoord[0]; y0 = _tilecoord[1]; x1 = _tilecoord[2]; y1 = _tilecoord[3];}
-
-   // Load from XML
-   static boost::shared_ptr<ImageLayerSettings> Load(const std::string& layerdir);
-
-   // Save to XML
-   bool Save(const std::string& layerdir);
-
-protected:
-   std::string _sLayername;
-   std::string _sLayertype;
-   int         _maxlod;
-   std::string _srs;
-   std::vector<int64> _tilecoord;
-   std::string  _sFormat;
-   
-
-private:
-   static std::string _xmlsettingsfile;
-   static std::string _jsonsettingsfile;
-};
-
+// General Errors:
+#define ERROR_OUTOFMEMORY        101;  // not enough memory
 
 #endif
+

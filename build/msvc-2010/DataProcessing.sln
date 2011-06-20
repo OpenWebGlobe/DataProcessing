@@ -38,6 +38,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deploy", "deploy.vcxproj", 
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "triangulate", "Triangulate.vcxproj", "{1E9DB029-1FF3-40DF-AD84-5D78D4B7B6E9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deploy_mpi", "deploy_mpi.vcxproj", "{048834F9-8EEE-4053-8655-C6C276889689}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -76,6 +86,14 @@ Global
 		{DFC47E3A-9D7F-4002-A5E7-F29A4F47FD26}.Debug|Win32.Build.0 = Debug|Win32
 		{DFC47E3A-9D7F-4002-A5E7-F29A4F47FD26}.Release|Win32.ActiveCfg = Release|Win32
 		{DFC47E3A-9D7F-4002-A5E7-F29A4F47FD26}.Release|Win32.Build.0 = Release|Win32
+		{1E9DB029-1FF3-40DF-AD84-5D78D4B7B6E9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1E9DB029-1FF3-40DF-AD84-5D78D4B7B6E9}.Debug|Win32.Build.0 = Debug|Win32
+		{1E9DB029-1FF3-40DF-AD84-5D78D4B7B6E9}.Release|Win32.ActiveCfg = Release|Win32
+		{1E9DB029-1FF3-40DF-AD84-5D78D4B7B6E9}.Release|Win32.Build.0 = Release|Win32
+		{048834F9-8EEE-4053-8655-C6C276889689}.Debug|Win32.ActiveCfg = Debug|Win32
+		{048834F9-8EEE-4053-8655-C6C276889689}.Debug|Win32.Build.0 = Debug|Win32
+		{048834F9-8EEE-4053-8655-C6C276889689}.Release|Win32.ActiveCfg = Release|Win32
+		{048834F9-8EEE-4053-8655-C6C276889689}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
