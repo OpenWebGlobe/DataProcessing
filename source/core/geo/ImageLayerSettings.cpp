@@ -100,11 +100,11 @@ bool ImageLayerSettings::Save(const std::string& layerdir)
    {
 
       jout << "{\n";
-      jout << "   name   : " << _sLayername << ",\n";
-      jout << "   type   : " << _sLayertype << ",\n";
-      jout << "   format : " << _sFormat << ",\n";
-      jout << "   maxlod : " << _maxlod << ",\n";
-      jout << "   extent : " << "[" << _tilecoord[0] << ", " << _tilecoord[1] << ", " << _tilecoord[2] << ", " << _tilecoord[3] << "]\n";
+      jout << "   \"name\" : \"" << _sLayername << "\",\n";
+      jout << "   \"type\" : \"" << _sLayertype << "\",\n";
+      jout << "   \"format\" \": " << _sFormat << "\",\n";
+      jout << "   \"maxlod\" : " << _maxlod << ",\n";
+      jout << "   \"extent\" : " << "[" << _tilecoord[0] << ", " << _tilecoord[1] << ", " << _tilecoord[2] << ", " << _tilecoord[3] << "]\n";
       jout << "}\n";
    }
 

@@ -37,6 +37,18 @@
     <Filter Include="system">
       <UniqueIdentifier>{14a3c814-d71b-4b3d-be41-4330fdd5a8b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="data">
+      <UniqueIdentifier>{965bfb58-a9a0-41bc-8407-3c5ee83d2ab2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="boost">
+      <UniqueIdentifier>{1953f329-5775-4b3f-a395-b12f33f7a784}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="boost\atomic">
+      <UniqueIdentifier>{03e6700e-7dac-4be9-9422-c03ce056408d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="boost\atomic\detail">
+      <UniqueIdentifier>{b99ac59e-b9ea-4278-a1d0-bdf681165364}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
@@ -250,6 +262,51 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\image\JPEGHandler.h">
       <Filter>image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\data\stack_nolock.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic.hpp">
+      <Filter>boost</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\platform.hpp">
+      <Filter>boost\atomic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\base.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\builder.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\fallback.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\gcc-alpha.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\gcc-armv6+.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\gcc-ppc.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\gcc-x86.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\generic-cas.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\integral-casts.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\interlocked.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\linux-arm.hpp">
+      <Filter>boost\atomic\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\valid_integral_types.hpp">
+      <Filter>boost\atomic\detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
