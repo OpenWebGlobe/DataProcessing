@@ -18,6 +18,7 @@
 
 #include "JPEGHandler.h"
 #include <iostream>
+#include <cstring>
 
 extern "C" 
 { 
