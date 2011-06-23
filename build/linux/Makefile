@@ -37,8 +37,9 @@ all: \
 
 ../../bin/deploy: \
 	../../source/apps/deploy/main.cpp \
+	../../bin/deploy.o \
 	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< $(LIBS)
+	g++ -o $@ $(CFLAGS) $< ../../bin/deploy.o $(LIBS)
 
 ../../bin/resample: \
 	../../source/apps/resample/main.cpp \
@@ -69,6 +70,7 @@ all: \
 	../../bin/ImageHandler.o \
 	../../bin/ImageLoader.o \
 	../../bin/ImageWriter.o \
+	../../bin/JPEGHandler.o \
 	../../bin/CommonPath.o \
 	../../bin/FileSystem.o \
 	../../bin/TarWriter.o \
@@ -85,6 +87,8 @@ all: \
 	../../bin/ConvertUTF.o \
 	../../bin/FilenameUtils.o \
 	../../bin/StringUtils.o \
+	../../bin/Timer.o \
+	../../bin/Utils.o \
 	../../bin/BaseTypeConversion.o \
 	../../bin/ClassExport.o \
 	../../bin/PropertyBase.o \
@@ -119,6 +123,9 @@ all: \
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/ImageWriter.o: ../../source/core/image/ImageWriter.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/JPEGHandler.o: ../../source/core/image/JPEGHandler.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/CommonPath.o: ../../source/core/io/CommonPath.cpp
@@ -166,6 +173,12 @@ all: \
 ../../bin/StringUtils.o: ../../source/core/string/StringUtils.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/Timer.o: ../../source/core/system/Timer.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/Utils.o: ../../source/core/system/Utils.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/BaseTypeConversion.o: ../../source/core/xml/BaseTypeConversion.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
@@ -185,6 +198,9 @@ all: \
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/resample.o: ../../source/apps/resample/resample.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/deploy.o: ../../source/apps/deploy/deploy.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 clean:
