@@ -55,7 +55,7 @@ namespace ElevationData
       boost::shared_ptr<ElevationLayerSettings> qElevationLayerSettings = ElevationLayerSettings::Load(sElevationLayerDir);
       if (!qElevationLayerSettings)
       {
-         qLogger->Error("Failed retrieving image layer settings! Make sure to create it using 'createlayer'.");
+         qLogger->Error("Failed retrieving elevation layer settings! Make sure to create it using 'createlayer'.");
          ProcessingUtils::exit_gdal();
          return ERROR_ELVLAYERSETTINGS;
       }
@@ -183,8 +183,6 @@ namespace ElevationData
             oTriangulation.InsertLine(x1,y1,x0,y1);
             oTriangulation.InsertLine(x0,y1,x0,y0);
             oTriangulation.InvalidateVertices(x0,y0,x1,y1);
-
-            
 
             std::string str = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
             std::ofstream fout(sTilefile);
