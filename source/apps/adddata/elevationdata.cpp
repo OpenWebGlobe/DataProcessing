@@ -209,7 +209,7 @@ namespace ElevationData
       }
 
       // parallel sorting points:
-#     pragma omp parallel for      
+#     pragma omp parallel for
       for (int i=0;i<(int)vPoints.size();i++)
       {
          // calculate tile coordinate of current point:
@@ -229,7 +229,8 @@ namespace ElevationData
          }
       }
 
-      // write tiles:
+      // write tiles
+#     pragma omp parallel for
       for (int64 xx = elvTileX0; xx <= elvTileX1; ++xx)
       {
          for (int64 yy = elvTileY0; yy <= elvTileY1; ++yy)
@@ -239,12 +240,47 @@ namespace ElevationData
 
             std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
             std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, xx, yy);
-           
-            for (int i=0;i<max_threads;i++)
+
+            // LOCK this tile. If this tile is currently locked then wait until the lock is removed.
+            int lockhandle = FileSystem::Lock(sTilefile);
+
+            std::ofstream fout;
+
+            if (FileSystem::FileExists(sTilefile))
             {
-                SElevationCell& s = matrix[i*total + tty*tilewidth_i+ttx];
-                // #todo: add points from s.vecPts to file
+               fout.open(sTilefile.c_str(), std::ios::binary | std::ios::app); // open in append mode
             }
+            else
+            {
+               fout.open(sTilefile.c_str(), std::ios::binary); // open in append mode
+            }
+
+            if (fout.good())
+            {
+               for (int i=0;i<max_threads;i++)
+               {
+                   SElevationCell& s = matrix[i*total + tty*tilewidth_i+ttx];
+                   // #todo: add points from s.vecPts to file
+
+                   for (size_t k=0;k<s.vecPts.size();k++)
+                   {
+                        ElevationPoint* pt = s.vecPts[k];
+                        fout.write((const char*)&(pt->x), sizeof(double));
+                        fout.write((const char*)&(pt->y), sizeof(double));
+                        fout.write((const char*)&(pt->elevation), sizeof(double));
+                        fout.write((const char*)&(pt->weight), sizeof(double));
+                   }
+               }
+
+               fout.close();
+            }
+            else
+            {
+               std::cout << "FILE ERROR!\n";
+            }
+
+            // unlock file. Other computers/processes/threads can access it again.
+            FileSystem::Unlock(sTilefile, lockhandle);
          }
       }
 
