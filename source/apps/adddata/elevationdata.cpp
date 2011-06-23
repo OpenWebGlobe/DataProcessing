@@ -29,9 +29,18 @@
 #include <sstream>
 #include <fstream>
 #include <ctime>
+#include <omp.h>
+
 
 namespace ElevationData
 {
+   struct SElevationCell
+   {
+      std::vector<ElevationPoint*> vecPts;
+   };
+
+   //---------------------------------------------------------------------------
+
    int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, int epsg, std::string sElevationFile, bool bFill )
    {
       DataSetInfo oInfo;
@@ -142,10 +151,105 @@ namespace ElevationData
       elvTileX1 = math::Min<int64>(elvTileX1, layerTileX1);
       elvTileY1 = math::Min<int64>(elvTileY1, layerTileY1);
 
-      // tatal number of tiles affected by this dataset:
+      // total number of tiles affected by this dataset:
       int64 total = (elvTileX1-elvTileX0+1)*(elvTileY1-elvTileY0+1);
+      int tilewidth_i = int(elvTileX1-elvTileX0+1);
+      int tileheight_i = int(elvTileY1-elvTileY0+1);
+      double tilewidth = double(elvTileX1-elvTileX0+1);
+      double tileheight = double(elvTileY1-elvTileY0+1);
 
+
+      // retrieve min/max mercator coodinates of dataset:
+      std::string qc0 = qQuadtree->TileCoordToQuadkey(elvTileX0, elvTileY0, lod);
+      std::string qc1 = qQuadtree->TileCoordToQuadkey(elvTileX1, elvTileY1, lod);
+
+      double x00, y00, x10, y10;
+      double x01, y01, x11, y11;
+      qQuadtree->QuadKeyToMercatorCoord(qc0, x00,y00,x10,y10);
+      qQuadtree->QuadKeyToMercatorCoord(qc1, x01,y01,x11,y11);
+
+      double x0,y0,x1,y1;
+
+      x0 = x00;
+      y0 = y11;
+      x1 = x11;
+      y1 = y00;
+
+      if (bVerbose)
+      {
+         oss << "\nMercator coords of dataset:";
+         oss << "   (" << x0 << ", " << y0 << ")-(" << x1 << ", " << y1 << ")\n";
+         qLogger->Info(oss.str());
+         oss.str("");
+      }
+
+      double width_merc = fabs(x1 - x0);
+      double height_merc = fabs(y1 - y0);
+      tilewidth = width_merc / tilewidth;
+      tileheight =  height_merc / tileheight;
+
+      int max_threads = omp_get_max_threads();
+
+      if (bVerbose)
+      {
+         oss << "\nMemory required for matrix:";
+         oss << "  " << max_threads*tilewidth_i*tileheight_i*sizeof(SElevationCell) << " Bytes\n";
+         qLogger->Info(oss.str());
+         oss.str("");
+      }
+
+      SElevationCell* matrix = new SElevationCell[max_threads*tilewidth_i*tileheight_i]; 
+
+      if (!matrix)
+      {
+         oss << "\nOut of memory!";
+         qLogger->Error(oss.str());
+         oss.str("");
+         return ERROR_OUTOFMEMORY;
+      }
+
+      // parallel sorting points:
 #     pragma omp parallel for      
+      for (int i=0;i<(int)vPoints.size();i++)
+      {
+         // calculate tile coordinate of current point:
+         
+         int64 ttx = int64((vPoints[i].x - x0) / tilewidth);
+         int64 tty = int64((vPoints[i].y - y0) / tileheight);
+         int64 tileX = ttx+elvTileX0;
+         int64 tileY = tty+elvTileY0;
+         
+
+         if (tileX >= elvTileX0 && tileX<=elvTileX1 &&
+             tileY >= elvTileY0 &&  tileY<=elvTileY1)
+         {
+            int arraynum = omp_get_thread_num();
+            SElevationCell& s = matrix[arraynum*total + tty*tilewidth_i+ttx];
+            s.vecPts.push_back(&vPoints[i]);
+         }
+      }
+
+      // write tiles:
+      for (int64 xx = elvTileX0; xx <= elvTileX1; ++xx)
+      {
+         for (int64 yy = elvTileY0; yy <= elvTileY1; ++yy)
+         {
+            int64 ttx = xx - elvTileX0;
+            int64 tty = yy - elvTileY0;
+
+            std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
+            std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, xx, yy);
+           
+            for (int i=0;i<max_threads;i++)
+            {
+                SElevationCell& s = matrix[i*total + tty*tilewidth_i+ttx];
+                // #todo: add points from s.vecPts to file
+            }
+         }
+      }
+
+
+/*#     pragma omp parallel for      
       for (int64 xx = elvTileX0; xx <= elvTileX1; ++xx)
       {
          for (int64 yy = elvTileY0; yy <= elvTileY1; ++yy)
@@ -191,7 +295,7 @@ namespace ElevationData
           
          }
       }  
-
+*/
 
       // finished, print stats:
       t1=clock();

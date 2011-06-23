@@ -47,6 +47,21 @@
   <ItemGroup>
     <ClInclude Include="..\..\source\core\app\Logger.h" />
     <ClInclude Include="..\..\source\core\app\ProcessingSettings.h" />
+    <ClInclude Include="..\..\source\core\boost\atomic.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\base.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\builder.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\fallback.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\gcc-alpha.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\gcc-armv6+.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\gcc-ppc.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\gcc-x86.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\generic-cas.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\integral-casts.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\interlocked.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\linux-arm.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\detail\valid_integral_types.hpp" />
+    <ClInclude Include="..\..\source\core\boost\atomic\platform.hpp" />
+    <ClInclude Include="..\..\source\core\data\stack_nolock.h" />
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h" />
     <ClInclude Include="..\..\source\core\geo\ElevationLayerSettings.h" />
     <ClInclude Include="..\..\source\core\geo\ElevationReader.h" />
