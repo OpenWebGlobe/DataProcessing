@@ -224,8 +224,6 @@ int main(int argc, char *argv[])
       qProcessStatus->SetLayerName(sLayer);
    }
 
-   
-
    ProcessElement* pElement = qProcessStatus->GetElement(sFile);
 
    if (pElement)
