@@ -125,6 +125,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\apps\triangulate\main.cpp" />
+    <ClCompile Include="..\..\source\apps\triangulate\triangulate.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\source\apps\triangulate\errors.h" />
+    <ClInclude Include="..\..\source\apps\triangulate\triangulate.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
