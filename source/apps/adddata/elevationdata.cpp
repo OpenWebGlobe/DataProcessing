@@ -41,7 +41,7 @@ namespace ElevationData
 
    //---------------------------------------------------------------------------
 
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, int epsg, std::string sElevationFile, bool bFill )
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, int epsg, std::string sElevationFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1)
    {
       DataSetInfo oInfo;
 
@@ -70,6 +70,7 @@ namespace ElevationData
       }
 
       int lod = qElevationLayerSettings->GetMaxLod();
+      out_lod = lod;
       int64 layerTileX0, layerTileY0, layerTileX1, layerTileY1;
       qElevationLayerSettings->GetTileExtent(layerTileX0, layerTileY0, layerTileX1, layerTileY1);
 
@@ -150,6 +151,11 @@ namespace ElevationData
       elvTileY0 = math::Max<int64>(elvTileY0, layerTileY0);
       elvTileX1 = math::Min<int64>(elvTileX1, layerTileX1);
       elvTileY1 = math::Min<int64>(elvTileY1, layerTileY1);
+
+      out_x0 = elvTileX0;
+      out_y0 = elvTileY0;
+      out_x1 = elvTileX1;
+      out_y1 = elvTileY1;
 
       // total number of tiles affected by this dataset:
       int64 total = (elvTileX1-elvTileX0+1)*(elvTileY1-elvTileY0+1);

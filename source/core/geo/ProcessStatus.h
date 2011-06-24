@@ -42,11 +42,11 @@ public:
    void SetFilename(const std::string sFilename) { _sFilename = sFilename;} 
    std::string GetFilename() {return _sFilename;}
 
-   /*void SetLod(int lod){_lod = lod;}
+   void SetLod(int lod){_lod = lod;}
    int GetLod(){return _lod;}
 
    void SetExtent(int64 x0, int64 y0, int64 x1, int64 y1);
-   void GetExtent(int64& x0, int64& y0, int64& x1, int64& y1);*/
+   void GetExtent(int64& x0, int64& y0, int64& x1, int64& y1);
 
    void SetStatusMessage(const std::string sMsg) { _sStatusMessage = sMsg;} 
    std::string GetStatusMessage() {return _sStatusMessage;}
@@ -61,8 +61,8 @@ protected:
    bool _bProcessing;
    std::string _sStartTime;      // time when processing started
    std::string _sFinishTime;     // time when processing ended
-   //int _lod;                     // level of detail
-   //std::vector<int64> _vExtent;  // extent
+   int _lod;                     // level of detail
+   std::vector<int64> _vExtent;  // extent
 
 };
 

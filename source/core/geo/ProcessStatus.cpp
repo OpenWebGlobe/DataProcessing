@@ -33,8 +33,8 @@ BeginPropertyMap(ProcessElement);
    XMLProperty(ProcessElement, "Processing", _bProcessing);
    XMLProperty(ProcessElement, "StartTime", _sStartTime);
    XMLProperty(ProcessElement, "FinishTime", _sFinishTime);
-   //XMLProperty(ProcessElement, "lod", _lod);
-   //XMLProperty(ProcessElement, "extent", _vExtent);
+   XMLProperty(ProcessElement, "lod", _lod);
+   XMLProperty(ProcessElement, "extent", _vExtent);
 EndPropertyMap(ProcessElement);
 
 // ProcessElement can be seerialized as std::vector<ProcessElement>
@@ -54,10 +54,10 @@ ProcessElement::ProcessElement()
    _bFinished = false;
    _bProcessing = false;
    _sStatusMessage = "unknown";
-   /*_vExtent.push_back(0);
    _vExtent.push_back(0);
    _vExtent.push_back(0);
-   _vExtent.push_back(0);*/
+   _vExtent.push_back(0);
+   _vExtent.push_back(0);
 
 }
 
@@ -71,7 +71,7 @@ ProcessElement::~ProcessElement()
 
 //------------------------------------------------------------------------------
 
-/*void ProcessElement::SetExtent(int64 x0, int64 y0, int64 x1, int64 y1)
+void ProcessElement::SetExtent(int64 x0, int64 y0, int64 x1, int64 y1)
 {
    _vExtent[0] = x0;
    _vExtent[1] = y0;
@@ -88,7 +88,7 @@ void ProcessElement::GetExtent(int64& x0, int64& y0, int64& x1, int64& y1)
    x1 = _vExtent[2];
    y1 = _vExtent[3];
 }
-*/
+
 //------------------------------------------------------------------------------
 
 void ProcessElement::SetStartTime()

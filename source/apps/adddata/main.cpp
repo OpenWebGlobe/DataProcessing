@@ -263,14 +263,16 @@ int main(int argc, char *argv[])
 
    //---------------------------------------------------------------------------
    int retval = 0;
+   int lod = 0;
+   int64 x0 = 0, y0 = 0, x1 = 0, y1 = 0;
 
    if (eLayer == IMAGE_LAYER) 
    {
-      retval = ImageData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill);
+      retval = ImageData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
    else if (eLayer == ELEVATION_LAYER)
    {
-      retval = ElevationData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill);
+      retval = ElevationData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
 
    //---------------------------------------------------------------------------
@@ -301,6 +303,8 @@ int main(int argc, char *argv[])
    if (retval == 0)
    {
       pElement->SetStatusMessage("success");
+      pElement->SetLod(lod);
+      pElement->SetExtent(x0,y0,x1,y1);
       pElement->MarkFinished();
       pElement->FinishedProcessing();
    }
