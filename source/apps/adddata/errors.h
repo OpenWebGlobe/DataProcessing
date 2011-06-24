@@ -27,7 +27,7 @@
 #define ERROR_IMAGELAYERSETTINGS 5     // can't load imagelayersettings. (image layer probably doesn't exist)
 #define ERROR_ELVLAYERSETTINGS   6     // can't load elevsation layer settings
 #define ERROR_LOADELEVATION      10    // can't load elevation
-
+#define ERROR_FILE               11    // file error (process status file)
 
 // General Errors:
 #define ERROR_OUTOFMEMORY        101;  // not enough memory
