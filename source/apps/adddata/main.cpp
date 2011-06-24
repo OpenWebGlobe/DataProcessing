@@ -221,7 +221,10 @@ int main(int argc, char *argv[])
    {
       // create new Process Status file!
       qProcessStatus = boost::shared_ptr<ProcessStatus>(new ProcessStatus);
+      qProcessStatus->SetLayerName(sLayer);
    }
+
+   
 
    ProcessElement* pElement = qProcessStatus->GetElement(sFile);
 

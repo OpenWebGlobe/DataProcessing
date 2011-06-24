@@ -86,6 +86,9 @@ public:
    // Load from XML
    static boost::shared_ptr<ProcessStatus> Load(const std::string& sFilename);
 
+
+   void SetLayerName(const std::string& sLayername) { _sLayername = sLayername;}
+
 protected:
    std::string _sLayername;
    std::vector<ProcessElement> _vElements;  // contains all Elements to be processed and their status

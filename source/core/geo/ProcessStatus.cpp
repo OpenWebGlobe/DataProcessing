@@ -58,7 +58,6 @@ ProcessElement::ProcessElement()
    _vExtent.push_back(0);
    _vExtent.push_back(0);
    _vExtent.push_back(0);
-
 }
 
 
