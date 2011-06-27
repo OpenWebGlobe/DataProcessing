@@ -26,7 +26,8 @@
 #define ERROR_PARAMS             4     // wrong parameters
 #define ERROR_IMAGELAYERSETTINGS 5     // can't load imagelayersettings. (image layer probably doesn't exist)
 #define ERROR_ELVLAYERSETTINGS   6     // can't load elevsation layer settings
-#define ERROR_LOADELEVATION      10    // can't load elevatione)
+#define ERROR_LOADELEVATION      10    // can't load elevation
+#define ERROR_AREA               20    // area is too small to be processed
 
 // General Errors:
 #define ERROR_OUTOFMEMORY        101;  // not enough memory

@@ -151,6 +151,9 @@ int main(int argc, char *argv[])
       return ERROR_PARAMS;
    }
 
+   clock_t t0,t1;
+   t0 = clock();
+
    if (bTriangulate)
    {
       triangulate::process(qLogger, qSettings, sLayer, bVerbose);
@@ -159,6 +162,12 @@ int main(int argc, char *argv[])
    {
       // not yet supported
    }
+
+   t1=clock();
+
+   std::ostringstream out;
+   out << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
+   qLogger->Info(out.str());
 
 
    return 0;

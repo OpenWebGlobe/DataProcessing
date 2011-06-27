@@ -190,8 +190,8 @@ namespace ElevationData
 
       double width_merc = fabs(x1 - x0);
       double height_merc = fabs(y1 - y0);
-      tilewidth = width_merc / tilewidth;
-      tileheight =  height_merc / tileheight;
+      tilewidth = width_merc / (tilewidth);
+      tileheight =  height_merc / (tileheight);
 
       int max_threads = omp_get_max_threads();
 
@@ -214,7 +214,9 @@ namespace ElevationData
       }
 
       // parallel sorting points:
+#ifndef _DEBUG
 #     pragma omp parallel for
+#endif
       for (int i=0;i<(int)vPoints.size();i++)
       {
          // calculate tile coordinate of current point:
@@ -223,7 +225,8 @@ namespace ElevationData
          int64 tty = int64((vPoints[i].y - y0) / tileheight);
          int64 tileX = ttx+elvTileX0;
          int64 tileY = tty+elvTileY0;
-         
+
+
 
          if (tileX >= elvTileX0 && tileX<=elvTileX1 &&
              tileY >= elvTileY0 &&  tileY<=elvTileY1)
@@ -235,16 +238,23 @@ namespace ElevationData
       }
 
       // write tiles
+      int failcntx=0;
+      int failcnty=0;
+#ifndef _DEBUG
 #     pragma omp parallel for
+#endif
       for (int64 xx = elvTileX0; xx <= elvTileX1; ++xx)
       {
          for (int64 yy = elvTileY0; yy <= elvTileY1; ++yy)
          {
             int64 ttx = xx - elvTileX0;
-            int64 tty = yy - elvTileY0;
+            int64 tty = elvTileY1 - yy;
 
             std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
             std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, xx, yy);
+
+            double px0,py0,px1,py1;
+            qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0, py1, px1, py0);
 
             // LOCK this tile. If this tile is currently locked then wait until the lock is removed.
             int lockhandle = FileSystem::Lock(sTilefile);
@@ -270,6 +280,19 @@ namespace ElevationData
                    for (size_t k=0;k<s.vecPts.size();k++)
                    {
                         ElevationPoint* pt = s.vecPts[k];
+
+                        if (pt->y > py1 ||
+                            pt->y < py0)
+                        {
+                           failcnty++;
+                        }
+
+                        if (pt->x > px1 || 
+                           pt->x < px0)
+                        {
+                           failcntx++;
+                        }
+                        
                         fout.write((const char*)&(pt->x), sizeof(double));
                         fout.write((const char*)&(pt->y), sizeof(double));
                         fout.write((const char*)&(pt->elevation), sizeof(double));
@@ -291,6 +314,9 @@ namespace ElevationData
 
       // finished, print stats:
       t1=clock();
+
+      std::cout << "FAILCNTX: " << failcntx << "\n";
+      std::cout << "FAILCNTY: " << failcnty << "\n";
 
       std::ostringstream out;
       out << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
