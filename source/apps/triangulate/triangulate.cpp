@@ -40,6 +40,7 @@ namespace triangulate
       std::ostringstream oss;
 
       std::string sElevationLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
+      std::string sTempTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sElevationLayerDir) + "temp/tiles");
       std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sElevationLayerDir) + "tiles");
 
       boost::shared_ptr<ElevationLayerSettings> qElevationLayerSettings = ElevationLayerSettings::Load(sElevationLayerDir);
@@ -112,7 +113,7 @@ namespace triangulate
                for (int tx=-1;tx<=1;tx++)
                {
                   std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx+tx,yy+ty,lod);
-                  std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, xx+tx, yy+ty);
+                  std::string sTilefile = ProcessingUtils::GetTilePath(sTempTileDir, ".pts" , lod, xx+tx, yy+ty);
                   
                   double sx0, sy1, sx1, sy0;
                   qQuadtree->QuadKeyToMercatorCoord(sQuadcode, sx0, sy1, sx1, sy0);
@@ -174,8 +175,8 @@ namespace triangulate
 
             std::string str = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
 
-            //std::string sObjTileFile = ProcessingUtils::GetTilePath(sTileDir, ".obj" , lod, xx, yy);
-            std::string sObjTileFile = sTileDir + "/" + sCurrentQuadcode + ".obj";
+            std::string sObjTileFile = ProcessingUtils::GetTilePath(sTileDir, ".obj" , lod, xx, yy);
+            //std::string sObjTileFile = sTileDir + "/" + sCurrentQuadcode + ".obj";
             std::ofstream fout(sObjTileFile);
             fout << str;
             fout.close();

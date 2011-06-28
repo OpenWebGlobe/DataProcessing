@@ -58,7 +58,7 @@ namespace ElevationData
       std::ostringstream oss;
 
       std::string sElevationLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
-      std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sElevationLayerDir) + "tiles");
+      std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sElevationLayerDir) + "temp/tiles");
 
       boost::shared_ptr<ElevationLayerSettings> qElevationLayerSettings = ElevationLayerSettings::Load(sElevationLayerDir);
       if (!qElevationLayerSettings)
@@ -238,8 +238,6 @@ namespace ElevationData
       }
 
       // write tiles
-      int failcntx=0;
-      int failcnty=0;
 #ifndef _DEBUG
 #     pragma omp parallel for
 #endif
@@ -280,19 +278,6 @@ namespace ElevationData
                    for (size_t k=0;k<s.vecPts.size();k++)
                    {
                         ElevationPoint* pt = s.vecPts[k];
-
-                        if (pt->y > py1 ||
-                            pt->y < py0)
-                        {
-                           failcnty++;
-                        }
-
-                        if (pt->x > px1 || 
-                           pt->x < px0)
-                        {
-                           failcntx++;
-                        }
-                        
                         fout.write((const char*)&(pt->x), sizeof(double));
                         fout.write((const char*)&(pt->y), sizeof(double));
                         fout.write((const char*)&(pt->elevation), sizeof(double));
@@ -314,9 +299,6 @@ namespace ElevationData
 
       // finished, print stats:
       t1=clock();
-
-      std::cout << "FAILCNTX: " << failcntx << "\n";
-      std::cout << "FAILCNTY: " << failcnty << "\n";
 
       std::ostringstream out;
       out << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
