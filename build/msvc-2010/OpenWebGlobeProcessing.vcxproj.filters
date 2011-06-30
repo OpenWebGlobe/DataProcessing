@@ -148,6 +148,9 @@
     <ClCompile Include="..\..\source\core\geo\ProcessStatus.cpp">
       <Filter>geo</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\geo\ElevationTile.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
@@ -312,6 +315,9 @@
       <Filter>boost\atomic\detail</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\core\geo\ProcessStatus.h">
+      <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\geo\ElevationTile.h">
       <Filter>geo</Filter>
     </ClInclude>
   </ItemGroup>

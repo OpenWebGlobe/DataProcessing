@@ -184,9 +184,9 @@ namespace math
 
             switch(relation)
             {
-            case PointTriangle_Edge0:  // Point on Edge 0
-            case PointTriangle_Edge1:  // Point on Edge 1  
-            case PointTriangle_Edge2:  // Point on Edge 2  
+            case PointTriangle_Edge0:  // Point on Edge 0 (AB)
+            case PointTriangle_Edge1:  // Point on Edge 1 (BC)
+            case PointTriangle_Edge2:  // Point on Edge 2 (CA)
             case PointTriangle_Inside: // Point inside triangle
                {
                   A.elevation = 0.0;
@@ -606,9 +606,6 @@ namespace math
          }
 
       }
-
-
-
 
       // Convert list to vector (for returning values)
       if (lst.size()>2)
@@ -1417,7 +1414,6 @@ namespace math
          pt.weight = -2;
          _vecEdgePoints.push_back(pt);
       }
-
    }
 
    //--------------------------------------------------------------------------
@@ -1459,6 +1455,346 @@ namespace math
       _vecEdgePoints.clear();
 
    }
+   //---------------------------------------------------------------------------
+   void DelaunayTriangulation::IntersectLine(double x0, double y0, double x1, double y1, ElevationPoint& first, ElevationPoint& second, std::vector<ElevationPoint>& between)
+   {
+      ElevationQuery query_result;
+      double elv = GetElevationAt(x0, y0, query_result);
+      first.x = x0;
+      first.y = y0;
+      if (query_result == EQ_INTERIOR) { first.elevation = elv;}
+      else { first.elevation = 0;}
+
+      elv = GetElevationAt(x1, y1, query_result);
+      second.x = x1;
+      second.y = y1;
+      if (query_result == EQ_INTERIOR) { second.elevation = elv;}
+      else { second.elevation = 0;}
+
+      first.weight = -3; // mark as corner point
+      first.weight = -3; // mark as corner point
+
+      _pt1 = &first;
+      _pt2 = &second;
+
+      _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_LineTraversal, this, _1));
+
+      between.clear();
+      for (size_t i=0;i<_vecEdgePoints.size();i++)
+      {
+         between.push_back(_vecEdgePoints[i]);
+      }
+
+      _vecEdgePoints.clear();
+
+   }
+
+   //---------------------------------------------------------------------------
+
+   void DelaunayTriangulation::_GetElevation(double x, double y, ElevationPoint& out, double weight)
+   {
+      ElevationQuery query_result;
+      double elv = GetElevationAt(x, y, query_result);
+      out.x = x;
+      out.y = y;
+      out.weight = weight;
+
+      if (query_result == EQ_INTERIOR) 
+      { 
+         out.elevation = elv;
+      }
+      else
+      { 
+         out.elevation = 0;
+      }
+   }
+
+   //---------------------------------------------------------------------------
+
+   bool ep_xsort (const ElevationPoint& pt1, const ElevationPoint& pt2) { return (pt1.x<pt2.x); }
+   bool ep_ysort (const ElevationPoint& pt1, const ElevationPoint& pt2) { return (pt1.y<pt2.y); }
+
+   template <class T>
+   void sortpoints(std::vector<T>& sites)
+   {
+      int nsites = (int)sites.size();
+
+      for (int gap = nsites/2; gap > 0; gap /= 2)
+      {
+         for (int i = gap; i < nsites; i++)
+         {
+            for (int j = i-gap; 
+               j >= 0 && (sites[j].x != sites[j+gap].x ? (sites[j].x > sites[j+gap].x) : (sites[j].y > sites[j+gap].y));j -= gap)
+
+            {
+               std::swap(sites[j], sites[j+gap]);
+            }
+         }
+      }
+   }
+
+   inline void _xthin(std::vector<ElevationPoint>& pts, double maxdist)
+   {
+      if (pts.size()<1)
+      {
+         return;
+      }
+      std::vector<ElevationPoint> newvec;
+      ElevationPoint cur = pts[0];
+      newvec.push_back(cur);
+      for (size_t i=1;i<pts.size();i++)
+      {
+         if (fabs(pts[i].x-cur.x)>maxdist)
+         {
+            newvec.push_back(pts[i]);
+            cur = pts[i];
+         }
+      }
+
+      pts.clear();
+      for (size_t i=0;i<newvec.size();i++)
+      {
+         pts.push_back(newvec[i]);
+      }
+   }
+
+   inline void _removeclosetocorner(std::vector<ElevationPoint>& pts, double x0, double y0, double x1, double y1, double mindist)
+   {
+      std::vector<ElevationPoint> newvec;
+
+      for (size_t i=0;i<pts.size();i++)
+      {
+         if (  ((fabs(pts[i].x - x0)) < mindist) &&
+               ((fabs(pts[i].y - y0)) < mindist))
+         {
+            // reject point
+         }
+         else if ( ((fabs(pts[i].x - x1)) < mindist) &&
+                   ((fabs(pts[i].y - y1)) < mindist) )
+         {
+            // reject point
+         }
+         else if ( ((fabs(pts[i].x - x0)) < mindist) &&
+                   ((fabs(pts[i].y - y1)) < mindist) )
+         {
+            // reject point
+         }
+         else if ( ((fabs(pts[i].x - x1)) < mindist) &&
+                   ((fabs(pts[i].y - y0)) < mindist) )
+         {
+            // reject point
+         }
+         else
+         {
+            newvec.push_back(pts[i]);
+         }
+      }
+
+      pts.clear();
+      for (size_t i=0;i<newvec.size();i++)
+      {
+         pts.push_back(newvec[i]);
+      }
+   }
+
+   //---------------------------------------------------------------------------
+
+   inline void _ythin(std::vector<ElevationPoint>& pts, double maxdist)
+   {
+      if (pts.size()<1)
+      {
+         return;
+      }
+      std::vector<ElevationPoint> newvec;
+      ElevationPoint cur = pts[0];
+      newvec.push_back(cur);
+      for (size_t i=1;i<pts.size();i++)
+      {
+         if (fabs(pts[i].y-cur.y)>maxdist)
+         {
+            newvec.push_back(pts[i]);
+            cur = pts[i];
+         }
+      }
+
+      pts.clear();
+      for (size_t i=0;i<newvec.size();i++)
+      {
+         pts.push_back(newvec[i]);
+      }
+   }
+
+   //---------------------------------------------------------------------------
+
+   void DelaunayTriangulation::IntersectRect(double x0, double y0, double x1, double y1, 
+      ElevationPoint& NW,  
+      ElevationPoint& NE,  
+      ElevationPoint& SE,  
+      ElevationPoint& SW,  
+      std::vector<ElevationPoint>& vNorth, 
+      std::vector<ElevationPoint>& vEast,  
+      std::vector<ElevationPoint>& vSouth, 
+      std::vector<ElevationPoint>& vWest,  
+      std::vector<ElevationPoint>& vMiddle) 
+   {
+      assert(x0<x1);
+      assert(y0<y1);
+
+      _GetElevation(x0,y1, NW, -3);
+      _GetElevation(x1,y1, NE, -3);
+      _GetElevation(x1,y0, SE, -3);
+      _GetElevation(x0,y0, SW, -3);
+
+      //-------------------------------------------------------------------------------------------
+      // (1) North Points
+      _pt1 = &NW;
+      _pt2 = &NE;
+      _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_LineTraversal, this, _1));
+      vNorth.clear();
+      for (size_t i=0;i<_vecEdgePoints.size();i++)
+      {
+         _vecEdgePoints[i].y = y1;
+         vNorth.push_back(_vecEdgePoints[i]);
+      }
+      _vecEdgePoints.clear();
+      //-------------------------------------------------------------------------------------------
+      // (2) East Points
+      _pt1 = &NE;
+      _pt2 = &SE;
+      _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_LineTraversal, this, _1));
+      vEast.clear();
+      for (size_t i=0;i<_vecEdgePoints.size();i++)
+      {
+         _vecEdgePoints[i].x = x1;
+         vEast.push_back(_vecEdgePoints[i]);
+      }
+      _vecEdgePoints.clear();
+      //-------------------------------------------------------------------------------------------
+      // (3) South Points
+      _pt1 = &SW;
+      _pt2 = &SE;
+      _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_LineTraversal, this, _1));
+      vSouth.clear();
+      for (size_t i=0;i<_vecEdgePoints.size();i++)
+      {
+         _vecEdgePoints[i].y = y0;
+         vSouth.push_back(_vecEdgePoints[i]);
+      }
+      _vecEdgePoints.clear();
+      //-------------------------------------------------------------------------------------------
+      // (4) East Points
+      _pt1 = &NW;
+      _pt2 = &SW;
+      _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_LineTraversal, this, _1));
+      vWest.clear();
+      for (size_t i=0;i<_vecEdgePoints.size();i++)
+      {
+         _vecEdgePoints[i].x = x0;
+         vWest.push_back(_vecEdgePoints[i]);
+      }
+      _vecEdgePoints.clear();
+      //-------------------------------------------------------------------------------------------
+
+      _x0 = x0;
+      _y0 = y0;
+      _x1 = x1;
+      _y1 = y1;
+
+      _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_MiddleTraversal, this, _1));
+
+      vMiddle.clear();
+      for (size_t i=0;i<_vecEdgePoints.size();i++)
+      {
+         vMiddle.push_back(_vecEdgePoints[i]);
+      }
+
+      _vecEdgePoints.clear();
+
+      // Recreate triangulation
+
+      Clear();
+      InsertPoint(NW);
+      InsertPoint(NE);
+      InsertPoint(SE);
+      InsertPoint(SW);
+
+      _removeclosetocorner(vNorth, x0, y0, x1, y1, fabs(NE.x-NW.x)/34.0);
+      _removeclosetocorner(vSouth, x0, y0, x1, y1, fabs(NE.x-NW.x)/34.0);
+      _removeclosetocorner(vEast, x0, y0, x1, y1, fabs(NE.x-NW.x)/34.0);
+      _removeclosetocorner(vWest, x0, y0, x1, y1, fabs(NE.x-NW.x)/34.0);
+      _removeclosetocorner(vMiddle, x0, y0, x1, y1, fabs(NE.x-NW.x)/34.0);
+
+      std::sort(vNorth.begin(), vNorth.end(), ep_xsort);
+      std::sort(vSouth.begin(), vSouth.end(), ep_xsort);
+      std::sort(vEast.begin(), vEast.end(), ep_ysort);
+      std::sort(vWest.begin(), vWest.end(), ep_ysort);
+
+      _xthin(vNorth, fabs(NE.x-NW.x)/17.0);
+      _xthin(vSouth, fabs(SE.x-SW.x)/17.0);
+      _ythin(vEast, fabs(NE.y-SE.y)/17.0);
+      _ythin(vWest, fabs(NW.y-SW.y)/17.0);
+
+      if (vMiddle.size()>0)
+      {
+         sortpoints<ElevationPoint>(vMiddle);
+
+         for (size_t i=0;i<vNorth.size();i++)
+         {
+            InsertPoint(vNorth[i]);
+         }
+         for (size_t i=0;i<vSouth.size();i++)
+         {
+            InsertPoint(vSouth[i]);
+         }
+         for (size_t i=0;i<vEast.size();i++)
+         {
+            InsertPoint(vEast[i]);
+         }
+         for (size_t i=0;i<vWest.size();i++)
+         {
+            InsertPoint(vWest[i]);
+         }
+
+         for (size_t i=0;i<vMiddle.size();i++)
+         {
+            InsertPoint(vMiddle[i]);
+         }
+      }
+   }
+
+   //---------------------------------------------------------------------------
+
+   void DelaunayTriangulation::_MiddleTraversal(DelaunayTriangle* pTri)
+   {
+      DelaunayVertex* pVertex0 = pTri->GetVertex(0);
+      DelaunayVertex* pVertex1 = pTri->GetVertex(1);
+      DelaunayVertex* pVertex2 = pTri->GetVertex(2);
+
+      if (  pVertex0->x() > _x0 &&
+         pVertex0->x() < _x1 &&
+         pVertex0->y() > _y0 &&
+         pVertex0->y() < _y1)
+      {
+         _vecEdgePoints.push_back(pVertex0->GetElevationPoint());
+      }
+
+      if (  pVertex1->x() > _x0 &&
+         pVertex1->x() < _x1 &&
+         pVertex1->y() > _y0 &&
+         pVertex1->y() < _y1)
+      {
+         _vecEdgePoints.push_back(pVertex1->GetElevationPoint());
+      }
+
+      if (  pVertex2->x() > _x0 &&
+         pVertex2->x() < _x1 &&
+         pVertex2->y() > _y0 &&
+         pVertex2->y() < _y1)
+      {
+         _vecEdgePoints.push_back(pVertex2->GetElevationPoint());
+      }
+   }
+
    //---------------------------------------------------------------------------
    void DelaunayTriangulation::_SuperSimplexTraversal(DelaunayTriangle* pTri)
    {

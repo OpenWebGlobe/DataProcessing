@@ -261,7 +261,7 @@ namespace math
             return PointTriangle_Invalid;
          }
 
-         if (p2 <= edgeepsilon && p0 <= edgeepsilon)
+         /*if (p2 <= edgeepsilon && p0 <= edgeepsilon)
          {
             return PointTriangle_Vertex0;
          }
@@ -273,6 +273,7 @@ namespace math
          {
             return PointTriangle_Vertex2;
          }
+         */
 
          if (p0<=edgeepsilon)
          {

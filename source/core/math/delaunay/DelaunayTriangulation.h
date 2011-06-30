@@ -131,10 +131,30 @@ namespace math
       // Insert Line in Delaunay Triangulation.
       void InsertLine(double x0, double y0, double x1, double y1);
 
+      // Virtually intersect Line Triangulation, returns:
+      // returns false if operation is not possible
+      // first: point at (x0,y0)
+      // second: point at (x1, y1)
+      // between: lists of points hitting the triangulation in between (unsorted, random order)
+      void IntersectLine(double x0, double y0, double x1, double y1, ElevationPoint& first, ElevationPoint& second, std::vector<ElevationPoint>& between);
+
+      // Intersect Rect. (Please note: x0<x1 and y0<y1)
+      void IntersectRect(double x0, double y0, double x1, double y1, 
+         ElevationPoint& NW,  // Point at (x0,y1)
+         ElevationPoint& NE,  // Point at (x1,y1)
+         ElevationPoint& SE,  // Point at (x1, y0) 
+         ElevationPoint& SW,  // Point at (x0, y0)
+         std::vector<ElevationPoint>& vNorth, // Points at north edge
+         std::vector<ElevationPoint>& vEast,  // Points at east edge
+         std::vector<ElevationPoint>& vSouth, // Points at south edge
+         std::vector<ElevationPoint>& vWest,  // Points at west edge
+         std::vector<ElevationPoint>& vMiddle); // points inside rectangle
+
       // All Vertices outside specified boundary will be marked as supersimplex.
       void InvalidateVertices(double x0, double y0, double x1, double y1);
 
    protected:
+      void _GetElevation(double x, double y, ElevationPoint& out, double weight);
       void _RemoveVertex(DelaunayTriangle* pTri, int vtx);
       void _CreateSurroundingPolygon(DelaunayTriangle* pTri, int vertex_index, std::vector<ElevationPoint>& outputPolygon);
       void _CollectTriangle(DelaunayTriangle* pTri);
@@ -153,6 +173,7 @@ namespace math
       void _UpdateMinError();
       void _LineTraversal(DelaunayTriangle* pTri);
       void _SuperSimplexTraversal(DelaunayTriangle* pTri);
+      void _MiddleTraversal(DelaunayTriangle* pTri);
 
       DelaunayTriangle*  _pStartTriangle;
 

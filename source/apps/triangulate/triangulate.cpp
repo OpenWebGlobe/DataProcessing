@@ -30,10 +30,110 @@
 #include <sstream>
 #include <fstream>
 #include <ctime>
+#include <algorithm>
 #include <omp.h>
 
 namespace triangulate
 {
+
+   //---------------------------------------------------------------------------
+
+   inline void EliminateCloseToCorner(double x0, double y0, double x1, double y1, std::vector<ElevationPoint>& PointList, const double epsilon)
+   {
+      std::vector<ElevationPoint>::iterator it = PointList.begin();
+
+      bool advance = true;
+
+      while (it!= PointList.end())
+      {
+         double dx0 = fabs(x0 - (*it).x);
+         double dy0 = fabs(y0 - (*it).y);
+         double dx1 = fabs(x1 - (*it).x);
+         double dy1 = fabs(y1 - (*it).y);
+
+         if (dx0 < epsilon || dy0 < epsilon || dx1 < epsilon || dy1 < epsilon)
+         {
+
+            it = PointList.erase(it);
+         }
+         else
+         {
+            it++;
+         }
+      }
+   }
+
+   //-----------------------------------------------------------------------------
+   // for performance reasons this only works on a sorted list!
+   inline void EliminateDoubleEntriesX(std::vector<ElevationPoint>& PointList, const double epsilon)
+   {
+      std::vector<ElevationPoint>::iterator it = PointList.begin();
+
+      bool advance = true;
+      ElevationPoint current;
+
+      while (it!= PointList.end())
+      {
+         if (advance)
+         {
+            current = *it;
+            advance = false;
+            it++;
+         }
+
+         if (it!= PointList.end())
+         {
+            double dx = fabs((*it).x - current.x);
+
+            if (dx < epsilon)
+            {
+               it = PointList.erase(it);
+            }
+            else
+            {
+               advance = true;
+            }
+         }
+      }
+   }
+
+
+   // for performance reasons this only works on a sorted list!
+   inline void EliminateDoubleEntriesY(std::vector<ElevationPoint>& PointList, const double epsilon)
+   {
+      std::vector<ElevationPoint>::iterator it = PointList.begin();
+
+      bool advance = true;
+      ElevationPoint current;
+
+      while (it!= PointList.end())
+      {
+         if (advance)
+         {
+            current = *it;
+            advance = false;
+            it++;
+         }
+
+         if (it!= PointList.end())
+         {
+            double dy = fabs((*it).y - current.y);
+
+            if (dy < epsilon)
+            {
+               it = PointList.erase(it);
+            }
+            else
+            {
+               advance = true;
+            }
+         }
+      }
+   }
+
+   //---------------------------------------------------------------------------
+
+
    int process(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose)
    {
       // Retrieve ElevationLayerSettings:
@@ -157,6 +257,7 @@ namespace triangulate
 
             int cnt = 0;
             math::DelaunayTriangulation oTriangulation(xx0,yy0,xx1,yy1);
+            math::DelaunayTriangulation oFinalTriangulation(xx0,yy0,xx1,yy1);
             for (size_t i=0;i<vecPts.size();i++)
             {
               if (vecPts[i].x > xx0 && vecPts[i].x < xx1 &&
@@ -166,17 +267,19 @@ namespace triangulate
                      cnt++;
                   }
             }
-            
-            oTriangulation.InsertLine(x0,y0,x1,y0);
-            oTriangulation.InsertLine(x1,y0,x1,y1);
-            oTriangulation.InsertLine(x1,y1,x0,y1);
-            oTriangulation.InsertLine(x0,y1,x0,y0);
-            oTriangulation.InvalidateVertices(x0,y0,x1,y1); // invalidate vertices outside this border!
 
+            ElevationPoint NW, NE, SE, SW;
+            std::vector<ElevationPoint> vNorth;
+            std::vector<ElevationPoint> vEast;
+            std::vector<ElevationPoint> vSouth;
+            std::vector<ElevationPoint> vWest;
+            std::vector<ElevationPoint> vMiddle;
+            oTriangulation.IntersectRect(x0,y0,x1,y1, NW, NE, SE, SW, vNorth, vEast, vSouth, vWest, vMiddle);
+            
             std::string str = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
 
-            std::string sObjTileFile = ProcessingUtils::GetTilePath(sTileDir, ".obj" , lod, xx, yy);
-            //std::string sObjTileFile = sTileDir + "/" + sCurrentQuadcode + ".obj";
+            //std::string sObjTileFile = ProcessingUtils::GetTilePath(sTileDir, ".obj" , lod, xx, yy);
+            std::string sObjTileFile = sTileDir + "/" + sCurrentQuadcode + ".obj";
             std::ofstream fout(sObjTileFile);
             fout << str;
             fout.close();
