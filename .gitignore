@@ -13,4 +13,5 @@
 /bin/resample
 /bin/resample_mpi
 /bin/resample_mpi_homogenous
+/bin/triangulate
 /bin/libOpenWebGlobeProcessing.a
