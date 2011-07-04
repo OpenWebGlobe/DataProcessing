@@ -16,7 +16,8 @@ all: \
 	../../bin/createlayer \
 	../../bin/deploy \
 	../../bin/resample \
-	../../bin/resample_mpi_homogenous
+	../../bin/resample_mpi_homogenous \
+	../../bin/triangulate
 
 ../../bin/adddata: \
 	../../source/apps/adddata/main.cpp \
@@ -59,14 +60,22 @@ all: \
 	../../bin/libOpenWebGlobeProcessing.a
 	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
 
+../../bin/triangulate: \
+	../../source/apps/triangulate/main.cpp \
+	../../bin/triangulate.o \
+	../../bin/libOpenWebGlobeProcessing.a
+	g++ -o $@ $(CFLAGS) $< ../../bin/triangulate.o $(LIBS)
+
 ../../bin/libOpenWebGlobeProcessing.a: \
 	../../bin/Logger.o \
 	../../bin/ProcessingSettings.o \
 	../../bin/CoordinateTransformation.o \
 	../../bin/ElevationLayerSettings.o \
 	../../bin/ElevationReader.o \
+	../../bin/ElevationTile.o \
 	../../bin/ImageLayerSettings.o \
 	../../bin/MercatorQuadtree.o \
+	../../bin/ProcessStatus.o \
 	../../bin/ImageHandler.o \
 	../../bin/ImageLoader.o \
 	../../bin/ImageWriter.o \
@@ -110,7 +119,13 @@ all: \
 ../../bin/ElevationReader.o: ../../source/core/geo/ElevationReader.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/ElevationTile.o: ../../source/core/geo/ElevationTile.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/ImageLayerSettings.o: ../../source/core/geo/ImageLayerSettings.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ProcessStatus.o: ../../source/core/geo/ProcessStatus.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/MercatorQuadtree.o: ../../source/core/geo/MercatorQuadtree.cpp
@@ -203,6 +218,9 @@ all: \
 ../../bin/deploy.o: ../../source/apps/deploy/deploy.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/triangulate.o: ../../source/apps/triangulate/triangulate.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 clean:
 	rm -f ../../bin/*.o
 	rm -f ../../bin/libOpenWebGlobeProcessing.a
@@ -213,3 +231,4 @@ clean:
 	rm -f ../../bin/resample
 	rm -f ../../bin/resample_mpi
 	rm -f ../../bin/resample_mpi_homogenous
+	rm -f ../../bin/triangulate
