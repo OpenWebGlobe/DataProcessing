@@ -16,21 +16,22 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _ERRORS_H
-#define _ERRORS_H
+#ifndef _TRIANGULATE_H
+#define _TRIANGULATE_H
+
+#include "og.h"
+#include "math/mathutils.h"
+#include "app/Logger.h"
+#include "app/ProcessingSettings.h"
+#include "ogprocess.h"
+#include "errors.h"
+#include <string>
 
 
-// App Specific:
-#define ERROR_GDAL               2     // gdal-data directory not found
-#define ERROR_CONFIG             3     // wrong configuration (setup.xml) (processing path or log-path is wrong)
-#define ERROR_PARAMS             4     // wrong parameters
-#define ERROR_IMAGELAYERSETTINGS 5     // can't load imagelayersettings. (image layer probably doesn't exist)
-#define ERROR_ELVLAYERSETTINGS   6     // can't load elevsation layer settings
-#define ERROR_LOADELEVATION      10    // can't load elevation
-#define ERROR_FILE               11    // file error (process status file)
+namespace triangulate
+{
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose);
+}
 
-// General Errors:
-#define ERROR_OUTOFMEMORY        101;  // not enough memory
 
 #endif
-

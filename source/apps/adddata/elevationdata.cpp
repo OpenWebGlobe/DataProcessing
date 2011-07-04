@@ -23,7 +23,6 @@
 #include "geo/MercatorQuadtree.h"
 #include "image/ImageLoader.h"
 #include "image/ImageWriter.h"
-#include "math/delaunay/DelaunayTriangulation.h"
 #include "math/ElevationPoint.h"
 #include "geo/ElevationReader.h"
 #include <sstream>
@@ -41,7 +40,7 @@ namespace ElevationData
 
    //---------------------------------------------------------------------------
 
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, int epsg, std::string sElevationFile, bool bFill )
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, int epsg, std::string sElevationFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1)
    {
       DataSetInfo oInfo;
 
@@ -59,7 +58,7 @@ namespace ElevationData
       std::ostringstream oss;
 
       std::string sElevationLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
-      std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sElevationLayerDir) + "tiles");
+      std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sElevationLayerDir) + "temp/tiles");
 
       boost::shared_ptr<ElevationLayerSettings> qElevationLayerSettings = ElevationLayerSettings::Load(sElevationLayerDir);
       if (!qElevationLayerSettings)
@@ -70,6 +69,7 @@ namespace ElevationData
       }
 
       int lod = qElevationLayerSettings->GetMaxLod();
+      out_lod = lod;
       int64 layerTileX0, layerTileY0, layerTileX1, layerTileY1;
       qElevationLayerSettings->GetTileExtent(layerTileX0, layerTileY0, layerTileX1, layerTileY1);
 
@@ -151,6 +151,11 @@ namespace ElevationData
       elvTileX1 = math::Min<int64>(elvTileX1, layerTileX1);
       elvTileY1 = math::Min<int64>(elvTileY1, layerTileY1);
 
+      out_x0 = elvTileX0;
+      out_y0 = elvTileY0;
+      out_x1 = elvTileX1;
+      out_y1 = elvTileY1;
+
       // total number of tiles affected by this dataset:
       int64 total = (elvTileX1-elvTileX0+1)*(elvTileY1-elvTileY0+1);
       int tilewidth_i = int(elvTileX1-elvTileX0+1);
@@ -185,8 +190,8 @@ namespace ElevationData
 
       double width_merc = fabs(x1 - x0);
       double height_merc = fabs(y1 - y0);
-      tilewidth = width_merc / tilewidth;
-      tileheight =  height_merc / tileheight;
+      tilewidth = width_merc / (tilewidth);
+      tileheight =  height_merc / (tileheight);
 
       int max_threads = omp_get_max_threads();
 
@@ -209,7 +214,9 @@ namespace ElevationData
       }
 
       // parallel sorting points:
-#     pragma omp parallel for      
+#ifndef _DEBUG
+#     pragma omp parallel for
+#endif
       for (int i=0;i<(int)vPoints.size();i++)
       {
          // calculate tile coordinate of current point:
@@ -218,7 +225,8 @@ namespace ElevationData
          int64 tty = int64((vPoints[i].y - y0) / tileheight);
          int64 tileX = ttx+elvTileX0;
          int64 tileY = tty+elvTileY0;
-         
+
+
 
          if (tileX >= elvTileX0 && tileX<=elvTileX1 &&
              tileY >= elvTileY0 &&  tileY<=elvTileY1)
@@ -229,73 +237,65 @@ namespace ElevationData
          }
       }
 
-      // write tiles:
+      // write tiles
+#ifndef _DEBUG
+#     pragma omp parallel for
+#endif
       for (int64 xx = elvTileX0; xx <= elvTileX1; ++xx)
       {
          for (int64 yy = elvTileY0; yy <= elvTileY1; ++yy)
          {
             int64 ttx = xx - elvTileX0;
-            int64 tty = yy - elvTileY0;
+            int64 tty = elvTileY1 - yy;
 
             std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
             std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, xx, yy);
-           
-            for (int i=0;i<max_threads;i++)
+
+            double px0,py0,px1,py1;
+            qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0, py1, px1, py0);
+
+            // LOCK this tile. If this tile is currently locked then wait until the lock is removed.
+            int lockhandle = FileSystem::Lock(sTilefile);
+
+            std::ofstream fout;
+
+            if (FileSystem::FileExists(sTilefile))
             {
-                SElevationCell& s = matrix[i*total + tty*tilewidth_i+ttx];
-                // #todo: add points from s.vecPts to file
+               fout.open(sTilefile.c_str(), std::ios::binary | std::ios::app); // open in append mode
             }
+            else
+            {
+               fout.open(sTilefile.c_str(), std::ios::binary); // open in append mode
+            }
+
+            if (fout.good())
+            {
+               for (int i=0;i<max_threads;i++)
+               {
+                   SElevationCell& s = matrix[i*total + tty*tilewidth_i+ttx];
+                   // #todo: add points from s.vecPts to file
+
+                   for (size_t k=0;k<s.vecPts.size();k++)
+                   {
+                        ElevationPoint* pt = s.vecPts[k];
+                        fout.write((const char*)&(pt->x), sizeof(double));
+                        fout.write((const char*)&(pt->y), sizeof(double));
+                        fout.write((const char*)&(pt->elevation), sizeof(double));
+                        fout.write((const char*)&(pt->weight), sizeof(double));
+                   }
+               }
+
+               fout.close();
+            }
+            else
+            {
+               std::cout << "FILE ERROR!\n";
+            }
+
+            // unlock file. Other computers/processes/threads can access it again.
+            FileSystem::Unlock(sTilefile, lockhandle);
          }
       }
-
-
-/*#     pragma omp parallel for      
-      for (int64 xx = elvTileX0; xx <= elvTileX1; ++xx)
-      {
-         for (int64 yy = elvTileY0; yy <= elvTileY1; ++yy)
-         {
-            std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
-            std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".obj" , lod, xx, yy);
-            
-            double x0, y0, x1, y1;
-            qQuadtree->QuadKeyToMercatorCoord(sQuadcode, x0, y1, x1, y0);
-            double len = y1-y0;
-
-            double xx0 = x0-0.10*len;
-            double xx1 = x1+0.10*len;
-            double yy0 = y0-0.10*len;
-            double yy1 = y1+0.10*len;
-
-            math::DelaunayTriangulation oTriangulation(x0-2.0*len, y0-2.0*len, x1+2.0*len, y1+2.0*len);
-
-            int cnt=0;
-            for (size_t i=0;i<vPoints.size();i++)
-            {
-               if (vPoints[i].x > xx0 && vPoints[i].x < xx1 &&
-                   vPoints[i].y > yy0 && vPoints[i].y < yy1)
-                {
-                  oTriangulation.InsertPoint(vPoints[i]);
-                  cnt++;
-                }
-            }
-
-             oTriangulation.Reduce(cnt/2); // thin out 50%
-
-            // cut!
-            oTriangulation.InsertLine(x0,y0,x1,y0);
-            oTriangulation.InsertLine(x1,y0,x1,y1);
-            oTriangulation.InsertLine(x1,y1,x0,y1);
-            oTriangulation.InsertLine(x0,y1,x0,y0);
-            oTriangulation.InvalidateVertices(x0,y0,x1,y1);
-
-            std::string str = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
-            std::ofstream fout(sTilefile);
-            fout << str;
-            fout.close();
-          
-         }
-      }  
-*/
 
       // finished, print stats:
       t1=clock();

@@ -35,7 +35,7 @@ namespace ImageData
    const double dWanc = 1.0/(double(tilesize)-1.0);
    //------------------------------------------------------------------------------
 
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, int epsg, std::string sImagefile, bool bFill ) 
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, int epsg, std::string sImagefile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1) 
    {
       DataSetInfo oInfo;
 
@@ -61,6 +61,7 @@ namespace ImageData
       }
 
       int lod = qImageLayerSettings->GetMaxLod();
+      out_lod = lod;
       int64 layerTileX0, layerTileY0, layerTileX1, layerTileY1;
       qImageLayerSettings->GetTileExtent(layerTileX0, layerTileY0, layerTileX1, layerTileY1);
 
@@ -130,6 +131,11 @@ namespace ImageData
       imageTileY0 = math::Max<int64>(imageTileY0, layerTileY0);
       imageTileX1 = math::Min<int64>(imageTileX1, layerTileX1);
       imageTileY1 = math::Min<int64>(imageTileY1, layerTileY1);
+
+      out_x0 = imageTileX0;
+      out_y0 = imageTileY0;
+      out_x1 = imageTileX1;
+      out_y1 = imageTileY1;
 
       // Load image 
       boost::shared_array<unsigned char> vImage = ProcessingUtils::ImageToMemoryRGB(oInfo);

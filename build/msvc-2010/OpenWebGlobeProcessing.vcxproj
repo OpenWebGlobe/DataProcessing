@@ -16,8 +16,10 @@
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp" />
     <ClCompile Include="..\..\source\core\geo\ElevationLayerSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\ElevationReader.cpp" />
+    <ClCompile Include="..\..\source\core\geo\ElevationTile.cpp" />
     <ClCompile Include="..\..\source\core\geo\ImageLayerSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp" />
+    <ClCompile Include="..\..\source\core\geo\ProcessStatus.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageHandler.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageLoader.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageWriter.cpp" />
@@ -65,8 +67,10 @@
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h" />
     <ClInclude Include="..\..\source\core\geo\ElevationLayerSettings.h" />
     <ClInclude Include="..\..\source\core\geo\ElevationReader.h" />
+    <ClInclude Include="..\..\source\core\geo\ElevationTile.h" />
     <ClInclude Include="..\..\source\core\geo\ImageLayerSettings.h" />
     <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h" />
+    <ClInclude Include="..\..\source\core\geo\ProcessStatus.h" />
     <ClInclude Include="..\..\source\core\image\ImageHandler.h" />
     <ClInclude Include="..\..\source\core\image\ImageLoader.h" />
     <ClInclude Include="..\..\source\core\image\ImageWriter.h" />

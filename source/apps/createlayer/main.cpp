@@ -45,7 +45,7 @@
 int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std::string& processpath);
 int _createimagelayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
 int _createelevationlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
-int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod); 
+int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod, bool bTemp); 
 
 
 //-----------------------------------------------------------------------------
@@ -300,7 +300,7 @@ int _createimagelayer(const std::string& sLayerName, const std::string& sLayerPa
       return ERROR_WRITE_PERMISSION;
    }
 
-   return _createDirectories(sLayerPath, qLogger, vecExtent, nLod);
+   return _createDirectories(sLayerPath, qLogger, vecExtent, nLod, false);
 }
 
 //------------------------------------------------------------------------------
@@ -326,22 +326,31 @@ int _createelevationlayer(const std::string& sLayerName, const std::string& sLay
       return ERROR_WRITE_PERMISSION;
    }
 
-   return _createDirectories(sLayerPath, qLogger, vecExtent, nLod);
+   return _createDirectories(sLayerPath, qLogger, vecExtent, nLod, true);
 
 }
 
 //------------------------------------------------------------------------------
 
-int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod) 
+int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod, bool bTemp) 
 {
    // Create Quadtree (default constructor represents WebMercator: EPSG 3857)
    boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
    if (!qQuadtree) {return ERROR_OUTOFMEMORY;}
 
    // now iterate through all tiles and create required subdirectories
-
    std::string targetdir = FilenameUtils::DelimitPath(sLayerPath);
    std::string tiledir = FilenameUtils::DelimitPath(targetdir + "tiles");
+   std::string temptiledir;
+  
+   if (bTemp)
+   {
+      temptiledir = FilenameUtils::DelimitPath(targetdir + "temp");
+      FileSystem::makedir(temptiledir);
+      temptiledir = FilenameUtils::DelimitPath(temptiledir + "tiles");
+      FileSystem::makedir(temptiledir);
+   }
+
    FileSystem::makedir(tiledir);
    std::string quadcode;
    std::string newfile;
@@ -375,14 +384,28 @@ int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger>
 
       FileSystem::makedir(oss1.str());
 
+      if (bTemp)
+      {
+         std::ostringstream oss1_tmp;
+         oss1_tmp << temptiledir << nLevelOfDetail;
+         FileSystem::makedir(oss1_tmp.str());
+      }
+
       // Creating directories in parallel speeds up the whole thing!
 
-#        pragma omp parallel for
+#     pragma omp parallel for
       for (int64 x=tx0;x<=tx1;x+=1)
       {
          std::ostringstream oss2;
          oss2 << tiledir << nLevelOfDetail << "/" << x;
          FileSystem::makedir(oss2.str());
+
+         if (bTemp)
+         {
+            std::ostringstream oss2_tmp;
+            oss2_tmp << temptiledir << nLevelOfDetail << "/" << x;
+            FileSystem::makedir(oss2_tmp.str());
+         }
       }
    }
 

@@ -32,6 +32,7 @@
 #include "image/ImageWriter.h"
 #include "app/Logger.h"
 #include "math/mathutils.h"
+#include "geo/ProcessStatus.h"
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <sstream>
@@ -60,8 +61,6 @@ int main(int argc, char *argv[])
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "verbose output")
        ;
-
-   // #todo: image -> vector<std::string> : allow multiple images per application
 
    po::variables_map vm;
 
@@ -198,15 +197,129 @@ int main(int argc, char *argv[])
    int epsg = atoi(sSRS.c_str()+5);
 
    //---------------------------------------------------------------------------
+   // CREATE / UPDATE PROCESS STATUS
+   //---------------------------------------------------------------------------
+
+   std::string sProcessStatusFile = qSettings->GetPath() + "/" + sLayer + "/ProcessStatus.xml";
+   boost::shared_ptr<ProcessStatus> qProcessStatus;
+
+   // update process status (exclusive lock)
+   int lockid = FileSystem::Lock(sProcessStatusFile);
+
+   if (FileSystem::FileExists(sProcessStatusFile))
+   {
+      qProcessStatus = ProcessStatus::Load(sProcessStatusFile);
+      // file already exists -> load it!
+      if (!qProcessStatus)
+      {
+         qLogger->Error("Failed opening process status file\n");
+         FileSystem::Unlock(sProcessStatusFile, lockid);
+         return ERROR_FILE;
+      }
+   }
+   else  
+   {
+      // create new Process Status file!
+      qProcessStatus = boost::shared_ptr<ProcessStatus>(new ProcessStatus);
+      qProcessStatus->SetLayerName(sLayer);
+   }
+
+   ProcessElement* pElement = qProcessStatus->GetElement(sFile);
+
+   if (pElement)
+   {
+      if (pElement->IsFinished())
+      {
+         // this file was already processed! Do not process again!
+         qLogger->Warn("This file has already been added to the dataset. Ignoring it.\n");
+         FileSystem::Unlock(sProcessStatusFile, lockid);
+         return 0;
+      }
+      if (pElement->IsProcessing())
+      {
+         qLogger->Error("This file is currently being processed by another instance. Ignoring it.\n");
+         FileSystem::Unlock(sProcessStatusFile, lockid);
+         return 0;
+      }
+
+      // Element exists, but creation failed or didn't complete
+      // Set Start Time again.
+      pElement->SetStatusMessage("reprocessing");
+      pElement->SetStartTime(); // update start time
+   }
+   else
+   {
+      ProcessElement newElement;
+      newElement.SetFilename(sFile);
+      newElement.SetStartTime();
+      newElement.SetStatusMessage("processing");
+      newElement.Processing();
+      qProcessStatus->AddElement(newElement);
+   }
+
+   qProcessStatus->Save(sProcessStatusFile);
+
+   FileSystem::Unlock(sProcessStatusFile, lockid);
+
+
+   //---------------------------------------------------------------------------
+   int retval = 0;
+   int lod = 0;
+   int64 x0 = 0, y0 = 0, x1 = 0, y1 = 0;
 
    if (eLayer == IMAGE_LAYER) 
    {
-      return ImageData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill);
+      retval = ImageData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
    else if (eLayer == ELEVATION_LAYER)
    {
-      return ElevationData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill);
+      retval = ElevationData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
+
+   //---------------------------------------------------------------------------
+   // UPDATE PROCESS STATUS
+   //---------------------------------------------------------------------------
+
+   // Update Process XML (exclusive lock)
+   lockid = FileSystem::Lock(sProcessStatusFile);
+
+   qProcessStatus = ProcessStatus::Load(sProcessStatusFile);
+   if (!qProcessStatus)
+   {
+      qLogger->Error("Failed opening process status file (for updating).\n");
+      FileSystem::Unlock(sProcessStatusFile, lockid);
+      return ERROR_FILE;
+   }
+
+   pElement = qProcessStatus->GetElement(sFile);
+   if (!pElement)
+   {
+      qLogger->Error("Can't find element in process status file.\n");
+      FileSystem::Unlock(sProcessStatusFile, lockid);
+      return ERROR_FILE;
+   }
+
+   pElement->SetFinishTime();
+
+   if (retval == 0)
+   {
+      pElement->SetStatusMessage("success");
+      pElement->SetLod(lod);
+      pElement->SetExtent(x0,y0,x1,y1);
+      pElement->MarkFinished();
+      pElement->FinishedProcessing();
+   }
+   else
+   {
+      pElement->SetStatusMessage("failed");
+      pElement->MarkFailed();
+   }
+
+   qProcessStatus->Save(sProcessStatusFile);
+
+   FileSystem::Unlock(sProcessStatusFile, lockid);
+
+   return retval;
 }
 
 
