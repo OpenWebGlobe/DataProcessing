@@ -14,13 +14,17 @@ all: \
 	../../bin/adddata \
 	../../bin/calcextent \
 	../../bin/createlayer \
+	../../bin/deploy \
 	../../bin/resample \
-	../../bin/resample_mpi_homogenous
+	../../bin/resample_mpi_homogenous \
+	../../bin/triangulate
 
 ../../bin/adddata: \
 	../../source/apps/adddata/main.cpp \
+	../../bin/elevationdata.o \
+	../../bin/imagedata.o \
 	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< $(LIBS)
+	g++ -o $@ $(CFLAGS) $< ../../bin/elevationdata.o ../../bin/imagedata.o $(LIBS)
 
 ../../bin/calcextent: \
 	../../source/apps/calcextent/main.cpp \
@@ -31,6 +35,12 @@ all: \
 	../../source/apps/createlayer/main.cpp \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< $(LIBS)
+
+../../bin/deploy: \
+	../../source/apps/deploy/main.cpp \
+	../../bin/deploy.o \
+	../../bin/libOpenWebGlobeProcessing.a
+	g++ -o $@ $(CFLAGS) $< ../../bin/deploy.o $(LIBS)
 
 ../../bin/resample: \
 	../../source/apps/resample/main.cpp \
@@ -50,24 +60,44 @@ all: \
 	../../bin/libOpenWebGlobeProcessing.a
 	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
 
+../../bin/triangulate: \
+	../../source/apps/triangulate/main.cpp \
+	../../bin/triangulate.o \
+	../../bin/libOpenWebGlobeProcessing.a
+	g++ -o $@ $(CFLAGS) $< ../../bin/triangulate.o $(LIBS)
+
 ../../bin/libOpenWebGlobeProcessing.a: \
 	../../bin/Logger.o \
 	../../bin/ProcessingSettings.o \
 	../../bin/CoordinateTransformation.o \
 	../../bin/ElevationLayerSettings.o \
+	../../bin/ElevationReader.o \
+	../../bin/ElevationTile.o \
 	../../bin/ImageLayerSettings.o \
 	../../bin/MercatorQuadtree.o \
+	../../bin/ProcessStatus.o \
 	../../bin/ImageHandler.o \
 	../../bin/ImageLoader.o \
 	../../bin/ImageWriter.o \
+	../../bin/JPEGHandler.o \
 	../../bin/CommonPath.o \
 	../../bin/FileSystem.o \
+	../../bin/TarWriter.o \
 	../../bin/ogprocess.o \
+	../../bin/DelaunayLocationStructure.o \
+	../../bin/DelaunayMemoryManager.o \
+	../../bin/DelaunayTriangle.o \
+	../../bin/DelaunayTriangulation.o \
+	../../bin/DelaunayVertex.o \
+	../../bin/Predicates.o \
+	../../bin/ElevationPoint.o \
 	../../bin/vec3.o \
 	../../bin/ConvertUTF.o \
 	../../bin/ConvertUTF.o \
 	../../bin/FilenameUtils.o \
 	../../bin/StringUtils.o \
+	../../bin/Timer.o \
+	../../bin/Utils.o \
 	../../bin/BaseTypeConversion.o \
 	../../bin/ClassExport.o \
 	../../bin/PropertyBase.o \
@@ -86,7 +116,16 @@ all: \
 ../../bin/ElevationLayerSettings.o: ../../source/core/geo/ElevationLayerSettings.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/ElevationReader.o: ../../source/core/geo/ElevationReader.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ElevationTile.o: ../../source/core/geo/ElevationTile.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/ImageLayerSettings.o: ../../source/core/geo/ImageLayerSettings.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ProcessStatus.o: ../../source/core/geo/ProcessStatus.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/MercatorQuadtree.o: ../../source/core/geo/MercatorQuadtree.cpp
@@ -101,13 +140,40 @@ all: \
 ../../bin/ImageWriter.o: ../../source/core/image/ImageWriter.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/JPEGHandler.o: ../../source/core/image/JPEGHandler.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/CommonPath.o: ../../source/core/io/CommonPath.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/FileSystem.o: ../../source/core/io/FileSystem.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/TarWriter.o: ../../source/core/io/TarWriter.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/ogprocess.o: ../../source/core/ogprocess.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/DelaunayLocationStructure.o: ../../source/core/math/delaunay/DelaunayLocationStructure.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/DelaunayMemoryManager.o: ../../source/core/math/delaunay/DelaunayMemoryManager.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/DelaunayTriangle.o: ../../source/core/math/delaunay/DelaunayTriangle.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/DelaunayTriangulation.o: ../../source/core/math/delaunay/DelaunayTriangulation.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/DelaunayVertex.o: ../../source/core/math/delaunay/DelaunayVertex.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/Predicates.o: ../../source/core/math/delaunay/Predicates.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/ElevationPoint.o: ../../source/core/math/ElevationPoint.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/vec3.o: ../../source/core/math/vec3.cpp
@@ -122,6 +188,12 @@ all: \
 ../../bin/StringUtils.o: ../../source/core/string/StringUtils.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/Timer.o: ../../source/core/system/Timer.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/Utils.o: ../../source/core/system/Utils.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/BaseTypeConversion.o: ../../source/core/xml/BaseTypeConversion.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
@@ -134,7 +206,19 @@ all: \
 ../../bin/Tokenizer.o: ../../source/core/xml/Tokenizer.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/elevationdata.o: ../../source/apps/adddata/elevationdata.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/imagedata.o: ../../source/apps/adddata/imagedata.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/resample.o: ../../source/apps/resample/resample.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/deploy.o: ../../source/apps/deploy/deploy.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/triangulate.o: ../../source/apps/triangulate/triangulate.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 clean:
@@ -143,3 +227,8 @@ clean:
 	rm -f ../../bin/adddata
 	rm -f ../../bin/calcextent
 	rm -f ../../bin/createlayer
+	rm -f ../../bin/deploy
+	rm -f ../../bin/resample
+	rm -f ../../bin/resample_mpi
+	rm -f ../../bin/resample_mpi_homogenous
+	rm -f ../../bin/triangulate

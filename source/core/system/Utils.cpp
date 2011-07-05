@@ -55,7 +55,7 @@ std::string SystemUtils::ComputerName()
    {
       char cComputerName[255]; 
       gethostname(cComputerName, 255);
-      result = cComputerName;
+      std::string result(cComputerName);
       return result;
    }
 

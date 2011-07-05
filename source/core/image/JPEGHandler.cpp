@@ -16,8 +16,9 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#include "JpegHandler.h"
+#include "JPEGHandler.h"
 #include <iostream>
+#include <cstring>
 
 extern "C" 
 { 

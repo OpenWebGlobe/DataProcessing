@@ -280,7 +280,7 @@ namespace triangulate
 
             //std::string sObjTileFile = ProcessingUtils::GetTilePath(sTileDir, ".obj" , lod, xx, yy);
             std::string sObjTileFile = sTileDir + "/" + sCurrentQuadcode + ".obj";
-            std::ofstream fout(sObjTileFile);
+            std::ofstream fout(sObjTileFile.c_str());
             fout << str;
             fout.close();
 

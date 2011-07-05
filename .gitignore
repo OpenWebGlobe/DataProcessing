@@ -9,4 +9,9 @@
 /bin/adddata
 /bin/calcextent
 /bin/createlayer
+/bin/deploy
+/bin/resample
+/bin/resample_mpi
+/bin/resample_mpi_homogenous
+/bin/triangulate
 /bin/libOpenWebGlobeProcessing.a
