@@ -1700,6 +1700,9 @@ namespace math
       _x1 = x1;
       _y1 = y1;
 
+       // Reset All Vertices to 0
+      _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_ResetVertexId, this, _1));
+
       _qLocationStructure->Traverse(boost::bind(&DelaunayTriangulation::_MiddleTraversal, this, _1));
 
       vMiddle.clear();
@@ -1770,28 +1773,40 @@ namespace math
       DelaunayVertex* pVertex1 = pTri->GetVertex(1);
       DelaunayVertex* pVertex2 = pTri->GetVertex(2);
 
-      if (  pVertex0->x() > _x0 &&
-         pVertex0->x() < _x1 &&
-         pVertex0->y() > _y0 &&
-         pVertex0->y() < _y1)
+      if (pVertex0->GetId() == -1)
       {
-         _vecEdgePoints.push_back(pVertex0->GetElevationPoint());
+         pVertex0->SetId(1);
+         if (  pVertex0->x() > _x0 &&
+            pVertex0->x() < _x1 &&
+            pVertex0->y() > _y0 &&
+            pVertex0->y() < _y1)
+         {
+            _vecEdgePoints.push_back(pVertex0->GetElevationPoint());
+         }
       }
 
-      if (  pVertex1->x() > _x0 &&
-         pVertex1->x() < _x1 &&
-         pVertex1->y() > _y0 &&
-         pVertex1->y() < _y1)
+      if (pVertex1->GetId() == -1)
       {
-         _vecEdgePoints.push_back(pVertex1->GetElevationPoint());
+         pVertex1->SetId(1);
+         if (  pVertex1->x() > _x0 &&
+            pVertex1->x() < _x1 &&
+            pVertex1->y() > _y0 &&
+            pVertex1->y() < _y1)
+         {
+            _vecEdgePoints.push_back(pVertex1->GetElevationPoint());
+         }
       }
 
-      if (  pVertex2->x() > _x0 &&
-         pVertex2->x() < _x1 &&
-         pVertex2->y() > _y0 &&
-         pVertex2->y() < _y1)
+      if (pVertex2->GetId() == -1)
       {
-         _vecEdgePoints.push_back(pVertex2->GetElevationPoint());
+         pVertex2->SetId(1);
+         if (  pVertex2->x() > _x0 &&
+            pVertex2->x() < _x1 &&
+            pVertex2->y() > _y0 &&
+            pVertex2->y() < _y1)
+         {
+            _vecEdgePoints.push_back(pVertex2->GetElevationPoint());
+         }
       }
    }
 
