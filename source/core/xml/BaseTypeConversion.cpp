@@ -565,7 +565,7 @@ std::string StringVectorToXML(void* pAddress, std::string sTag)
    {
       std::string s = *it;
       os << s.c_str();
-      if (cnt!=pData->size()-1) os << ";\n";
+      if (cnt!=pData->size()-1) os << ";";
       it++;
       cnt++;
    }
