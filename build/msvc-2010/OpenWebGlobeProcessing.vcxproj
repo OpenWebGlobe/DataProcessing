@@ -34,6 +34,7 @@
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayVertex.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\Predicates.cpp" />
     <ClCompile Include="..\..\source\core\math\ElevationPoint.cpp" />
+    <ClCompile Include="..\..\source\core\math\GeoCoord.cpp" />
     <ClCompile Include="..\..\source\core\math\vec3.cpp" />
     <ClCompile Include="..\..\source\core\ogprocess.cpp" />
     <ClCompile Include="..\..\source\core\string\ConvertUTF.cpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="..\..\source\core\math\delaunay\Predicates.h" />
     <ClInclude Include="..\..\source\core\math\ElevationPoint.h" />
     <ClInclude Include="..\..\source\core\math\ElevationPointUtils.h" />
+    <ClInclude Include="..\..\source\core\math\GeoCoord.h" />
     <ClInclude Include="..\..\source\core\math\mathutils.h" />
     <ClInclude Include="..\..\source\core\math\vec2.h" />
     <ClInclude Include="..\..\source\core\math\vec3.h" />

@@ -26,6 +26,7 @@
 #include "math/ElevationPoint.h"
 #include "math/delaunay/DelaunayTriangulation.h"
 #include "geo/ElevationReader.h"
+#include "geo/ElevationTile.h"
 #include "errors.h"
 #include <sstream>
 #include <fstream>
@@ -133,8 +134,7 @@ namespace triangulate
 
    //---------------------------------------------------------------------------
 
-
-   int process(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose)
+   int process(boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, int nMaxPoints, std::string sLayer, bool bVerbose)
    {
       // Retrieve ElevationLayerSettings:
       std::ostringstream oss;
@@ -198,7 +198,9 @@ namespace triangulate
          oss.str("");
       }
 
+#ifndef _DEBUG
 #     pragma omp parallel for
+#endif
       for (int64 xx = layerTileX0+1; xx < layerTileX1; ++xx)
       {
          for (int64 yy = layerTileY0+1; yy < layerTileY1; ++yy)
@@ -275,15 +277,28 @@ namespace triangulate
             std::vector<ElevationPoint> vWest;
             std::vector<ElevationPoint> vMiddle;
             oTriangulation.IntersectRect(x0,y0,x1,y1, NW, NE, SE, SW, vNorth, vEast, vSouth, vWest, vMiddle);
-            
-            std::string str = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
 
-            //std::string sObjTileFile = ProcessingUtils::GetTilePath(sTileDir, ".obj" , lod, xx, yy);
-            std::string sObjTileFile = sTileDir + "/" + sCurrentQuadcode + ".obj";
-            std::ofstream fout(sObjTileFile.c_str());
-            fout << str;
+            ElevationTile oElevationTile(sCurrentQuadcode, x0,y0,x1,y1);
+            oElevationTile.Setup(NW, NE, SE, SW, vNorth, vEast, vSouth, vWest, vMiddle);
+
+            // Thin out tile if there are too many points:
+            oElevationTile.Reduce(nMaxPoints);
+
+            std::string datastr;
+            std::string sFilename;
+
+            // if (outputformat == JSON)
+            datastr = oElevationTile.CreateJSON();
+            sFilename = ProcessingUtils::GetTilePath(sTileDir, ".json" , lod, xx, yy);
+
+            // if (outputformat == OBJ) [internal testing only]
+            // datastr = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
+            // sFilename = sTileDir + "/" + sCurrentQuadcode + ".obj";
+
+            // write output tile
+            std::ofstream fout(sFilename.c_str());
+            fout << datastr;
             fout.close();
-
          }
       }
 

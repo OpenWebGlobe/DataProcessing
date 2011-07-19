@@ -47,7 +47,8 @@ int main(int argc, char *argv[])
    desc.add_options()
       ("layer", po::value<std::string>(), "name of layer to add the data")
       ("triangulate", "triangulate dataset")
-      ("grid", "create grid")
+      ("maxpoints", po::value<int>(), "[optional] max number of points per tile. Default is 512.")
+      ("grid", "create grid [currently unsupported, do not use!]")
       ("numthreads", po::value<int>(), "force number of threads")
       ("verbose", "verbose output")
       ;
@@ -55,6 +56,7 @@ int main(int argc, char *argv[])
    po::variables_map vm;
 
    bool bError = false;
+   
 
    try
    {
@@ -70,6 +72,7 @@ int main(int argc, char *argv[])
    bool bTriangulate = false;
    bool bGrid = false;
    bool bVerbose = false;
+   int nMaxpoints = 512; // default: max 512 points per tile (including corners and edges)
 
    //---------------------------------------------------------------------------
    // init options:
@@ -106,6 +109,19 @@ int main(int argc, char *argv[])
    if (vm.count("triangulate"))
    {
       bTriangulate = true;
+   }
+
+   if (vm.count("maxpoints"))
+   {
+      int v = vm["maxpoints"].as<int>();
+      if (v>32 && v<2048) // please note: the ideal number is between 300 and 1000. The default value of 512 shouldn't be changed in most cases..
+      {
+         std::ostringstream oss; 
+         oss << "changing maxpoints to " << v;
+         qLogger->Info(oss.str());
+
+         nMaxpoints = v;
+      }
    }
 
    if (vm.count("grid"))
@@ -156,7 +172,7 @@ int main(int argc, char *argv[])
 
    if (bTriangulate)
    {
-      triangulate::process(qLogger, qSettings, sLayer, bVerbose);
+      triangulate::process(qLogger, qSettings, nMaxpoints, sLayer, bVerbose);
    }
    else if (bGrid)
    {

@@ -30,7 +30,7 @@
 
 namespace triangulate
 {
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose);
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, int nMaxPoints, std::string sLayer, bool bVerbose);
 }
 
 
