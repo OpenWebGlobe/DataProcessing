@@ -273,7 +273,6 @@ namespace ElevationData
                for (int i=0;i<max_threads;i++)
                {
                    SElevationCell& s = matrix[i*total + tty*tilewidth_i+ttx];
-                   // #todo: add points from s.vecPts to file
 
                    for (size_t k=0;k<s.vecPts.size();k++)
                    {
