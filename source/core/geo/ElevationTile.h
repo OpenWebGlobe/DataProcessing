@@ -58,6 +58,12 @@ public:
    // create JSON tile:
    std::string CreateJSON();
 
+   // write tile binary
+   void WriteBinary(const std::string& sTempfilename);
+
+   // read tile binary
+   void ReadBinary(const std::string& sTimefilename);
+
    boost::shared_ptr<math::DelaunayTriangulation> CreateTriangulation();
 
 protected:

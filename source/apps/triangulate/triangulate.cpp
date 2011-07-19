@@ -286,10 +286,15 @@ namespace triangulate
 
             std::string datastr;
             std::string sFilename;
+            std::string sTempfilename; // for resampling info
 
             // if (outputformat == JSON)
             datastr = oElevationTile.CreateJSON();
             sFilename = ProcessingUtils::GetTilePath(sTileDir, ".json" , lod, xx, yy);
+
+            // for binary data (resampling)
+            sTempfilename = ProcessingUtils::GetTilePath(sTempTileDir, ".tri", lod, xx, yy);
+            //oElevationTile->WriteBinary(sTempfilename);
 
             // if (outputformat == OBJ) [internal testing only]
             // datastr = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);

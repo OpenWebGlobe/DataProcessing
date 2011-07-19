@@ -748,4 +748,14 @@ void ElevationTile::_CreateCurtain(double curtainelv, ElevationPoint& start, Ele
 //------------------------------------------------------------------------------
 
 
+void ElevationTile::WriteBinary(const std::string& sTempfilename)
+{
+   // #todo
+}
+
+void ElevationTile::ReadBinary(const std::string& sTimefilename)
+{
+   // #todo
+}
+
 
