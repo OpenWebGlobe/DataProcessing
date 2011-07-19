@@ -462,7 +462,10 @@ void ElevationTile::_Classify(std::vector<ElevationPoint>& pts)
       {
          if (pts[i].x>_x0+eps && pts[i].y>_y0+eps && pts[i].x<_x1-eps && pts[i].y<_y1-eps)
          {
-            _ptsMiddle.push_back(pts[i]);
+            if (pts[i].weight>=0) // a previous edge point must be ignored (e.g. resampling)
+            {
+               _ptsMiddle.push_back(pts[i]);
+            }
          } 
       }
    }
@@ -723,8 +726,8 @@ void ElevationTile::_CreateCurtain(double curtainelv, ElevationPoint& start, Ele
 
 }
 
-
 //------------------------------------------------------------------------------
+
 /*
    EliminateCloseToCorner(_x0, DBL_EPSILON, _x1, DBL_EPSILON, _ptsNorth, fabs(_x1-_x0)/80.0);
    EliminateCloseToCorner(_x0, DBL_EPSILON, _x1, DBL_EPSILON, _ptsSouth, fabs(_x1-_x0)/80.0);
@@ -747,15 +750,18 @@ void ElevationTile::_CreateCurtain(double curtainelv, ElevationPoint& start, Ele
 */
 //------------------------------------------------------------------------------
 
-
 void ElevationTile::WriteBinary(const std::string& sTempfilename)
 {
    // #todo
 }
 
+//------------------------------------------------------------------------------
+
 void ElevationTile::ReadBinary(const std::string& sTimefilename)
 {
    // #todo
 }
+
+//------------------------------------------------------------------------------
 
 
