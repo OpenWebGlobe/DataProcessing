@@ -34,6 +34,9 @@
 #include <algorithm>
 #include <omp.h>
 
+// uncomment to generate .obj instead of JSON (in temp directory)
+#define GENERATE_JSON
+
 namespace triangulate
 {
 
@@ -278,7 +281,7 @@ namespace triangulate
             std::vector<ElevationPoint> vMiddle;
             oTriangulation.IntersectRect(x0,y0,x1,y1, NW, NE, SE, SW, vNorth, vEast, vSouth, vWest, vMiddle);
 
-            ElevationTile oElevationTile(sCurrentQuadcode, x0,y0,x1,y1);
+            ElevationTile oElevationTile(x0,y0,x1,y1); // elevation tile for "sCurrentQuadcode"
             oElevationTile.Setup(NW, NE, SE, SW, vNorth, vEast, vSouth, vWest, vMiddle);
 
             // Thin out tile if there are too many points:
@@ -288,17 +291,19 @@ namespace triangulate
             std::string sFilename;
             std::string sTempfilename; // for resampling info
 
-            // if (outputformat == JSON)
+#ifdef GENERATE_JSON
+            //if (outputformat == JSON)
             datastr = oElevationTile.CreateJSON();
             sFilename = ProcessingUtils::GetTilePath(sTileDir, ".json" , lod, xx, yy);
+#else
+            //if (outputformat == OBJ) [internal testing only]
+            datastr = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
+            sFilename = sTempTileDir + sCurrentQuadcode + ".obj";
+#endif
 
             // for binary data (resampling)
             sTempfilename = ProcessingUtils::GetTilePath(sTempTileDir, ".tri", lod, xx, yy);
-            //oElevationTile->WriteBinary(sTempfilename);
-
-            // if (outputformat == OBJ) [internal testing only]
-            // datastr = oTriangulation.CreateOBJ(xmin, ymin, xmax, ymax);
-            // sFilename = sTileDir + "/" + sCurrentQuadcode + ".obj";
+            oElevationTile.WriteBinary(sTempfilename);
 
             // write output tile
             std::ofstream fout(sFilename.c_str());

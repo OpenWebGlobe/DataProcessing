@@ -32,7 +32,7 @@
 class OPENGLOBE_API ElevationTile
 {
 public:
-   ElevationTile(const std::string& sQuadcode, double x0, double y0, double x1, double y1);
+   ElevationTile(double x0, double y0, double x1, double y1);
    virtual ~ElevationTile();
 
    // Setup from catagorized data
@@ -58,11 +58,11 @@ public:
    // create JSON tile:
    std::string CreateJSON();
 
-   // write tile binary
-   void WriteBinary(const std::string& sTempfilename);
+   // write tile binary, returns true on success
+   bool WriteBinary(const std::string& sTempfilename);
 
-   // read tile binary
-   void ReadBinary(const std::string& sTimefilename);
+   // read tile binary, returns true on success
+   bool ReadBinary(const std::string& sTimefilename);
 
    boost::shared_ptr<math::DelaunayTriangulation> CreateTriangulation();
 
@@ -79,7 +79,6 @@ protected:
    std::vector<ElevationPoint>   _ptsSouth; 
    std::vector<ElevationPoint>   _ptsWest;
    std::vector<ElevationPoint>   _ptsMiddle;
-   std::string                   _sQuadcode;
    double                        _x0, _y0, _x1, _y1;
    bool                          _bCategorized;
 

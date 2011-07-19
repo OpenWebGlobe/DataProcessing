@@ -21,6 +21,7 @@
 #include "geo/CoordinateTransformation.h"
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 //------------------------------------------------------------------------------
 
@@ -121,7 +122,7 @@ inline void EliminateDoubleEntriesY(std::vector<ElevationPoint>& PointList, cons
 
 //------------------------------------------------------------------------------
 
-ElevationTile::ElevationTile(const std::string& sQuadcode, double x0, double y0, double x1, double y1)
+ElevationTile::ElevationTile(double x0, double y0, double x1, double y1)
 {
    _bCategorized = false;
    _x0 = x0;
@@ -750,16 +751,180 @@ void ElevationTile::_CreateCurtain(double curtainelv, ElevationPoint& start, Ele
 */
 //------------------------------------------------------------------------------
 
-void ElevationTile::WriteBinary(const std::string& sTempfilename)
+inline void _writeElevationPoint(std::ostream& streamout, ElevationPoint& pt)
 {
-   // #todo
+   // note: this is is a temporary file, no need to worry about endian or size of double...
+   streamout.write((char*)&pt.x, sizeof(double));
+   streamout.write((char*)&pt.y, sizeof(double));
+   streamout.write((char*)&pt.elevation, sizeof(double));
+   streamout.write((char*)&pt.weight, sizeof(double));
+   // [note: pt.error can be ignored when saving, assume it to be 0 when read]
 }
 
 //------------------------------------------------------------------------------
 
-void ElevationTile::ReadBinary(const std::string& sTimefilename)
+inline void _readElevationPoint(std::istream& streamin, ElevationPoint& pt)
 {
-   // #todo
+   streamin.read((char*)&pt.x, sizeof(double));
+   streamin.read((char*)&pt.y, sizeof(double));
+   streamin.read((char*)&pt.elevation, sizeof(double));
+   streamin.read((char*)&pt.weight, sizeof(double));
+   pt.error = 0;
+}
+
+//------------------------------------------------------------------------------
+//#todo: add some error checking...
+bool ElevationTile::WriteBinary(const std::string& sTempfilename)
+{
+   // note: no exclusive lock required for this ("thread safe" during processing)
+
+   std::ofstream elvtile;
+
+   elvtile.open(sTempfilename.c_str(), std::ios::binary);
+
+   if (elvtile.good())
+   {
+      int n;
+      // [0] write 2D boundary
+      elvtile.write((char*)&_x0, sizeof(double));
+      elvtile.write((char*)&_y0, sizeof(double));
+      elvtile.write((char*)&_x1, sizeof(double));
+      elvtile.write((char*)&_y1, sizeof(double));
+
+      // [1] write CORNER POINTS
+      _writeElevationPoint(elvtile, _NW);
+      _writeElevationPoint(elvtile, _NE);
+      _writeElevationPoint(elvtile, _SE);
+      _writeElevationPoint(elvtile, _SW);
+
+      // [2] write NORTH-EDGE-POINTS
+      n = (int)_ptsNorth.size();
+      elvtile.write((char*)&n, sizeof(int));
+      for (int i=0;i<n;i++)
+      {
+         _writeElevationPoint(elvtile, _ptsNorth[i]);
+      }
+
+      // [3] write EAST-EDGE-POINTS
+      n = (int)_ptsEast.size();
+      elvtile.write((char*)&n, sizeof(int));
+      for (int i=0;i<n;i++)
+      {
+         _writeElevationPoint(elvtile, _ptsEast[i]);
+      }
+
+      // [4] write SOUTH-EDGE-POINTS
+      n = (int)_ptsSouth.size();
+      elvtile.write((char*)&n, sizeof(int));
+      for (int i=0;i<n;i++)
+      {
+         _writeElevationPoint(elvtile, _ptsSouth[i]);
+      }
+
+      // [5] write WEST-EDGE-POINTS
+      n = (int)_ptsWest.size();
+      elvtile.write((char*)&n, sizeof(int));
+      for (int i=0;i<n;i++)
+      {
+         _writeElevationPoint(elvtile, _ptsWest[i]);
+      }
+
+      // [6] write MIDDLE-POINTS
+      n = (int)_ptsMiddle.size();
+      elvtile.write((char*)&n, sizeof(int));
+      for (int i=0;i<n;i++)
+      {
+         _writeElevationPoint(elvtile, _ptsMiddle[i]);
+      }
+   }
+   else
+   {
+      return false;
+   }
+
+   elvtile.close();
+
+   return true;
+
+}
+
+//------------------------------------------------------------------------------
+//#todo: add some error checking...
+bool ElevationTile::ReadBinary(const std::string& sTimefilename)
+{
+   std::ifstream elvtile;
+   _ptsNorth.clear();
+   _ptsSouth.clear();
+   _ptsWest.clear();
+   _ptsEast.clear();
+   _ptsMiddle.clear();
+   _bCategorized = false;
+
+   elvtile.open(sTimefilename.c_str(), std::ios::binary);
+
+   if (elvtile.good())
+   {
+      int n;
+      ElevationPoint pt;
+      // [0] read 2D boundary
+      elvtile.read((char*)&_x0, sizeof(double));
+      elvtile.read((char*)&_y0, sizeof(double));
+      elvtile.read((char*)&_x1, sizeof(double));
+      elvtile.read((char*)&_y1, sizeof(double));
+
+      // [1] read CORNER POINTS
+      _readElevationPoint(elvtile, _NW);
+      _readElevationPoint(elvtile, _NE);
+      _readElevationPoint(elvtile, _SE);
+      _readElevationPoint(elvtile, _SW);
+
+      // [2] read NORTH-EDGE-POINTS
+      elvtile.read((char*)&n, sizeof(int));
+      for (int i=0;i<n;i++)
+      {
+         _readElevationPoint(elvtile, pt);
+         _ptsNorth.push_back(pt);
+      }
+
+       // [3] read EAST-EDGE-POINTS
+      elvtile.read((char*)&n, sizeof(int));
+      for (int i=0;i<n;i++)
+      {
+         _readElevationPoint(elvtile, pt);
+         _ptsEast.push_back(pt);
+      }
+
+       // [4] read SOUTH-EDGE-POINTS
+      elvtile.read((char*)&n, sizeof(int));
+      for (int i=0;i<n;i++)
+      {
+         _readElevationPoint(elvtile, pt);
+         _ptsSouth.push_back(pt);
+      }
+
+      // [5] read WEST-EDGE-POINTS
+      elvtile.read((char*)&n, sizeof(int));
+      for (int i=0;i<n;i++)
+      {
+         _readElevationPoint(elvtile, pt);
+         _ptsWest.push_back(pt);
+      }
+
+      // [6] read MIDDLE-POINTS
+      elvtile.read((char*)&n, sizeof(int));
+      for (int i=0;i<n;i++)
+      {
+         _readElevationPoint(elvtile, pt);
+         _ptsMiddle.push_back(pt);
+      }
+   }
+   else
+   {
+      return false;
+   }
+
+   _bCategorized = true;
+   return true;
 }
 
 //------------------------------------------------------------------------------
