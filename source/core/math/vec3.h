@@ -20,6 +20,7 @@
 #define A_VEC3_H
 
 #include "og.h"
+#include "math/vec2.h"
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -44,12 +45,6 @@
 #define AGE_GRAD_PI  (180.0 / AGEPI);
 #define AGE_GRAD_PI2 (AGEPI / 180.0)
 
-//-----------------------------------------------------------------------------
-
-template<typename T>
-class Math {
-   static const T ZERO_TOLERANCE;
-};
 
 //-----------------------------------------------------------------------------
 
@@ -664,9 +659,5 @@ inline vec3<T> abs(const vec3<T> &a)
 #define cross_flt          cross<float>
 #define normalize_flt      normalize_ret<float>
 #define length_flt         length<float>
-
-
-
-//}
 
 #endif
