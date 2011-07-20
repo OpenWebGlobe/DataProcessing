@@ -524,19 +524,19 @@ void ElevationTile::_PrecomputeTriangulation(bool bCurtain)
    qTriangulation->GetPointVec(lstElevationPoint);
    qTriangulation->GetTriangleIndices(_lstIndices);
 
-   double TexCoordOffsetX = _NW.x;
-   double TexCoordOffsetY = _NW.y;
-   double TexCoordDX = fabs(_NE.x - _NW.x);
-   double TexCoordDY = fabs(_SW.y - _NW.y);
+   double TexCoordOffsetX = _SW.x;
+   double TexCoordOffsetY = _SW.y;
+   double TexCoordDX = fabs(_SE.x - _SW.x);
+   double TexCoordDY = fabs(_NW.y - _SW.y);
 
    // Virtual Camera Offset (STORE)
 
    //**********************************************************
    // Calc virtual camera offset:
    //**********************************************************
-   _vOffset.x = _NW.x /*+ TexCoordDX/2.0*/;
-   _vOffset.y = _NW.y /*+ TexCoordDY/2.0*/;
-   _vOffset.z = _NW.elevation;
+   _vOffset.x = _SW.x /*+ TexCoordDX/2.0*/;
+   _vOffset.y = _SW.y /*+ TexCoordDY/2.0*/;
+   _vOffset.z = _SW.elevation;
 
    Mercator::ReverseCustom(_vOffset.x, _vOffset.y, lng, lat, 0.0);
    oGeoCoord.SetLatitude(lat);
@@ -610,25 +610,25 @@ void ElevationTile::_PrecomputeTriangulation(bool bCurtain)
       int idxB = _lstElevationPointWGS84.size()+1;
       int idxC = _lstElevationPointWGS84.size()+2;
       int idxD = _lstElevationPointWGS84.size()+3;
-      _CreateCurtain(curtainelv, _SW, _SE, _ptsNorth, idxA, idxB, idxC, idxD);
+      _CreateCurtain(curtainelv, _NW, _NE, _ptsNorth, idxA, idxB, idxC, idxD);
       
       idxA = _lstElevationPointWGS84.size()+0;
       idxB = _lstElevationPointWGS84.size()+1;
       idxC = _lstElevationPointWGS84.size()+2;
       idxD = _lstElevationPointWGS84.size()+3;
-      _CreateCurtain(curtainelv, _NE, _SE, _ptsEast, idxA, idxB, idxC, idxD);
+      _CreateCurtain(curtainelv, _SE, _NE, _ptsEast, idxA, idxB, idxC, idxD);
 
       idxA = _lstElevationPointWGS84.size()+0;
       idxB = _lstElevationPointWGS84.size()+1;
       idxC = _lstElevationPointWGS84.size()+2;
       idxD = _lstElevationPointWGS84.size()+3;
-      _CreateCurtain(curtainelv, _NW, _NE, _ptsSouth, idxA, idxB, idxC, idxD);
+      _CreateCurtain(curtainelv, _SW, _SE, _ptsSouth, idxA, idxB, idxC, idxD);
 
       idxA = _lstElevationPointWGS84.size()+0;
       idxB = _lstElevationPointWGS84.size()+1;
       idxC = _lstElevationPointWGS84.size()+2;
       idxD = _lstElevationPointWGS84.size()+3;
-      _CreateCurtain(curtainelv, _NW, _SW, _ptsWest, idxA, idxB, idxC, idxD);
+      _CreateCurtain(curtainelv, _SW, _NW, _ptsWest, idxA, idxB, idxC, idxD);
    
 
    }
@@ -639,10 +639,10 @@ void ElevationTile::_PrecomputeTriangulation(bool bCurtain)
 
 void ElevationTile::_CreateCurtain(double curtainelv, ElevationPoint& start, ElevationPoint& end, std::vector<ElevationPoint>& between,  int& idxA, int& idxB, int& idxC, int& idxD)
 {
-   double TexCoordOffsetX = _NW.x;
-   double TexCoordOffsetY = _NW.y;
-   double TexCoordDX = fabs(_NE.x - _NW.x);
-   double TexCoordDY = fabs(_SW.y - _NW.y);
+   double TexCoordOffsetX = _SW.x;
+   double TexCoordOffsetY = _SW.y;
+   double TexCoordDX = fabs(_SE.x - _SW.x);
+   double TexCoordDY = fabs(_NW.y - _SW.y);
 
 
    std::vector< ElevationPoint > input;
