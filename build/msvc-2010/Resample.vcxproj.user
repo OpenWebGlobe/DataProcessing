@@ -3,11 +3,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--layer LayerName --verbose</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer DHM25 --verbose --type elevation --maxpoints 180</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--layer LayerName --verbose</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer DHM25 --verbose --type elevation --maxpoints 180</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

@@ -107,6 +107,8 @@ int main(int argc, char *argv[])
    int maxlod;
    clock_t t0,t1;
    bool bVerbose = false;
+   int layertype = 0; // 0: image, 1: elevation
+   int nMaxpoints = 512;
 
    //---------------------------------------------------------------------------
    // MPI Init
@@ -128,7 +130,9 @@ int main(int argc, char *argv[])
       t0 = clock();
       po::options_description desc("Program-Options");
       desc.add_options()
-         ("layer", po::value<std::string>(), "image layer to resample")
+         ("layer", po::value<std::string>(), "layer to resample")
+         ("type", po::value<std::string>(), "[optional] image (default) or elevation.")
+         ("maxpoints", po::value<int>(), "[optional] for elevation layer: max number of points per tile. Default is 512.")
          ("numthreads", po::value<int>(), "force number of threads (for each compute node)")
          ("verbose", "optional info")
          ;
@@ -149,7 +153,7 @@ int main(int argc, char *argv[])
       // --------------------------------------------------------------------------
       std::string sLayer;
       bool bError = false;
-
+      
       try
       {
          po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -181,6 +185,33 @@ int main(int argc, char *argv[])
          {
             std::cout << "Forcing number of threads to " << n << " per node\n";
             omp_set_num_threads(n);
+         }
+      }
+
+      if (vm.count("type"))
+      {
+         std::string sType = vm["type"].as<std::string>();
+
+         if (sType == "elevation")
+         {
+            layertype = 1;
+         }
+         else if (sType == "image")
+         {
+            layertype = 0;
+         }
+         else
+         {
+            bError = true;
+         }
+      }
+
+      if (vm.count("maxpoints"))
+      {
+         int v = vm["maxpoints"].as<int>();
+         if (v>32 && v<2048)
+         {
+            nMaxpoints = v;
          }
       }
 
@@ -224,66 +255,78 @@ int main(int argc, char *argv[])
    BroadcastInt64(tx1, 0);
    BroadcastInt64(ty1, 0);
    BroadcastInt(maxlod, 0);
+   BroadcastInt(layertype, 0);
+   BroadcastInt(nMaxpoints, 0);
    BroadcastBool(bVerbose, 0);
 
-   g_pTileBlockArray = _createTileBlockArray();
 
-   q_qQuadtree= boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
-   std::string qc0 = q_qQuadtree->TileCoordToQuadkey(tx0, ty0, maxlod);
-   std::string qc1 = q_qQuadtree->TileCoordToQuadkey(tx1, ty1, maxlod);
-
-   for (int nLevelOfDetail = maxlod - 1; nLevelOfDetail>0; nLevelOfDetail--)
+   if (layertype == 0) // image layer
    {
-      g_Lod = nLevelOfDetail;
+      g_pTileBlockArray = _createTileBlockArray();
 
-      if (bVerbose && rank == 0)
+      q_qQuadtree= boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
+      std::string qc0 = q_qQuadtree->TileCoordToQuadkey(tx0, ty0, maxlod);
+      std::string qc1 = q_qQuadtree->TileCoordToQuadkey(tx1, ty1, maxlod);
+
+      for (int nLevelOfDetail = maxlod - 1; nLevelOfDetail>0; nLevelOfDetail--)
       {
-         std::cout << "[LOD] starting processing lod " << nLevelOfDetail << "\n" << std::flush;
-      }
+         g_Lod = nLevelOfDetail;
 
-      qc0 = StringUtils::Left(qc0, nLevelOfDetail);
-      qc1 = StringUtils::Left(qc1, nLevelOfDetail);
-
-      int tmp_lod;
-      q_qQuadtree->QuadKeyToTileCoord(qc0, tx0, ty0, tmp_lod);
-      q_qQuadtree->QuadKeyToTileCoord(qc1, tx1, ty1, tmp_lod);
-
-      if (bVerbose && rank == 0)
-      {
-        std::cout << "[RANGE]: [" << tx0 << ", " << ty0 << "]-[" << tx1 << ", " << ty1 << "]\n" << std::flush;
-      }
-
-      // Create Jobs
-      if (rank == 0)
-      {
-         // create workstack: contains all work which will be distributed.
-         Job work;
-         
-         for (int64 y=ty0;y<=ty1;y++)
+         if (bVerbose && rank == 0)
          {
-            for (int64 x=tx0;x<=tx1;x++)
+            std::cout << "[LOD] starting processing lod " << nLevelOfDetail << "\n" << std::flush;
+         }
+
+         qc0 = StringUtils::Left(qc0, nLevelOfDetail);
+         qc1 = StringUtils::Left(qc1, nLevelOfDetail);
+
+         int tmp_lod;
+         q_qQuadtree->QuadKeyToTileCoord(qc0, tx0, ty0, tmp_lod);
+         q_qQuadtree->QuadKeyToTileCoord(qc1, tx1, ty1, tmp_lod);
+
+         if (bVerbose && rank == 0)
+         {
+           std::cout << "[RANGE]: [" << tx0 << ", " << ty0 << "]-[" << tx1 << ", " << ty1 << "]\n" << std::flush;
+         }
+
+         // Create Jobs
+         if (rank == 0)
+         {
+            // create workstack: contains all work which will be distributed.
+            Job work;
+         
+            for (int64 y=ty0;y<=ty1;y++)
             {
-               work.sx = x; work.sy = y;
-               jobmgr.AddJob(work);
+               for (int64 x=tx0;x<=tx1;x++)
+               {
+                  work.sx = x; work.sy = y;
+                  jobmgr.AddJob(work);
+               }
             }
          }
+
+         jobmgr.Process(jobCallback, bVerbose);
       }
 
-      jobmgr.Process(jobCallback, bVerbose);
+      MPI_Finalize();
+
+      // clean up
+      _destroyTileBlockArray(g_pTileBlockArray);
+
+      std::cout << std::flush;
+
+      // output calculation time
+      if (rank == 0)
+      {
+         t1=clock();
+         std::cout << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
+      }
+
    }
-
-   MPI_Finalize();
-
-   // clean up
-   _destroyTileBlockArray(g_pTileBlockArray);
-
-   std::cout << std::flush;
-
-   // output calculation time
-   if (rank == 0)
+   else if (layertype == 1) // elevation
    {
-      t1=clock();
-      std::cout << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
+      assert(false); // MPI based elevation processing is not yet working
+      return 1;
    }
 
    return 0;

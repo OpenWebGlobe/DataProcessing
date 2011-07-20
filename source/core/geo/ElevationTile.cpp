@@ -129,6 +129,28 @@ ElevationTile::ElevationTile(double x0, double y0, double x1, double y1)
    _y0 = y0;
    _x1 = x1;
    _y1 = y1;
+
+   // Create Empty Corners:
+   _NW.x = x0;
+   _NW.y = y1;
+   _NW.elevation = 0;
+   _NW.weight = -3;
+
+   _NE.x = x1;
+   _NE.y = y1;
+   _NE.elevation = 0;
+   _NE.weight = -3;
+
+   _SE.x = x1;
+   _SE.y = y0;
+   _SE.elevation = 0;
+   _SE.weight = -3;
+   
+   _SW.x = x0;
+   _SW.y = y0;
+   _SW.elevation = 0;
+   _SW.weight = -3;
+
 }
 
 //------------------------------------------------------------------------------
@@ -928,5 +950,89 @@ bool ElevationTile::ReadBinary(const std::string& sTimefilename)
 }
 
 //------------------------------------------------------------------------------
+//  NW           NE
+//   +-----+-----+
+//   |  t  |  t  |
+//   |  0  |  1  |
+//   +-----+-----+
+//   |  t  |  t  |
+//   |  2  |  3  |
+//   +-----+-----+
+//  SW           SE
+//
 
+void ElevationTile::CreateFromParent(ElevationTile& t0, ElevationTile& t1, ElevationTile& t2, ElevationTile& t3)
+{
+   _ptsNorth.clear();
+   _ptsSouth.clear();
+   _ptsWest.clear();
+   _ptsEast.clear();
+   _ptsMiddle.clear();
+
+   _NW = t0._NW;
+   _NE = t1._NE;
+   _SW = t2._SW;
+   _SE = t3._SE;
+
+   // copy "middle points"
+   for (size_t i=0;i<t0._ptsMiddle.size();i++)
+   {
+      _ptsMiddle.push_back(t0._ptsMiddle[i]);
+   }
+   for (size_t i=0;i<t1._ptsMiddle.size();i++)
+   {
+      _ptsMiddle.push_back(t1._ptsMiddle[i]);
+   }
+   for (size_t i=0;i<t2._ptsMiddle.size();i++)
+   {
+      _ptsMiddle.push_back(t2._ptsMiddle[i]);
+   }
+   for (size_t i=0;i<t3._ptsMiddle.size();i++)
+   {
+      _ptsMiddle.push_back(t3._ptsMiddle[i]);
+   }
+
+   // north = t0_north +  t1_north
+   for (size_t i=0;i<t0._ptsNorth.size();i++)
+   {
+      _ptsNorth.push_back(t0._ptsNorth[i]);
+   }
+   for (size_t i=0;i<t1._ptsNorth.size();i++)
+   {
+      _ptsNorth.push_back(t1._ptsNorth[i]);
+   }
+
+   // east = t1_east + t3_east
+   for (size_t i=0;i<t1._ptsEast.size();i++)
+   {
+      _ptsEast.push_back(t1._ptsEast[i]);
+   }
+   for (size_t i=0;i<t3._ptsEast.size();i++)
+   {
+      _ptsEast.push_back(t3._ptsEast[i]);
+   }
+
+   // south = t2_south + t3_south 
+   for (size_t i=0;i<t2._ptsSouth.size();i++)
+   {
+      _ptsSouth.push_back(t2._ptsSouth[i]);
+   }
+   for (size_t i=0;i<t3._ptsSouth.size();i++)
+   {
+      _ptsSouth.push_back(t3._ptsSouth[i]);
+   }
+
+   // west = t0_west + t2_west
+   for (size_t i=0;i<t0._ptsWest.size();i++)
+   {
+      _ptsWest.push_back(t0._ptsWest[i]);
+   }
+   for (size_t i=0;i<t2._ptsWest.size();i++)
+   {
+      _ptsWest.push_back(t2._ptsWest[i]);
+   }
+
+}
+
+//------------------------------------------------------------------------------
 

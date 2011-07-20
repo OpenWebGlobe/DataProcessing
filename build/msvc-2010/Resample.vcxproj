@@ -58,7 +58,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
-      <OpenMPSupport>true</OpenMPSupport>
+      <OpenMPSupport>false</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,9 +128,11 @@
   <ItemGroup>
     <ClCompile Include="..\..\source\apps\resample\main.cpp" />
     <ClCompile Include="..\..\source\apps\resample\resample.cpp" />
+    <ClCompile Include="..\..\source\apps\resample\resample_elevation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\apps\resample\resample.h" />
+    <ClInclude Include="..\..\source\apps\resample\resample_elevation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

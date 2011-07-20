@@ -1,7 +1,7 @@
 
 
-#ifndef _RESAMPLE_H
-#define _RESAMPLE_H
+#ifndef _RESAMPLE_IMAGE_H
+#define _RESAMPLE_IMAGE_H
 
 #include "ogprocess.h"
 #include "app/ProcessingSettings.h"
@@ -29,7 +29,7 @@
 const int tilesize = 256;
 //------------------------------------------------------------------------------
 
-// Holding/managing memory for a tile
+// Holding/managing memory for an image tile
 class TileBlock
 {
 public:

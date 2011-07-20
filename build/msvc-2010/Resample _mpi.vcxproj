@@ -126,9 +126,11 @@
   <ItemGroup>
     <ClCompile Include="..\..\source\apps\resample\main_mpi.cpp" />
     <ClCompile Include="..\..\source\apps\resample\resample.cpp" />
+    <ClCompile Include="..\..\source\apps\resample\resample_elevation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\apps\resample\resample.h" />
+    <ClInclude Include="..\..\source\apps\resample\resample_elevation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

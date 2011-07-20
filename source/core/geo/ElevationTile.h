@@ -66,6 +66,18 @@ public:
 
    boost::shared_ptr<math::DelaunayTriangulation> CreateTriangulation();
 
+   // Creating a new tile from 4 "parent" tiles in this layout
+   //
+   //   +-----+-----+
+   //   |  t  |  t  |
+   //   |  0  |  1  |
+   //   +-----+-----+
+   //   |  t  |  t  |
+   //   |  2  |  3  |
+   //   +-----+-----+
+   //
+   void CreateFromParent(ElevationTile& t0, ElevationTile& t1, ElevationTile& t2, ElevationTile& t3); 
+
 protected:
    void _Sort();
    void _Classify(std::vector<ElevationPoint>& pts);
