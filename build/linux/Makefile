@@ -44,14 +44,16 @@ all: \
 ../../bin/resample: \
 	../../source/apps/resample/main.cpp \
 	../../bin/resample.o \
+	../../bin/resample_elevation.o \
 	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
+	g++ -o $@ $(CFLAGS) $< ../../bin/resample.o ../../bin/resample_elevation.o $(LIBS)
 
 ../../bin/resample_mpi: \
 	../../source/apps/resample/main_mpi.cpp \
 	../../bin/resample.o \
+	../../bin/resample_elevation.o \
 	../../bin/libOpenWebGlobeProcessing.a
-	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
+	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o ../../bin/resample_elevation.o $(LIBS)
 
 ../../bin/triangulate: \
 	../../source/apps/triangulate/main.cpp \
@@ -84,6 +86,7 @@ all: \
 	../../bin/DelaunayVertex.o \
 	../../bin/Predicates.o \
 	../../bin/ElevationPoint.o \
+	../../bin/GeoCoord.o \
 	../../bin/vec3.o \
 	../../bin/ConvertUTF.o \
 	../../bin/ConvertUTF.o \
@@ -169,6 +172,9 @@ all: \
 ../../bin/ElevationPoint.o: ../../source/core/math/ElevationPoint.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/GeoCoord.o: ../../source/core/math/GeoCoord.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/vec3.o: ../../source/core/math/vec3.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
@@ -206,6 +212,9 @@ all: \
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/resample.o: ../../source/apps/resample/resample.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
+../../bin/resample_elevation.o: ../../source/apps/resample/resample_elevation.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
 ../../bin/deploy.o: ../../source/apps/deploy/deploy.cpp
