@@ -16,7 +16,6 @@ all: \
 	../../bin/createlayer \
 	../../bin/deploy \
 	../../bin/resample \
-	../../bin/resample_mpi_homogenous \
 	../../bin/triangulate
 
 ../../bin/adddata: \
@@ -50,12 +49,6 @@ all: \
 
 ../../bin/resample_mpi: \
 	../../source/apps/resample/main_mpi.cpp \
-	../../bin/resample.o \
-	../../bin/libOpenWebGlobeProcessing.a
-	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
-
-../../bin/resample_mpi_homogenous: \
-	../../source/apps/resample/main_mpi_homogenous.cpp \
 	../../bin/resample.o \
 	../../bin/libOpenWebGlobeProcessing.a
 	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
@@ -230,5 +223,4 @@ clean:
 	rm -f ../../bin/deploy
 	rm -f ../../bin/resample
 	rm -f ../../bin/resample_mpi
-	rm -f ../../bin/resample_mpi_homogenous
 	rm -f ../../bin/triangulate
