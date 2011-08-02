@@ -6,6 +6,7 @@ LIBS=\
      $(BOOST)/bin.v2/libs/date_time/build/gcc-4.4.3/release/link-static/threading-multi/libboost_date_time.a \
      $(BOOST)/bin.v2/libs/filesystem/build/gcc-4.4.3/release/link-static/threading-multi/libboost_filesystem.a \
      $(BOOST)/bin.v2/libs/program_options/build/gcc-4.4.3/release/link-static/threading-multi/libboost_program_options.a \
+     $(BOOST)/bin.v2/libs/thread/build/gcc-4.4.3/release/link-static/threading-multi/libboost_thread.a \
      $(BOOST)/bin.v2/libs/system/build/gcc-4.4.3/release/link-static/threading-multi/libboost_system.a \
      -lgdal1.7.0 \
      -lxerces-c
@@ -15,6 +16,7 @@ all: \
 	../../bin/calcextent \
 	../../bin/createlayer \
 	../../bin/deploy \
+	../../bin/locktest \
 	../../bin/resample \
 	../../bin/triangulate
 
@@ -40,6 +42,11 @@ all: \
 	../../bin/deploy.o \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< ../../bin/deploy.o $(LIBS)
+
+../../bin/locktest: \
+	../../source/apps/locktest/main.cpp \
+	../../bin/libOpenWebGlobeProcessing.a
+	g++ -o $@ $(CFLAGS) $< $(LIBS)
 
 ../../bin/resample: \
 	../../source/apps/resample/main.cpp \
@@ -230,6 +237,7 @@ clean:
 	rm -f ../../bin/calcextent
 	rm -f ../../bin/createlayer
 	rm -f ../../bin/deploy
+	rm -f ../../bin/locktest
 	rm -f ../../bin/resample
 	rm -f ../../bin/resample_mpi
 	rm -f ../../bin/triangulate
