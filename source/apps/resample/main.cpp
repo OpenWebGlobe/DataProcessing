@@ -283,4 +283,7 @@ int main(int argc, char *argv[])
       qLogger->Info(out.str());
    }
 
+
+   return 0;
+
 }
