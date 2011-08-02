@@ -12,43 +12,43 @@ LIBS=\
      -lxerces-c
 
 all: \
-	../../bin/adddata \
-	../../bin/calcextent \
-	../../bin/createlayer \
-	../../bin/deploy \
-	../../bin/locktest \
-	../../bin/resample \
-	../../bin/triangulate
+	../../bin/ogAddData \
+	../../bin/ogCalcExtent \
+	../../bin/ogCreateLayer \
+	../../bin/ogDeploy \
+	../../bin/ogFileLockTest \
+	../../bin/ogResample \
+	../../bin/ogTriangulate
 
-../../bin/adddata: \
+../../bin/ogAddData: \
 	../../source/apps/adddata/main.cpp \
 	../../bin/elevationdata.o \
 	../../bin/imagedata.o \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< ../../bin/elevationdata.o ../../bin/imagedata.o $(LIBS)
 
-../../bin/calcextent: \
+../../bin/ogCalcExtent: \
 	../../source/apps/calcextent/main.cpp \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< $(LIBS)
 
-../../bin/createlayer: \
+../../bin/ogCreateLayer: \
 	../../source/apps/createlayer/main.cpp \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< $(LIBS)
 
-../../bin/deploy: \
+../../bin/ogDeploy: \
 	../../source/apps/deploy/main.cpp \
 	../../bin/deploy.o \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< ../../bin/deploy.o $(LIBS)
 
-../../bin/locktest: \
+../../bin/ogFileLockTest: \
 	../../source/apps/locktest/main.cpp \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< $(LIBS)
 
-../../bin/resample: \
+../../bin/ogResample: \
 	../../source/apps/resample/main.cpp \
 	../../bin/resample.o \
 	../../bin/resample_elevation.o \
@@ -62,7 +62,7 @@ all: \
 	../../bin/libOpenWebGlobeProcessing.a
 	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o ../../bin/resample_elevation.o $(LIBS)
 
-../../bin/triangulate: \
+../../bin/ogTriangulate: \
 	../../source/apps/triangulate/main.cpp \
 	../../bin/triangulate.o \
 	../../bin/libOpenWebGlobeProcessing.a
@@ -233,11 +233,11 @@ all: \
 clean:
 	rm -f ../../bin/*.o
 	rm -f ../../bin/libOpenWebGlobeProcessing.a
-	rm -f ../../bin/adddata
-	rm -f ../../bin/calcextent
-	rm -f ../../bin/createlayer
-	rm -f ../../bin/deploy
-	rm -f ../../bin/locktest
-	rm -f ../../bin/resample
+	rm -f ../../bin/ogAddData
+	rm -f ../../bin/ogCalcExtent
+	rm -f ../../bin/ogCreateLayer
+	rm -f ../../bin/ogDeploy
+	rm -f ../../bin/ogFileLockTest
+	rm -f ../../bin/ogResample
 	rm -f ../../bin/resample_mpi
-	rm -f ../../bin/triangulate
+	rm -f ../../bin/ogTriangulate
