@@ -1,5 +1,5 @@
 BOOST=../../external/boost_1_46_1
-CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal
+CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal -O2
 # FIXME there are far too many hardcode paths in the line below
 LIBS=\
      -Wl,--whole-archive ../../bin/libOpenWebGlobeProcessing.a -Wl,--no-whole-archive \
