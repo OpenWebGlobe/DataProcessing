@@ -42,9 +42,11 @@ namespace ProcessingUtils
       }
       OGRRegisterAll();
 
+#ifdef OS_WINDOWS
       return has_data_dir;
-
+#else
       return true;
+#endif
    }
 
    //---------------------------------------------------------------------------
