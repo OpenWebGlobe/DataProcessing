@@ -371,15 +371,17 @@ int FileSystem::Lock(const std::string& file)
 
    int fd = -1;
    
+   fd = open (sLockFile.c_str(), open_flags, 660);
    while (fd == -1)
    {
-      fd = open (sLockFile.c_str(), open_flags, 660);
 
 #     ifdef OS_WINDOWS
          Sleep(1);
 #     else
          sleep(1);
 #     endif
+
+      fd = open (sLockFile.c_str(), open_flags, 660);
    }
 
    return fd;

@@ -1,66 +1,69 @@
 BOOST=../../external/boost_1_46_1
-CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal
+CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal -O2
+BOOST_COMPILER=gcc-4.4.3
 # FIXME there are far too many hardcode paths in the line below
 LIBS=\
      -Wl,--whole-archive ../../bin/libOpenWebGlobeProcessing.a -Wl,--no-whole-archive \
-     $(BOOST)/bin.v2/libs/date_time/build/gcc-4.4.3/release/link-static/threading-multi/libboost_date_time.a \
-     $(BOOST)/bin.v2/libs/filesystem/build/gcc-4.4.3/release/link-static/threading-multi/libboost_filesystem.a \
-     $(BOOST)/bin.v2/libs/program_options/build/gcc-4.4.3/release/link-static/threading-multi/libboost_program_options.a \
-     $(BOOST)/bin.v2/libs/system/build/gcc-4.4.3/release/link-static/threading-multi/libboost_system.a \
+     $(BOOST)/bin.v2/libs/date_time/build/$(BOOST_COMPILER)/release/link-static/threading-multi/libboost_date_time.a \
+     $(BOOST)/bin.v2/libs/filesystem/build/$(BOOST_COMPILER)/release/link-static/threading-multi/libboost_filesystem.a \
+     $(BOOST)/bin.v2/libs/program_options/build/$(BOOST_COMPILER)/release/link-static/threading-multi/libboost_program_options.a \
+     $(BOOST)/bin.v2/libs/thread/build/$(BOOST_COMPILER)/release/link-static/threading-multi/libboost_thread.a \
+     $(BOOST)/bin.v2/libs/system/build/$(BOOST_COMPILER)/release/link-static/threading-multi/libboost_system.a \
      -lgdal1.7.0 \
      -lxerces-c
 
 all: \
-	../../bin/adddata \
-	../../bin/calcextent \
-	../../bin/createlayer \
-	../../bin/deploy \
-	../../bin/resample \
-	../../bin/resample_mpi_homogenous \
-	../../bin/triangulate
+	../../bin/ogAddData \
+	../../bin/ogCalcExtent \
+	../../bin/ogCreateLayer \
+	../../bin/ogDeploy \
+	../../bin/ogFileLockTest \
+	../../bin/ogResample \
+	../../bin/ogTriangulate
 
-../../bin/adddata: \
+../../bin/ogAddData: \
 	../../source/apps/adddata/main.cpp \
 	../../bin/elevationdata.o \
 	../../bin/imagedata.o \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< ../../bin/elevationdata.o ../../bin/imagedata.o $(LIBS)
 
-../../bin/calcextent: \
+../../bin/ogCalcExtent: \
 	../../source/apps/calcextent/main.cpp \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< $(LIBS)
 
-../../bin/createlayer: \
+../../bin/ogCreateLayer: \
 	../../source/apps/createlayer/main.cpp \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< $(LIBS)
 
-../../bin/deploy: \
+../../bin/ogDeploy: \
 	../../source/apps/deploy/main.cpp \
 	../../bin/deploy.o \
 	../../bin/libOpenWebGlobeProcessing.a
 	g++ -o $@ $(CFLAGS) $< ../../bin/deploy.o $(LIBS)
 
-../../bin/resample: \
+../../bin/ogFileLockTest: \
+	../../source/apps/locktest/main.cpp \
+	../../bin/libOpenWebGlobeProcessing.a
+	g++ -o $@ $(CFLAGS) $< $(LIBS)
+
+../../bin/ogResample: \
 	../../source/apps/resample/main.cpp \
 	../../bin/resample.o \
+	../../bin/resample_elevation.o \
 	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
+	g++ -o $@ $(CFLAGS) $< ../../bin/resample.o ../../bin/resample_elevation.o $(LIBS)
 
 ../../bin/resample_mpi: \
 	../../source/apps/resample/main_mpi.cpp \
 	../../bin/resample.o \
+	../../bin/resample_elevation.o \
 	../../bin/libOpenWebGlobeProcessing.a
-	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
+	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o ../../bin/resample_elevation.o $(LIBS)
 
-../../bin/resample_mpi_homogenous: \
-	../../source/apps/resample/main_mpi_homogenous.cpp \
-	../../bin/resample.o \
-	../../bin/libOpenWebGlobeProcessing.a
-	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o $(LIBS)
-
-../../bin/triangulate: \
+../../bin/ogTriangulate: \
 	../../source/apps/triangulate/main.cpp \
 	../../bin/triangulate.o \
 	../../bin/libOpenWebGlobeProcessing.a
@@ -91,6 +94,7 @@ all: \
 	../../bin/DelaunayVertex.o \
 	../../bin/Predicates.o \
 	../../bin/ElevationPoint.o \
+	../../bin/GeoCoord.o \
 	../../bin/vec3.o \
 	../../bin/ConvertUTF.o \
 	../../bin/ConvertUTF.o \
@@ -176,6 +180,9 @@ all: \
 ../../bin/ElevationPoint.o: ../../source/core/math/ElevationPoint.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/GeoCoord.o: ../../source/core/math/GeoCoord.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/vec3.o: ../../source/core/math/vec3.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
@@ -215,6 +222,9 @@ all: \
 ../../bin/resample.o: ../../source/apps/resample/resample.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
+../../bin/resample_elevation.o: ../../source/apps/resample/resample_elevation.cpp
+	g++ -c -o $@ $(CFLAGS) $<
+
 ../../bin/deploy.o: ../../source/apps/deploy/deploy.cpp
 	g++ -c -o $@ $(CFLAGS) $<
 
@@ -224,11 +234,11 @@ all: \
 clean:
 	rm -f ../../bin/*.o
 	rm -f ../../bin/libOpenWebGlobeProcessing.a
-	rm -f ../../bin/adddata
-	rm -f ../../bin/calcextent
-	rm -f ../../bin/createlayer
-	rm -f ../../bin/deploy
-	rm -f ../../bin/resample
+	rm -f ../../bin/ogAddData
+	rm -f ../../bin/ogCalcExtent
+	rm -f ../../bin/ogCreateLayer
+	rm -f ../../bin/ogDeploy
+	rm -f ../../bin/ogFileLockTest
+	rm -f ../../bin/ogResample
 	rm -f ../../bin/resample_mpi
-	rm -f ../../bin/resample_mpi_homogenous
-	rm -f ../../bin/triangulate
+	rm -f ../../bin/ogTriangulate
