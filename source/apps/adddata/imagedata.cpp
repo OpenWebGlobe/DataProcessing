@@ -35,7 +35,7 @@ namespace ImageData
    const double dWanc = 1.0/(double(tilesize)-1.0);
    //------------------------------------------------------------------------------
 
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, int epsg, std::string sImagefile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1) 
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sImagefile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1)
    {
       DataSetInfo oInfo;
 
@@ -167,7 +167,7 @@ namespace ImageData
             //---------------------------------------------------------------------
             // LOCK this tile. If this tile is currently locked 
             //     -> wait until lock is removed.
-            int lockhandle = FileSystem::Lock(sTilefile);
+            int lockhandle = bLock ? FileSystem::Lock(sTilefile) : -1;
 
             //---------------------------------------------------------------------
             // if mode is --fill: (bFill)

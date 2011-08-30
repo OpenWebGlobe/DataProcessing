@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
        ("overwrite", "overwrite existing data")
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "verbose output")
+       ("nolock", "disable file locking")
        ;
 
    po::variables_map vm;
@@ -82,6 +83,7 @@ int main(int argc, char *argv[])
    bool bFill = false;
    bool bOverwrite = false;
    bool bVerbose = false;
+   bool bLock = true;
    ELayerType eLayer = IMAGE_LAYER;
 
    //---------------------------------------------------------------------------
@@ -170,6 +172,11 @@ int main(int argc, char *argv[])
       bFill = true;
    }
 
+   if (vm.count("nolock"))
+   {
+      bLock = false;
+   }
+
    if (!bFill && !bOverwrite)
    {
       bError = true; // needs atleast one option (fill or overwrite)
@@ -204,7 +211,7 @@ int main(int argc, char *argv[])
    boost::shared_ptr<ProcessStatus> qProcessStatus;
 
    // update process status (exclusive lock)
-   int lockid = FileSystem::Lock(sProcessStatusFile);
+   int lockid = bLock ? FileSystem::Lock(sProcessStatusFile) : -1;
 
    if (FileSystem::FileExists(sProcessStatusFile))
    {
@@ -269,11 +276,11 @@ int main(int argc, char *argv[])
 
    if (eLayer == IMAGE_LAYER) 
    {
-      retval = ImageData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill, lod, x0, y0, x1, y1);
+      retval = ImageData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
    else if (eLayer == ELEVATION_LAYER)
    {
-      retval = ElevationData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill, lod, x0, y0, x1, y1);
+      retval = ElevationData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
 
    //---------------------------------------------------------------------------
@@ -281,7 +288,7 @@ int main(int argc, char *argv[])
    //---------------------------------------------------------------------------
 
    // Update Process XML (exclusive lock)
-   lockid = FileSystem::Lock(sProcessStatusFile);
+   lockid = bLock ? FileSystem::Lock(sProcessStatusFile) : -1;
 
    qProcessStatus = ProcessStatus::Load(sProcessStatusFile);
    if (!qProcessStatus)

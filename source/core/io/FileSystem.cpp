@@ -389,6 +389,8 @@ int FileSystem::Lock(const std::string& file)
 //------------------------------------------------------------------------------
 void FileSystem::Unlock(const std::string& file, int handle)
 {
+   if (handle == -1)
+	  return;
    std::string sLockFile = file + ".lock";
    close(handle);
    unlink(sLockFile.c_str());
