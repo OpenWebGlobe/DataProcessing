@@ -334,6 +334,11 @@ bool ElevationReader::_ImportRaster(std::vector<ElevationPoint>& result, double&
    }
 
    //---------------------------------------------------------------------------
+
+   result.clear();
+   result.reserve(_nRasterSizeX*_nRasterSizeY);
+
+
    ElevationPoint pt;
 
    for(int iYBlock = 0; iYBlock < _nYBlocks; iYBlock++ )

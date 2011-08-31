@@ -385,7 +385,7 @@ int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger>
       FileSystem::makedir(oss1.str());
 
       if (bTemp)
-      {
+      { 
          std::ostringstream oss1_tmp;
          oss1_tmp << temptiledir << nLevelOfDetail;
          FileSystem::makedir(oss1_tmp.str());

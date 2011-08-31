@@ -6,7 +6,7 @@
     <LocalDebuggerCommandArguments>--layer DHM25 --verbose --triangulate --numthreads 4</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>--layer DHM25 --verbose --triangulate --maxpoints 180</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer DHM25 --verbose --triangulate --maxpoints 512</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
