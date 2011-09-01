@@ -1,15 +1,14 @@
-BOOST=../../external/boost_1_46_1
+BOOST=../../external/boost_1_47_0
+BOOST_LIBS=date_time filesystem program_options thread system
+BOOST_TOOLSET=gcc-4.4.5
+BOOST_VARIANT=release
+BOOST_LINK=static
+BOOST_THREADING=multi
 CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal -O2
-BOOST_COMPILER=gcc-4.4.3
-# FIXME there are far too many hardcode paths in the line below
 LIBS=\
      -Wl,--whole-archive ../../bin/libOpenWebGlobeProcessing.a -Wl,--no-whole-archive \
-     $(BOOST)/bin.v2/libs/date_time/build/$(BOOST_COMPILER)/release/link-static/threading-multi/libboost_date_time.a \
-     $(BOOST)/bin.v2/libs/filesystem/build/$(BOOST_COMPILER)/release/link-static/threading-multi/libboost_filesystem.a \
-     $(BOOST)/bin.v2/libs/program_options/build/$(BOOST_COMPILER)/release/link-static/threading-multi/libboost_program_options.a \
-     $(BOOST)/bin.v2/libs/thread/build/$(BOOST_COMPILER)/release/link-static/threading-multi/libboost_thread.a \
-     $(BOOST)/bin.v2/libs/system/build/$(BOOST_COMPILER)/release/link-static/threading-multi/libboost_system.a \
-     -lgdal1.7.0 \
+     $(foreach lib,$(BOOST_LIBS),$(BOOST)/bin.v2/libs/$(lib)/build/$(BOOST_TOOLSET)/$(BOOST_VARIANT)/link-$(BOOST_LINK)/threading-$(BOOST_THREADING)/libboost_$(lib).a) \
+     -lgdal1.6.0 \
      -lxerces-c
 
 all: \
