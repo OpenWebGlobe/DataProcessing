@@ -1,14 +1,15 @@
-BOOST=../../external/boost_1_47_0
+BOOST=../../external/boost_1_46_1
 BOOST_LIBS=date_time filesystem program_options thread system
-BOOST_TOOLSET=gcc-4.4.5
+BOOST_TOOLSET=gcc-4.4.3
 BOOST_VARIANT=release
 BOOST_LINK=static
 BOOST_THREADING=multi
+GDAL_VERSION=1.7.0
 CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal -O2
 LIBS=\
      -Wl,--whole-archive ../../bin/libOpenWebGlobeProcessing.a -Wl,--no-whole-archive \
      $(foreach lib,$(BOOST_LIBS),$(BOOST)/bin.v2/libs/$(lib)/build/$(BOOST_TOOLSET)/$(BOOST_VARIANT)/link-$(BOOST_LINK)/threading-$(BOOST_THREADING)/libboost_$(lib).a) \
-     -lgdal1.6.0 \
+     -lgdal$(GDAL_VERSION) \
      -lxerces-c
 
 all: \
