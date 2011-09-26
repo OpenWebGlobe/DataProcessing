@@ -22,6 +22,7 @@
     <ClCompile Include="..\..\source\core\geo\ElevationTile.cpp" />
     <ClCompile Include="..\..\source\core\geo\ImageLayerSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp" />
+    <ClCompile Include="..\..\source\core\geo\PointCloudReader.cpp" />
     <ClCompile Include="..\..\source\core\geo\PointLayerSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\ProcessStatus.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageHandler.cpp" />
@@ -31,6 +32,7 @@
     <ClCompile Include="..\..\source\core\io\CommonPath.cpp" />
     <ClCompile Include="..\..\source\core\io\FileSystem.cpp" />
     <ClCompile Include="..\..\source\core\io\TarWriter.cpp" />
+    <ClCompile Include="..\..\source\core\math\CloudPoint.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayMemoryManager.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayTriangle.cpp" />
@@ -85,6 +87,7 @@
     <ClInclude Include="..\..\source\core\geo\ElevationTile.h" />
     <ClInclude Include="..\..\source\core\geo\ImageLayerSettings.h" />
     <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h" />
+    <ClInclude Include="..\..\source\core\geo\PointCloudReader.h" />
     <ClInclude Include="..\..\source\core\geo\PointLayerSettings.h" />
     <ClInclude Include="..\..\source\core\geo\ProcessStatus.h" />
     <ClInclude Include="..\..\source\core\image\ImageHandler.h" />
@@ -96,6 +99,7 @@
     <ClInclude Include="..\..\source\core\io\CommonPath.h" />
     <ClInclude Include="..\..\source\core\io\FileSystem.h" />
     <ClInclude Include="..\..\source\core\io\TarWriter.h" />
+    <ClInclude Include="..\..\source\core\math\CloudPoint.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayMemoryManager.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayTriangle.h" />
