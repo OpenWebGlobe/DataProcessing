@@ -13,6 +13,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\source\core\app\Logger.cpp" />
     <ClCompile Include="..\..\source\core\app\ProcessingSettings.cpp" />
+    <ClCompile Include="..\..\source\core\boost\json-spirit\json_spirit_reader.cpp" />
+    <ClCompile Include="..\..\source\core\boost\json-spirit\json_spirit_value.cpp" />
+    <ClCompile Include="..\..\source\core\boost\json-spirit\json_spirit_writer.cpp" />
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp" />
     <ClCompile Include="..\..\source\core\geo\ElevationLayerSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\ElevationReader.cpp" />
@@ -64,6 +67,16 @@
     <ClInclude Include="..\..\source\core\boost\atomic\detail\linux-arm.hpp" />
     <ClInclude Include="..\..\source\core\boost\atomic\detail\valid_integral_types.hpp" />
     <ClInclude Include="..\..\source\core\boost\atomic\platform.hpp" />
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit.h" />
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_error_position.h" />
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_reader.h" />
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_reader_template.h" />
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_stream_reader.h" />
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_utils.h" />
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_value.h" />
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_writer.h" />
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_writer_options.h" />
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_writer_template.h" />
     <ClInclude Include="..\..\source\core\data\stack_nolock.h" />
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h" />
     <ClInclude Include="..\..\source\core\geo\ElevationLayerSettings.h" />

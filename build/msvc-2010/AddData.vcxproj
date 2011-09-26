@@ -128,11 +128,13 @@
     <ClCompile Include="..\..\source\apps\adddata\elevationdata.cpp" />
     <ClCompile Include="..\..\source\apps\adddata\imagedata.cpp" />
     <ClCompile Include="..\..\source\apps\adddata\main.cpp" />
+    <ClCompile Include="..\..\source\apps\adddata\pointdata.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\apps\adddata\elevationdata.h" />
     <ClInclude Include="..\..\source\apps\adddata\errors.h" />
     <ClInclude Include="..\..\source\apps\adddata\imagedata.h" />
+    <ClInclude Include="..\..\source\apps\adddata\pointdata.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
