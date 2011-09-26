@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
    po::options_description desc("Program-Options");
    desc.add_options()
        ("layer", po::value<std::string>(), "image layer to resample")
-       ("type", po::value<std::string>(), "[optional] image (default) or elevation.")
+       ("type", po::value<std::string>(), "[optional] image (default) or elevation, or point.")
        ("maxpoints", po::value<int>(), "[optional] for elevation layer: max number of points per tile. Default is 512.")
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "optional info")
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
    std::string sLayer;
    bool bError = false;
    bool bVerbose = false;
-   int layertype = 0; // 0: image, 1:elevation
+   int layertype = 0; // 0: image, 1:elevation, 2: point
    int nMaxpoints = 512;
 
 
@@ -118,6 +118,10 @@ int main(int argc, char *argv[])
       else if (sType == "image")
       {
          layertype = 0;
+      }
+      else if (sType == "point")
+      {
+         layertype = 2;
       }
       else
       {
@@ -281,6 +285,10 @@ int main(int argc, char *argv[])
       std::ostringstream out;
       out << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
       qLogger->Info(out.str());
+   }
+   else if (layertype == 2) // point
+   {
+      // #todo
    }
 
 
