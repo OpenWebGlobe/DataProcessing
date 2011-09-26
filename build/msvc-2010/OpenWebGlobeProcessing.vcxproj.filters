@@ -166,6 +166,9 @@
     <ClCompile Include="..\..\source\core\boost\json-spirit\json_spirit_writer.cpp">
       <Filter>boost\json-spirit</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\geo\PointLayerSettings.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
@@ -367,6 +370,9 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_writer_template.h">
       <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\geo\PointLayerSettings.h">
+      <Filter>geo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
