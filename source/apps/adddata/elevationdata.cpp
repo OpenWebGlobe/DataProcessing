@@ -40,7 +40,7 @@ namespace ElevationData
 
    //---------------------------------------------------------------------------
 
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sElevationFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1)
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, bool bVirtual, int epsg, std::string sElevationFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1)
    {
       DataSetInfo oInfo;
 
@@ -59,6 +59,7 @@ namespace ElevationData
 
       std::string sElevationLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
       std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sElevationLayerDir) + "temp/tiles");
+      std::string sTempfile = FilenameUtils::DelimitPath(sTileDir) + sElevationFile + ".dat";
 
       boost::shared_ptr<ElevationLayerSettings> qElevationLayerSettings = ElevationLayerSettings::Load(sElevationLayerDir);
       if (!qElevationLayerSettings)
@@ -99,18 +100,38 @@ namespace ElevationData
       double ymin=1e20;
       double xmax=-1e20;
       double ymax=-1e20;
+      size_t numpoints = 0;
 
-      if (!oElevationReader.Import(vPoints, xmin, ymin, xmax, ymax))
+      if (bVirtual)
       {
-         qLogger->Error("Failed importing elevation.");
-         ProcessingUtils::exit_gdal();
-         return ERROR_LOADELEVATION;
+         if (!oElevationReader.Import(sTempfile, numpoints, xmin, ymin, xmax, ymax))
+         {
+            qLogger->Error("Failed importing elevation (virtual).");
+            ProcessingUtils::exit_gdal();
+            return ERROR_LOADELEVATION;
+         }
+      }
+      else
+      {
+         if (!oElevationReader.Import(vPoints, xmin, ymin, xmax, ymax))
+         {
+            qLogger->Error("Failed importing elevation.");
+            ProcessingUtils::exit_gdal();
+            return ERROR_LOADELEVATION;
+         }
       }
 
 
       if (bVerbose)
       {
-         oss << "Number of Points: " << vPoints.size() << "\n";
+         if (bVirtual)
+         {
+            oss << "Number of Points: " << numpoints << "\n";
+         }
+         else 
+         { 
+            oss << "Number of Points: " << vPoints.size() << "\n";
+         }
          oss << "Elevation Boundary:" << "(" << xmin << ", " << ymin << ")-(" << xmax << ", " << ymax << ")\n";
          qLogger->Info(oss.str());
          oss.str("");
@@ -213,89 +234,92 @@ namespace ElevationData
          return ERROR_OUTOFMEMORY;
       }
 
-      // parallel sorting points:
-#ifndef _DEBUG
-#     pragma omp parallel for
-#endif
-      for (int i=0;i<(int)vPoints.size();i++)
+      if (bVirtual)
       {
-         // calculate tile coordinate of current point:
-         
-         int64 ttx = int64((vPoints[i].x - x0) / tilewidth);
-         int64 tty = int64((vPoints[i].y - y0) / tileheight);
-         int64 tileX = ttx+elvTileX0;
-         int64 tileY = tty+elvTileY0;
 
-
-
-         if (tileX >= elvTileX0 && tileX<=elvTileX1 &&
-             tileY >= elvTileY0 &&  tileY<=elvTileY1)
-         {
-            int arraynum = omp_get_thread_num();
-            SElevationCell& s = matrix[arraynum*total + tty*tilewidth_i+ttx];
-            s.vecPts.push_back(&vPoints[i]);
-         }
       }
-
-      // write tiles
-#ifndef _DEBUG
-#     pragma omp parallel for
-#endif
-      for (int64 xx = elvTileX0; xx <= elvTileX1; ++xx)
+      else
       {
-         for (int64 yy = elvTileY0; yy <= elvTileY1; ++yy)
+         // parallel sorting points:
+#ifndef _DEBUG
+#        pragma omp parallel for
+#endif
+         for (int i=0;i<(int)vPoints.size();i++)
          {
-            int64 ttx = xx - elvTileX0;
-            int64 tty = elvTileY1 - yy;
+            // calculate tile coordinate of current point:         
+            int64 ttx = int64((vPoints[i].x - x0) / tilewidth);
+            int64 tty = int64((vPoints[i].y - y0) / tileheight);
+            int64 tileX = ttx+elvTileX0;
+            int64 tileY = tty+elvTileY0;
 
-            std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
-            std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, xx, yy);
-
-            double px0,py0,px1,py1;
-            qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0, py1, px1, py0);
-
-            // LOCK this tile. If this tile is currently locked then wait until the lock is removed.
-            int lockhandle = bLock ? FileSystem::Lock(sTilefile) : -1;
-
-            std::ofstream fout;
-
-            if (FileSystem::FileExists(sTilefile))
+            if (tileX >= elvTileX0 && tileX<=elvTileX1 &&
+                tileY >= elvTileY0 &&  tileY<=elvTileY1)
             {
-               fout.open(sTilefile.c_str(), std::ios::binary | std::ios::app); // open in append mode
+               int arraynum = omp_get_thread_num();
+               SElevationCell& s = matrix[arraynum*total + tty*tilewidth_i+ttx];
+               s.vecPts.push_back(&vPoints[i]);
             }
-            else
-            {
-               fout.open(sTilefile.c_str(), std::ios::binary); // open in append mode
-            }
+         }
 
-            if (fout.good())
+         // write tiles
+#ifndef _DEBUG
+#        pragma omp parallel for
+#endif
+         for (int64 xx = elvTileX0; xx <= elvTileX1; ++xx)
+         {
+            for (int64 yy = elvTileY0; yy <= elvTileY1; ++yy)
             {
-               for (int i=0;i<max_threads;i++)
+               int64 ttx = xx - elvTileX0;
+               int64 tty = elvTileY1 - yy;
+
+               std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
+               std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, xx, yy);
+
+               double px0,py0,px1,py1;
+               qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0, py1, px1, py0);
+
+               // LOCK this tile. If this tile is currently locked then wait until the lock is removed.
+               int lockhandle = bLock ? FileSystem::Lock(sTilefile) : -1;
+
+               std::ofstream fout;
+
+               if (FileSystem::FileExists(sTilefile))
                {
-                   SElevationCell& s = matrix[i*total + tty*tilewidth_i+ttx];
-
-                   for (size_t k=0;k<s.vecPts.size();k++)
-                   {
-                        ElevationPoint* pt = s.vecPts[k];
-                        fout.write((const char*)&(pt->x), sizeof(double));
-                        fout.write((const char*)&(pt->y), sizeof(double));
-                        fout.write((const char*)&(pt->elevation), sizeof(double));
-                        fout.write((const char*)&(pt->weight), sizeof(double));
-                   }
+                  fout.open(sTilefile.c_str(), std::ios::binary | std::ios::app); // open in append mode
+               }
+               else
+               {
+                  fout.open(sTilefile.c_str(), std::ios::binary); // open in append mode
                }
 
-               fout.close();
-            }
-            else
-            {
-               std::cout << "FILE ERROR!\n";
-            }
+               if (fout.good())
+               {
+                  for (int i=0;i<max_threads;i++)
+                  {
+                      SElevationCell& s = matrix[i*total + tty*tilewidth_i+ttx];
 
-            // unlock file. Other computers/processes/threads can access it again.
-            FileSystem::Unlock(sTilefile, lockhandle);
+                      for (size_t k=0;k<s.vecPts.size();k++)
+                      {
+                           ElevationPoint* pt = s.vecPts[k];
+                           fout.write((const char*)&(pt->x), sizeof(double));
+                           fout.write((const char*)&(pt->y), sizeof(double));
+                           fout.write((const char*)&(pt->elevation), sizeof(double));
+                           fout.write((const char*)&(pt->weight), sizeof(double));
+                      }
+                  }
+
+                  fout.close();
+               }
+               else
+               {
+                  std::cout << "FILE ERROR!\n";
+               }
+
+               // unlock file. Other computers/processes/threads can access it again.
+               FileSystem::Unlock(sTilefile, lockhandle);
+            }
          }
       }
-
       // finished, print stats:
       t1=clock();
 
@@ -304,12 +328,11 @@ namespace ElevationData
       qLogger->Info(out.str());
 
       ProcessingUtils::exit_gdal();
-      return 0;
+      return 0;   
    }
+   
 
-}
-
-
+} // namespace
 
 
 /*

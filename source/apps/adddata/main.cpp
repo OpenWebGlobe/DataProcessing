@@ -63,7 +63,8 @@ int main(int argc, char *argv[])
        ("overwrite", "overwrite existing data")
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "verbose output")
-       ("nolock", "disable file locking")
+       ("nolock", "disable file locking (also forcing 1 thread)")
+       ("virtual", "enable temporary disk storage (instead of RAM) for large datasets")
        ;
 
    po::variables_map vm;
@@ -87,6 +88,7 @@ int main(int argc, char *argv[])
    bool bOverwrite = false;
    bool bVerbose = false;
    bool bLock = true;
+   bool bVirtual = false;
    ELayerType eLayer = IMAGE_LAYER;
 
    //---------------------------------------------------------------------------
@@ -178,6 +180,12 @@ int main(int argc, char *argv[])
    if (vm.count("nolock"))
    {
       bLock = false;
+      omp_set_num_threads(1);
+   }
+
+   if (vm.count("virtual"))
+   {
+      bVirtual = true;
    }
 
    if (!bFill && !bOverwrite)
@@ -284,7 +292,7 @@ int main(int argc, char *argv[])
    }
    else if (eLayer == ELEVATION_LAYER)
    {
-      retval = ElevationData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1);
+      retval = ElevationData::process(qLogger, qSettings, sLayer, bVerbose, bLock, bVirtual, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
    else if (eLayer == POINT_LAYER)
    {
