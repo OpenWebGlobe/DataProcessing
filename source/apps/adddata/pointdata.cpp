@@ -24,7 +24,6 @@
 #include "image/ImageLoader.h"
 #include "image/ImageWriter.h"
 #include "math/ElevationPoint.h"
-#include "geo/ElevationReader.h"
 #include <sstream>
 #include <fstream>
 #include <ctime>
