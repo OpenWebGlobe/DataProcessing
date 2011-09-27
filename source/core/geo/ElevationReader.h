@@ -48,12 +48,14 @@ public:
    // Transform Elevation points and write points to binary stream. Returns points written and bounding box
    bool Import(std::vector<ElevationPoint>& result, double& inout_xmin, double& inout_ymin, double& inout_xmax, double& inout_ymax);
 
+   // Import elevation points and store on disk
+   bool Import(const std::string& tempfile, size_t& size, double& inout_xmin, double& inout_ymin, double& inout_xmax, double& inout_ymax);
  
 protected:
    // importer for xyz, xyzw (xyz+weight)
    bool _ImportXYZ(std::vector<ElevationPoint>& result, double& inout_xmin, double& inout_ymin, double& inout_xmax, double& inout_ymax);
    bool _ImportRaster(std::vector<ElevationPoint>& result, double& inout_xmin, double& inout_ymin, double& inout_xmax, double& inout_ymax);
-
+   
    void _Free();
    void _ReadBlock(int bx, int by, int& valid_width, int& valid_height);
 

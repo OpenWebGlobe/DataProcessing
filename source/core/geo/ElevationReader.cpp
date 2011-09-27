@@ -445,3 +445,155 @@ bool ElevationReader::_ImportRaster(std::vector<ElevationPoint>& result, double&
 
    return true;
 }
+
+//------------------------------------------------------------------------------
+
+ bool ElevationReader::Import(const std::string& sFilename, size_t& size, double& inout_xmin, double& inout_ymin, double& inout_xmax, double& inout_ymax)
+ {
+    int valid_width; int valid_height;
+   double fx,fy,fz;
+   unsigned int ui_value;
+   int i_value;
+   float f_value;
+   double d_value;
+   unsigned short us_value;
+   short s_value;
+
+   std::ofstream ofs(sFilename.c_str(), std::ios::binary);
+
+   if (!ofs.good())
+   {
+      return false;
+   }
+
+   size = 0;
+
+   CoordinateTransformation* pCT = 0;
+
+   if (_nSourceEPSG != 0)
+   {
+      if (_nSourceEPSG != _nDestEPSG)
+         pCT = new CoordinateTransformation(_nSourceEPSG, _nDestEPSG);
+   }
+
+   //---------------------------------------------------------------------------
+
+   ElevationPoint pt;
+
+   for(int iYBlock = 0; iYBlock < _nYBlocks; iYBlock++ )
+   {
+      for(int iXBlock = 0; iXBlock < _nXBlocks; iXBlock++ )
+      {
+         _ReadBlock(iXBlock, iYBlock, valid_width, valid_height);
+
+         int BaseX = _nBlockWidth * iXBlock;
+         int BaseY = _nBlockHeight * iYBlock;
+
+         for (int y=0;y<valid_height;y++)
+         {
+            for (int x=0;x<valid_width;x++)
+            {
+               bool bNoData = true;
+               GetSourceCoord(double(x+BaseX), double(y+BaseY), &fx, &fy);
+               switch(_datatype)
+               {
+               case 1:  // GDT_UInt32
+                  ui_value = ((unsigned int*)_pBlockElv)[y*_nBlockWidth+x];
+                  if (ui_value!=_dNoDataValue)
+                  {
+                     fz = (double) ui_value;
+                     bNoData = false;
+                  }
+                  break;
+               case 2:  // GDT_Int32
+                  i_value = ((int*)_pBlockElv)[y*_nBlockWidth+x];
+                  if (i_value!=_dNoDataValue)
+                  {
+                     fz = (double) i_value;
+                     bNoData = false;
+                  }
+                  break;
+               case 3:  // GDT_Float32
+                  f_value = ((float*)_pBlockElv)[y*_nBlockWidth+x];
+                  if (f_value!=_dNoDataValue)
+                  {
+                     fz = (double) f_value;
+                     bNoData = false;
+                  }
+                  break;
+               case 4:  // GDT_Float64
+                  d_value = ((double*)_pBlockElv)[y*_nBlockWidth+x];
+                  if (d_value!=_dNoDataValue)
+                  {
+                     fz = d_value;
+                     bNoData = false;
+                  }
+                  break;
+               case 5: 
+                  {
+                     unsigned short* pElvData = ((unsigned short*)_pBlockElv);
+                     us_value = pElvData[y*_nBlockWidth+x];
+                     if (us_value!=_dNoDataValue)
+                     {
+                        fz = (double) us_value;
+                        bNoData = false;
+                     }
+                  }
+                  break;
+               case 6:  
+                  {
+                     short* pElvData = ((short*)_pBlockElv);
+                     s_value = pElvData[y*_nBlockWidth+x];
+                     if (s_value!=_dNoDataValue)
+                     {
+                        fz = (double) s_value;
+                        bNoData = false;
+                     }
+                  }
+                  break;
+
+               default:
+                  assert(false);
+               }
+
+               // Transform Point:
+
+               if (!bNoData)
+               {
+
+                  if (pCT)
+                  {  
+                     pCT->Transform(&fx, &fy);
+                  }
+
+                  pt.x = fx;
+                  pt.y = fy;
+                  pt.elevation = fz;
+                  pt.weight = 0;
+
+                  ofs.write((const char*)&pt.x, sizeof(double));
+                  ofs.write((const char*)&pt.y, sizeof(double));
+                  ofs.write((const char*)&pt.elevation, sizeof(double));
+                 
+
+                  // append pt
+
+                  size++;
+
+                  inout_xmax = math::Max<double>(inout_xmax, fx);
+                  inout_ymax = math::Max<double>(inout_ymax, fy);
+                  inout_xmin = math::Min<double>(inout_xmin, fx);
+                  inout_ymin = math::Min<double>(inout_ymin, fy);
+               }
+            }
+         }
+      }
+   }
+
+   ofs.close();
+
+   return true;
+ }
+
+ //------------------------------------------------------------------------------
+
