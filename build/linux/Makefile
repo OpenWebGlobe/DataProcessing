@@ -1,244 +1,87 @@
+AR=ar
+CXX=g++
+MPICXX=mpic++
+
 BOOST=../../external/boost_1_46_1
 BOOST_LIBS=date_time filesystem program_options thread system
 BOOST_TOOLSET=gcc-4.4.3
 BOOST_VARIANT=release
 BOOST_LINK=static
 BOOST_THREADING=multi
-GDAL_VERSION=1.7.0
-CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal -O2
-LIBS=\
-     -Wl,--whole-archive ../../bin/libOpenWebGlobeProcessing.a -Wl,--no-whole-archive \
-     $(foreach lib,$(BOOST_LIBS),$(BOOST)/bin.v2/libs/$(lib)/build/$(BOOST_TOOLSET)/$(BOOST_VARIANT)/link-$(BOOST_LINK)/threading-$(BOOST_THREADING)/libboost_$(lib).a) \
-     -lgdal$(GDAL_VERSION) \
-     -lxerces-c
 
-all: \
+GDAL_VERSION=1.7.0
+
+CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal -O2
+
+TARGETS=\
 	../../bin/ogAddData \
 	../../bin/ogCalcExtent \
 	../../bin/ogCreateLayer \
 	../../bin/ogDeploy \
 	../../bin/ogFileLockTest \
 	../../bin/ogResample \
-	../../bin/ogTriangulate
-
-../../bin/ogAddData: \
-	../../source/apps/adddata/main.cpp \
-	../../bin/elevationdata.o \
-	../../bin/imagedata.o \
+	../../bin/ogTriangulate \
 	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< ../../bin/elevationdata.o ../../bin/imagedata.o $(LIBS)
 
-../../bin/ogCalcExtent: \
-	../../source/apps/calcextent/main.cpp \
-	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< $(LIBS)
+LIBS=\
+     -Wl,--whole-archive ../../bin/libOpenWebGlobeProcessing.a -Wl,--no-whole-archive \
+     $(foreach lib,$(BOOST_LIBS),$(BOOST)/bin.v2/libs/$(lib)/build/$(BOOST_TOOLSET)/$(BOOST_VARIANT)/link-$(BOOST_LINK)/threading-$(BOOST_THREADING)/libboost_$(lib).a) \
+     -lgdal$(GDAL_VERSION) \
+     -lxerces-c
 
-../../bin/ogCreateLayer: \
-	../../source/apps/createlayer/main.cpp \
-	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< $(LIBS)
+OGADDDATA_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/adddata -name *.cpp))
+OGCALCEXTENT_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/calcextent -name *.cpp))
+OGCREATELAYER_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/createlayer -name *.cpp))
+OGDEPLOY_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/deploy -name *.cpp -not -name main_mpi.cpp))
+OGFILELOCKTEST_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/locktest -name *.cpp))
+OGRESAMPLE_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/resample -name *.cpp -not -name main_mpi.cpp))
+RESAMPLE_MPI_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/resample -name *.cpp -not -name main.cpp))
+OGTRIANGULATE_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/triangulate -name *.cpp))
+LIBOPENWEBGLOBEPROCESSING_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/core -name lodepng -prune -o -name \*.cpp -print))
 
-../../bin/ogDeploy: \
-	../../source/apps/deploy/main.cpp \
-	../../bin/deploy.o \
-	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< ../../bin/deploy.o $(LIBS)
+all: $(TARGETS)
 
-../../bin/ogFileLockTest: \
-	../../source/apps/locktest/main.cpp \
-	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< $(LIBS)
+../../bin/ogAddData: $(OGADDDATA_OBJS) ../../bin/libOpenWebGlobeProcessing.a
+	$(CXX) -o $@ $(CFLAGS) $(OGADDDATA_OBJS) $(LIBS)
 
-../../bin/ogResample: \
-	../../source/apps/resample/main.cpp \
-	../../bin/resample.o \
-	../../bin/resample_elevation.o \
-	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< ../../bin/resample.o ../../bin/resample_elevation.o $(LIBS)
+../../bin/ogCalcExtent: $(OGCALCEXTENT_OBJS) ../../bin/libOpenWebGlobeProcessing.a
+	$(CXX) -o $@ $(CFLAGS) $(OGCALCEXTENT_OBJS) $(LIBS)
 
-../../bin/resample_mpi: \
-	../../source/apps/resample/main_mpi.cpp \
-	../../bin/resample.o \
-	../../bin/resample_elevation.o \
-	../../bin/libOpenWebGlobeProcessing.a
-	mpic++ -o $@ $(CFLAGS) $< ../../bin/resample.o ../../bin/resample_elevation.o $(LIBS)
+../../bin/ogCreateLayer: $(OGCREATELAYER_OBJS) ../../bin/libOpenWebGlobeProcessing.a
+	$(CXX) -o $@ $(CFLAGS) $(OGCREATELAYER_OBJS) $(LIBS)
 
-../../bin/ogTriangulate: \
-	../../source/apps/triangulate/main.cpp \
-	../../bin/triangulate.o \
-	../../bin/libOpenWebGlobeProcessing.a
-	g++ -o $@ $(CFLAGS) $< ../../bin/triangulate.o $(LIBS)
+../../bin/ogDeploy: $(OGDEPLOY_OBJS) ../../bin/libOpenWebGlobeProcessing.a
+	$(CXX) -o $@ $(CFLAGS) $(OGDEPLOY_OBJS) $(LIBS)
 
-../../bin/libOpenWebGlobeProcessing.a: \
-	../../bin/Logger.o \
-	../../bin/ProcessingSettings.o \
-	../../bin/CoordinateTransformation.o \
-	../../bin/ElevationLayerSettings.o \
-	../../bin/ElevationReader.o \
-	../../bin/ElevationTile.o \
-	../../bin/ImageLayerSettings.o \
-	../../bin/MercatorQuadtree.o \
-	../../bin/ProcessStatus.o \
-	../../bin/ImageHandler.o \
-	../../bin/ImageLoader.o \
-	../../bin/ImageWriter.o \
-	../../bin/JPEGHandler.o \
-	../../bin/CommonPath.o \
-	../../bin/FileSystem.o \
-	../../bin/TarWriter.o \
-	../../bin/ogprocess.o \
-	../../bin/DelaunayLocationStructure.o \
-	../../bin/DelaunayMemoryManager.o \
-	../../bin/DelaunayTriangle.o \
-	../../bin/DelaunayTriangulation.o \
-	../../bin/DelaunayVertex.o \
-	../../bin/Predicates.o \
-	../../bin/ElevationPoint.o \
-	../../bin/GeoCoord.o \
-	../../bin/vec3.o \
-	../../bin/ConvertUTF.o \
-	../../bin/ConvertUTF.o \
-	../../bin/FilenameUtils.o \
-	../../bin/StringUtils.o \
-	../../bin/Timer.o \
-	../../bin/Utils.o \
-	../../bin/BaseTypeConversion.o \
-	../../bin/ClassExport.o \
-	../../bin/PropertyBase.o \
-	../../bin/Tokenizer.o
-	ar rcs $@ $?
+../../bin/ogFileLockTest: $(OGFILELOCKTEST_OBJS) ../../bin/libOpenWebGlobeProcessing.a
+	$(CXX) -o $@ $(CFLAGS) $(OGFILELOCKTEST_OBJS) $(LIBS)
 
-../../bin/Logger.o: ../../source/core/app/Logger.cpp
-	g++ -c -o $@ $(CFLAGS) $<
+../../bin/ogResample: $(OGRESAMPLE_OBJS) ../../bin/libOpenWebGlobeProcessing.a
+	$(CXX) -o $@ $(CFLAGS) $(OGRESAMPLE_OBJS) $(LIBS)
 
-../../bin/ProcessingSettings.o: ../../source/core/app/ProcessingSettings.cpp
-	g++ -c -o $@ $(CFLAGS) $<
+../../bin/resample_mpi: $(RESAMPLE_MPI_OBJS) ../../bin/libOpenWebGlobeProcessing.a
+	$(MPICXX) -o $@ $(CFLAGS) $(RESAMPLE_MPI_OBJS) $(LIBS)
 
-../../bin/CoordinateTransformation.o: ../../source/core/geo/CoordinateTransformation.cpp
-	g++ -c -o $@ $(CFLAGS) $<
+../../source/apps/resample/main_mpi.o: ../../source/apps/resample/main_mpi.cpp
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
-../../bin/ElevationLayerSettings.o: ../../source/core/geo/ElevationLayerSettings.cpp
-	g++ -c -o $@ $(CFLAGS) $<
+../../bin/ogTriangulate: $(OGTRIANGULATE_OBJS) ../../bin/libOpenWebGlobeProcessing.a
+	$(CXX) -o $@ $(CFLAGS) $(OGTRIANGULATE_OBJS) $(LIBS)
 
-../../bin/ElevationReader.o: ../../source/core/geo/ElevationReader.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/ElevationTile.o: ../../source/core/geo/ElevationTile.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/ImageLayerSettings.o: ../../source/core/geo/ImageLayerSettings.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/ProcessStatus.o: ../../source/core/geo/ProcessStatus.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/MercatorQuadtree.o: ../../source/core/geo/MercatorQuadtree.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/ImageHandler.o: ../../source/core/image/ImageHandler.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/ImageLoader.o: ../../source/core/image/ImageLoader.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/ImageWriter.o: ../../source/core/image/ImageWriter.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/JPEGHandler.o: ../../source/core/image/JPEGHandler.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/CommonPath.o: ../../source/core/io/CommonPath.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/FileSystem.o: ../../source/core/io/FileSystem.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/TarWriter.o: ../../source/core/io/TarWriter.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/ogprocess.o: ../../source/core/ogprocess.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/DelaunayLocationStructure.o: ../../source/core/math/delaunay/DelaunayLocationStructure.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/DelaunayMemoryManager.o: ../../source/core/math/delaunay/DelaunayMemoryManager.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/DelaunayTriangle.o: ../../source/core/math/delaunay/DelaunayTriangle.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/DelaunayTriangulation.o: ../../source/core/math/delaunay/DelaunayTriangulation.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/DelaunayVertex.o: ../../source/core/math/delaunay/DelaunayVertex.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/Predicates.o: ../../source/core/math/delaunay/Predicates.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/ElevationPoint.o: ../../source/core/math/ElevationPoint.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/GeoCoord.o: ../../source/core/math/GeoCoord.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/vec3.o: ../../source/core/math/vec3.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/ConvertUTF.o: ../../source/core/string/ConvertUTF.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/FilenameUtils.o: ../../source/core/string/FilenameUtils.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/StringUtils.o: ../../source/core/string/StringUtils.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/Timer.o: ../../source/core/system/Timer.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/Utils.o: ../../source/core/system/Utils.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/BaseTypeConversion.o: ../../source/core/xml/BaseTypeConversion.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/ClassExport.o: ../../source/core/xml/ClassExport.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/PropertyBase.o: ../../source/core/xml/PropertyBase.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/Tokenizer.o: ../../source/core/xml/Tokenizer.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/elevationdata.o: ../../source/apps/adddata/elevationdata.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/imagedata.o: ../../source/apps/adddata/imagedata.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/resample.o: ../../source/apps/resample/resample.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/resample_elevation.o: ../../source/apps/resample/resample_elevation.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/deploy.o: ../../source/apps/deploy/deploy.cpp
-	g++ -c -o $@ $(CFLAGS) $<
-
-../../bin/triangulate.o: ../../source/apps/triangulate/triangulate.cpp
-	g++ -c -o $@ $(CFLAGS) $<
+../../bin/libOpenWebGlobeProcessing.a: $(LIBOPENWEBGLOBEPROCESSING_OBJS)
+	$(AR) rcs $@ $?
 
 clean:
-	rm -f ../../bin/*.o
-	rm -f ../../bin/libOpenWebGlobeProcessing.a
-	rm -f ../../bin/ogAddData
-	rm -f ../../bin/ogCalcExtent
-	rm -f ../../bin/ogCreateLayer
-	rm -f ../../bin/ogDeploy
-	rm -f ../../bin/ogFileLockTest
-	rm -f ../../bin/ogResample
-	rm -f ../../bin/resample_mpi
-	rm -f ../../bin/ogTriangulate
+	rm -f $(OGADDDATA_OBJS)
+	rm -f $(OGCALCEXTENT_OBJS)
+	rm -f $(OGCREATELAYER_OBJS)
+	rm -f $(OGDEPLOY_OBJS)
+	rm -f $(OGFILELOCKTEST_OBJS)
+	rm -f $(OGRESAMPLE_OBJS)
+	rm -f $(RESAMPLE_MPI_OBJS)
+	rm -f $(OGTRIANGULATE_OBJS)
+	rm -f $(LIBOPENWEBGLOBEPROCESSING_OBJS)
+	rm -f $(TARGETS)
+
+%.o: %.cpp
+	$(CXX) -c -o $@ $(CFLAGS) $<

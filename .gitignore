@@ -1,10 +1,10 @@
+*.o
 /external
 /bin/*.dll
 /bin/*.exp
 /bin/*.lib
 /bin/*.pdb
 /bin/*.bat
-/bin/*.o
 /bin/gdal-data
 /bin/ogAddData
 /bin/ogCalcExtent
