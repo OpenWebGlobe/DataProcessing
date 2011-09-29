@@ -218,6 +218,8 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
          }
       }
 
+      double pixelsize_m = pixelsize * 6378137.0;
+
       t1 = clock();
 
       std::cout << "GATHERED BOUNDARY (Mercator):\n";
@@ -231,6 +233,7 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
 
       MercatorQuadtree* pQuadtree = new MercatorQuadtree();
       double x,y;
+      
 
       double lng0, lat0, lng1, lat1;
       x = total_dest_ulx; y = total_dest_lry;
@@ -243,7 +246,34 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
       lng1 = x; lat1 = y;
       std::cout << "       lng1: " << x << "\n";
       std::cout << "       lat1: " << y << "\n";
-      std::cout << " pixelsize : " << pixelsize * 6378137.0 << " m\n"; 
+      std::cout << " pixelsize: " << pixelsize_m << " m\n";
+
+      double lat_avg = 0.5*(lat1 - lat0);
+
+      double resolution_elevation[21];
+      double resolution_image[21];
+
+
+      for (int lod = 0; lod<21;lod++)
+      {
+         double v = cos(lat_avg*3.14159265358979/180)*2*3.14159265358979*6378137.0/pow(2.0,lod);
+         resolution_elevation[lod] = v / 22.0; // ~500 points per tile
+         resolution_image[lod] = v / 256;
+      }
+
+      int recommended_lod_elv = 0;
+      int recommended_lod_img = 0;
+      for (int lod = 0; lod<20;lod++)
+      {
+         if (pixelsize_m < resolution_elevation[lod] && pixelsize_m > resolution_elevation[lod+1])
+         {  
+            recommended_lod_elv = lod;
+         }
+         if (pixelsize_m < resolution_image[lod] && pixelsize_m > resolution_image[lod+1])
+         {  
+            recommended_lod_img = lod;
+         }
+      }
 
       for (int i=1;i<23;i++)
       {
@@ -251,9 +281,28 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
          _calcfromwgs84(i, lng0, lat0, lng1, lat1);
       }
 
+
+      std::cout << "****************************************\n";
+      std::cout << "RECOMMENDATION (MINIMUM LOD):\n";
+      if (recommended_lod_elv != 0)
+      {
+         std::cout << "IF THIS IS ELEVATION: LOD=" << recommended_lod_elv << ": ";
+         _calcfromwgs84(recommended_lod_elv, lng0, lat0, lng1, lat1);
+      }
+      if (recommended_lod_img != 0)
+      {
+         std::cout << "\nIF THIS IS IMAGE: LOD=" << recommended_lod_img << ": ";
+         _calcfromwgs84(recommended_lod_img, lng0, lat0, lng1, lat1);
+      }
+      if (recommended_lod_img == 0 && recommended_lod_elv==0)
+      {
+         std::cout << "recommendation is not possible.\n";
+      }
+      std::cout << "****************************************\n";
+
       delete pQuadtree;
 
-      std::cout << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
+      //std::cout << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
 
       delete[] pDataset;
 
