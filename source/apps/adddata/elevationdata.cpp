@@ -236,7 +236,48 @@ namespace ElevationData
 
       if (bVirtual)
       {
+         size_t maxpointsinmemory = 10000; // keep 10000 points in memory before writing..
+         size_t pointsread = 0;
 
+         std::ifstream ifs(sTempfile.c_str(), std::ios::binary);
+
+         
+  
+         for (size_t i=0;i<numpoints;i++)
+         {
+            ElevationPoint* rPt = new ElevationPoint();
+
+            ifs.read((char*)&rPt->x, sizeof(double));
+            ifs.read((char*)&rPt->y, sizeof(double));
+            ifs.read((char*)&rPt->elevation, sizeof(double));
+
+            int64 ttx = int64((rPt->x - x0) / tilewidth);
+            int64 tty = int64((rPt->y - y0) / tileheight);
+            int64 tileX = ttx+elvTileX0;
+            int64 tileY = tty+elvTileY0;
+
+            if (tileX >= elvTileX0 && tileX<=elvTileX1 &&
+                tileY >= elvTileY0 &&  tileY<=elvTileY1)
+            {
+               int arraynum = omp_get_thread_num();
+               SElevationCell& s = matrix[arraynum*total + tty*tilewidth_i+ttx];
+               s.vecPts.push_back(rPt);
+            }
+
+            pointsread++;
+            if (pointsread >= maxpointsinmemory)
+            {
+               for (size_t j=0;j<max_threads*tilewidth_i*tileheight_i;j++)
+               {
+                  SElevationCell& s = matrix[j];
+                  if (s.vecPts.size()>0)
+                  {
+                     // write this data!
+                  }
+               }
+               pointsread = 0;
+            }
+         }
       }
       else
       {
