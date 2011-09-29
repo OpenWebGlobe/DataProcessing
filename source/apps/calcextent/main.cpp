@@ -31,7 +31,7 @@
 #include <boost/program_options.hpp>
 
 
-int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs, bool bVerbose);
+int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs, bool bVerbose, bool bPointCloud);
 void _calcfromwgs84(int, double, double, double, double);
 //------------------------------------------------------------------------------
 
@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
        ("verbose", "display additional information")
        ("inputdir", po::value<std::string>(), "input directory")
        ("filetype",  po::value<std::string>(), "file type")
+       ("point", "for point cloud")
        ;
 
    po::variables_map vm;
@@ -64,10 +65,16 @@ int main(int argc, char *argv[])
    }
 
    bool bVerbose = false;
+   bool bPointCloud = false;
 
    if (vm.count("verbose"))
    {
       bVerbose = true;
+   }
+
+   if (vm.count("point"))
+   {
+      bPointCloud = true;
    }
 
    if ((vm.count("wgs84") && !vm.count("maxlod")) || (!vm.count("wgs84") && vm.count("maxlod")))
@@ -113,7 +120,7 @@ int main(int argc, char *argv[])
       std::vector<std::string> vecFiles = vm["input"].as< std::vector<std::string> >();
       std::string srs = vm["srs"].as<std::string>();
 
-      return _frominput(vecFiles, srs, bVerbose);
+      return _frominput(vecFiles, srs, bVerbose, bPointCloud);
    }
    else if (vm.count("srs") && vm.count("inputdir") && vm.count("filetype"))
    {
@@ -129,7 +136,7 @@ int main(int argc, char *argv[])
          return 1;
       }
 
-      return _frominput(vecFiles, srs, bVerbose);
+      return _frominput(vecFiles, srs, bVerbose, bPointCloud);
    }
    else
    {
@@ -146,12 +153,9 @@ int main(int argc, char *argv[])
 
 //------------------------------------------------------------------------------
 
-int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs, bool bVerbose)
+int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs, bool bVerbose, bool bPointCloud)
 {
-   // create an array of Dataset info for parallel access.
-   DataSetInfo* pDataset = new DataSetInfo[vecFiles.size()];
 
-  
    if (StringUtils::Left(srs, 5) != "EPSG:")
    {
       std::cout << "Error: only srs starting with EPSG: are currently supported";
@@ -169,77 +173,143 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
    boost::shared_ptr<CoordinateTransformation> qCT;
    qCT = boost::shared_ptr<CoordinateTransformation>(new CoordinateTransformation(epsg, 3785));
 
-   clock_t t0,t1;
-   t0 = clock();
 
-   for (int i=0;i<(int)vecFiles.size();i++)
+   if (bPointCloud)
    {
-      ProcessingUtils::RetrieveDatasetInfo(vecFiles[i], qCT.get(), &pDataset[i], bVerbose);
+      // vecfiles contains xyz (or xyzi or xyzirgb) ASCII files.
+      // a) find the center of the dataset
+      // b) find extent (max,min of x,y and z component)
+
+      return 0;
    }
-
-   // at this point we finished calculating all the boundaries of all datasets, now
-   // calculate the min/max
-
-   double total_dest_ulx = 1e20;
-   double total_dest_lry = 1e20;
-   double total_dest_lrx = -1e20;
-   double total_dest_uly = -1e20;
-   double pixelsize = 1e20;
-
-   for (size_t i=0;i<vecFiles.size();i++)
+   else
    {
-      if (pDataset[i].bGood)
+
+      // create an array of Dataset info for parallel access.
+      DataSetInfo* pDataset = new DataSetInfo[vecFiles.size()];
+
+  
+      clock_t t0,t1;
+      t0 = clock();
+
+      for (int i=0;i<(int)vecFiles.size();i++)
       {
-         total_dest_ulx = math::Min<double>(pDataset[i].dest_ulx, total_dest_ulx);
-         total_dest_lry = math::Min<double>(pDataset[i].dest_lry, total_dest_lry);
-         total_dest_lrx = math::Max<double>(pDataset[i].dest_lrx, total_dest_lrx);
-         total_dest_uly = math::Max<double>(pDataset[i].dest_uly, total_dest_uly);
-         pixelsize      = math::Min<double>(pDataset[i].pixelsize, pixelsize);
+         ProcessingUtils::RetrieveDatasetInfo(vecFiles[i], qCT.get(), &pDataset[i], bVerbose);
       }
+
+      // at this point we finished calculating all the boundaries of all datasets, now
+      // calculate the min/max
+
+      double total_dest_ulx = 1e20;
+      double total_dest_lry = 1e20;
+      double total_dest_lrx = -1e20;
+      double total_dest_uly = -1e20;
+      double pixelsize = 1e20;
+
+      for (size_t i=0;i<vecFiles.size();i++)
+      {
+         if (pDataset[i].bGood)
+         {
+            total_dest_ulx = math::Min<double>(pDataset[i].dest_ulx, total_dest_ulx);
+            total_dest_lry = math::Min<double>(pDataset[i].dest_lry, total_dest_lry);
+            total_dest_lrx = math::Max<double>(pDataset[i].dest_lrx, total_dest_lrx);
+            total_dest_uly = math::Max<double>(pDataset[i].dest_uly, total_dest_uly);
+            pixelsize      = math::Min<double>(pDataset[i].pixelsize, pixelsize);
+         }
+      }
+
+      double pixelsize_m = pixelsize * 6378137.0;
+
+      t1 = clock();
+
+      std::cout << "GATHERED BOUNDARY (Mercator):\n";
+      std::cout.precision(16);
+      std::cout << "        ulx: " << total_dest_ulx << "\n";
+      std::cout << "        lry: " << total_dest_lry << "\n";
+      std::cout << "        lrx: " << total_dest_lrx << "\n";
+      std::cout << "        uly: " << total_dest_uly << "\n";
+      std::cout << "BOUNDARY in WGS84:\n";
+
+
+      MercatorQuadtree* pQuadtree = new MercatorQuadtree();
+      double x,y;
+      
+
+      double lng0, lat0, lng1, lat1;
+      x = total_dest_ulx; y = total_dest_lry;
+      pQuadtree->MercatorToWGS84(x, y); 
+      lng0 = x; lat0 = y;
+      std::cout << "       lng0: " << x << "\n";  
+      std::cout << "       lat0: " << y << "\n";
+      x = total_dest_lrx; y = total_dest_uly;
+      pQuadtree->MercatorToWGS84(x, y);
+      lng1 = x; lat1 = y;
+      std::cout << "       lng1: " << x << "\n";
+      std::cout << "       lat1: " << y << "\n";
+      std::cout << " pixelsize: " << pixelsize_m << " m\n";
+
+      double lat_avg = 0.5*(lat1 - lat0);
+
+      double resolution_elevation[21];
+      double resolution_image[21];
+
+
+      for (int lod = 0; lod<21;lod++)
+      {
+         double v = cos(lat_avg*3.14159265358979/180)*2*3.14159265358979*6378137.0/pow(2.0,lod);
+         resolution_elevation[lod] = v / 22.0; // ~500 points per tile
+         resolution_image[lod] = v / 256;
+      }
+
+      int recommended_lod_elv = 0;
+      int recommended_lod_img = 0;
+      for (int lod = 0; lod<20;lod++)
+      {
+         if (pixelsize_m < resolution_elevation[lod] && pixelsize_m > resolution_elevation[lod+1])
+         {  
+            recommended_lod_elv = lod;
+         }
+         if (pixelsize_m < resolution_image[lod] && pixelsize_m > resolution_image[lod+1])
+         {  
+            recommended_lod_img = lod;
+         }
+      }
+
+      for (int i=1;i<23;i++)
+      {
+         std::cout << "LEVEL OF DETAIL " << i << ": ";
+         _calcfromwgs84(i, lng0, lat0, lng1, lat1);
+      }
+
+
+      std::cout << "****************************************\n";
+      std::cout << "RECOMMENDATION (MINIMUM LOD):\n";
+      if (recommended_lod_elv != 0)
+      {
+         std::cout << "IF THIS IS ELEVATION: LOD=" << recommended_lod_elv << ": ";
+         _calcfromwgs84(recommended_lod_elv, lng0, lat0, lng1, lat1);
+      }
+      if (recommended_lod_img != 0)
+      {
+         std::cout << "\nIF THIS IS IMAGE: LOD=" << recommended_lod_img << ": ";
+         _calcfromwgs84(recommended_lod_img, lng0, lat0, lng1, lat1);
+      }
+      if (recommended_lod_img == 0 && recommended_lod_elv==0)
+      {
+         std::cout << "recommendation is not possible.\n";
+      }
+      std::cout << "****************************************\n";
+
+      delete pQuadtree;
+
+      //std::cout << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
+
+      delete[] pDataset;
+
+      ProcessingUtils::exit_gdal();
+
+      return 0;
    }
-
-   t1 = clock();
-
-   std::cout << "GATHERED BOUNDARY (Mercator):\n";
-   std::cout.precision(16);
-   std::cout << "        ulx: " << total_dest_ulx << "\n";
-   std::cout << "        lry: " << total_dest_lry << "\n";
-   std::cout << "        lrx: " << total_dest_lrx << "\n";
-   std::cout << "        uly: " << total_dest_uly << "\n";
-   std::cout << "BOUNDARY in WGS84:\n";
-
-
-   MercatorQuadtree* pQuadtree = new MercatorQuadtree();
-   double x,y;
-
-   double lng0, lat0, lng1, lat1;
-   x = total_dest_ulx; y = total_dest_lry;
-   pQuadtree->MercatorToWGS84(x, y); 
-   lng0 = x; lat0 = y;
-   std::cout << "       lng0: " << x << "\n";  
-   std::cout << "       lat0: " << y << "\n";
-   x = total_dest_lrx; y = total_dest_uly;
-   pQuadtree->MercatorToWGS84(x, y);
-   lng1 = x; lat1 = y;
-   std::cout << "       lng1: " << x << "\n";
-   std::cout << "       lat1: " << y << "\n";
-   std::cout << " pixelsize : " << pixelsize * 6378137.0 << " m\n"; 
-
-   for (int i=1;i<23;i++)
-   {
-      std::cout << "LEVEL OF DETAIL " << i << ": ";
-      _calcfromwgs84(i, lng0, lat0, lng1, lat1);
-   }
-
-   delete pQuadtree;
-
-   std::cout << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
-
-   delete[] pDataset;
-
-   ProcessingUtils::exit_gdal();
-
-   return 0;
 }
 
 //------------------------------------------------------------------------------

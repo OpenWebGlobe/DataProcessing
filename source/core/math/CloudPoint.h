@@ -16,21 +16,22 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _ELEVATIONDATA_H
-#define _ELEVATIONDATA_H
+#ifndef _CLOUDPOINT_H
+#define _CLOUDPOINT_H
 
-#include "math/mathutils.h"
-#include "app/Logger.h"
-#include "app/ProcessingSettings.h"
-#include "ogprocess.h"
-#include "errors.h"
-#include <string>
+#include "og.h"
 
-namespace ElevationData
+class OPENGLOBE_API CloudPoint
 {
-
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, bool bVirtual, int epsg, std::string sElevationFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1);
-
-}
+public:
+   CloudPoint();
+   CloudPoint(const CloudPoint& cp);
+   ~CloudPoint();
+   
+   double         x,y;
+   double         elevation;    // XYZ
+   int            intensity;    // intensity
+   unsigned char  r,g,b,a;      // rgba color
+};
 
 #endif

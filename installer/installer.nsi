@@ -2,7 +2,7 @@
 
 ;defines
 !define PRODUCT_NAME "OWG-Processing"
-!define PRODUCT_VERSION "0.1.0"
+!define PRODUCT_VERSION "0.3.0"
 !define PRODUCT_PUBLISHER "Martin Christen"
 !define PRODUCT_WEB_SITE "http://www.openwebglobe.org"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"

@@ -3,10 +3,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--layer DHM25 --verbose --triangulate --numthreads 4</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer beijing --verbose --triangulate --maxpoints 256 --numthreads 4</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>--layer DHM25 --verbose --triangulate --maxpoints 180</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer DHM25 --verbose --triangulate --maxpoints 512</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>

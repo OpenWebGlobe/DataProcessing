@@ -21,6 +21,7 @@
 #include "errors.h"
 #include "imagedata.h"
 #include "elevationdata.h"
+#include "pointdata.h"
 #include "app/ProcessingSettings.h"
 #include "geo/MercatorQuadtree.h"
 #include "geo/CoordinateTransformation.h"
@@ -43,6 +44,7 @@ enum ELayerType
 {
    IMAGE_LAYER,
    ELEVATION_LAYER,
+   POINT_LAYER,
 };
 
 
@@ -54,12 +56,15 @@ int main(int argc, char *argv[])
    desc.add_options()
        ("image", po::value<std::string>(), "image file to add")
        ("elevation",  po::value<std::string>(), "elevation file to add")
+	   ("point", po::value<std::string>(), "point file to add")
        ("srs", po::value<std::string>(), "spatial reference system for input file")
        ("layer", po::value<std::string>(), "name of layer to add the data")
        ("fill", "fill empty parts, don't overwrite already existing data")
        ("overwrite", "overwrite existing data")
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "verbose output")
+       ("nolock", "disable file locking (also forcing 1 thread)")
+       ("virtual", "enable temporary disk storage (instead of RAM) for large datasets")
        ;
 
    po::variables_map vm;
@@ -82,6 +87,8 @@ int main(int argc, char *argv[])
    bool bFill = false;
    bool bOverwrite = false;
    bool bVerbose = false;
+   bool bLock = true;
+   bool bVirtual = false;
    ELayerType eLayer = IMAGE_LAYER;
 
    //---------------------------------------------------------------------------
@@ -107,12 +114,7 @@ int main(int argc, char *argv[])
 
    //---------------------------------------------------------------------------
 
-   if (!vm.count("image") && !vm.count("elevation"))
-   {
-      bError = true;
-   }
-
-   if (vm.count("image") && vm.count("elevation"))
+   if (!vm.count("image") && !vm.count("elevation") && !vm.count("point"))
    {
       bError = true;
    }
@@ -126,6 +128,11 @@ int main(int argc, char *argv[])
    {
       eLayer = ELEVATION_LAYER;
       sFile = vm["elevation"].as<std::string>();
+   }
+   else if  (vm.count("point"))
+   {
+      eLayer = POINT_LAYER;
+      sFile = vm["point"].as<std::string>();
    }
 
    if (!vm.count("srs") || !vm.count("layer"))
@@ -170,6 +177,17 @@ int main(int argc, char *argv[])
       bFill = true;
    }
 
+   if (vm.count("nolock"))
+   {
+      bLock = false;
+      omp_set_num_threads(1);
+   }
+
+   if (vm.count("virtual"))
+   {
+      bVirtual = true;
+   }
+
    if (!bFill && !bOverwrite)
    {
       bError = true; // needs atleast one option (fill or overwrite)
@@ -204,7 +222,7 @@ int main(int argc, char *argv[])
    boost::shared_ptr<ProcessStatus> qProcessStatus;
 
    // update process status (exclusive lock)
-   int lockid = FileSystem::Lock(sProcessStatusFile);
+   int lockid = bLock ? FileSystem::Lock(sProcessStatusFile) : -1;
 
    if (FileSystem::FileExists(sProcessStatusFile))
    {
@@ -266,22 +284,27 @@ int main(int argc, char *argv[])
    int retval = 0;
    int lod = 0;
    int64 x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+   int64 z0 = 0, z1 = 0;
 
    if (eLayer == IMAGE_LAYER) 
    {
-      retval = ImageData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill, lod, x0, y0, x1, y1);
+      retval = ImageData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
    else if (eLayer == ELEVATION_LAYER)
    {
-      retval = ElevationData::process(qLogger, qSettings, sLayer, bVerbose, epsg, sFile, bFill, lod, x0, y0, x1, y1);
+      retval = ElevationData::process(qLogger, qSettings, sLayer, bVerbose, bLock, bVirtual, epsg, sFile, bFill, lod, x0, y0, x1, y1);
+   }
+   else if (eLayer == POINT_LAYER)
+   {
+      retval = PointData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, z0, x1, y1, z1);
    }
 
    //---------------------------------------------------------------------------
    // UPDATE PROCESS STATUS
    //---------------------------------------------------------------------------
-
+   
    // Update Process XML (exclusive lock)
-   lockid = FileSystem::Lock(sProcessStatusFile);
+   lockid = bLock ? FileSystem::Lock(sProcessStatusFile) : -1;
 
    qProcessStatus = ProcessStatus::Load(sProcessStatusFile);
    if (!qProcessStatus)
@@ -305,7 +328,14 @@ int main(int argc, char *argv[])
    {
       pElement->SetStatusMessage("success");
       pElement->SetLod(lod);
-      pElement->SetExtent(x0,y0,x1,y1);
+      if (eLayer == POINT_LAYER)
+      {
+         pElement->SetExtent(x0,y0,z0,x1,y1,z1);
+      }
+      else
+      {
+         pElement->SetExtent(x0,y0,x1,y1);
+      }
       pElement->MarkFinished();
       pElement->FinishedProcessing();
    }

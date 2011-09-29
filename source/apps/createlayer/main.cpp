@@ -33,6 +33,7 @@
 #include "string/StringUtils.h"
 #include "geo/ImageLayerSettings.h"
 #include "geo/ElevationLayerSettings.h"
+#include "geo/PointLayerSettings.h"
 #include "io/FileSystem.h"
 #include "app/Logger.h"
 #include <iostream>
@@ -45,7 +46,9 @@
 int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std::string& processpath);
 int _createimagelayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
 int _createelevationlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
-int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod, bool bTemp); 
+int _createpointlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
+int _createDirectoriesXY( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod, bool bTemp); 
+int _createDirectoriesXYZ( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod, bool bTemp); 
 
 
 //-----------------------------------------------------------------------------
@@ -96,7 +99,7 @@ enum ELayerType
    IMAGE_LAYER,
    ELEVATION_LAYER,
    POI_LAYER,
-   POINTCLOUD_LAYER,
+   POINT_LAYER,
    GEOMETRY_LAYER,
 };
 //------------------------------------------------------------------------------
@@ -174,11 +177,6 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
    else
    {
       vecExtent = vm["extent"].as< std::vector<int64> >();
-      if (vecExtent.size() != 4)
-      {
-         qLogger->Error("extent must have 4 values!");
-         bError = true;
-      }
    }
 
    if (vm.count("numthreads"))
@@ -208,9 +206,9 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
       {
          eLayer = POI_LAYER;
       }
-      else if (sLayerType == "pointcloud")
+      else if (sLayerType == "point")
       {
-         eLayer = POINTCLOUD_LAYER;
+         eLayer = POINT_LAYER;
       }
       else if (sLayerType == "geometry")
       {
@@ -224,6 +222,23 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
    else
    {
        qLogger->Warn("It is highly recommended to use --type! Using default --type image");
+   }
+
+   if (eLayer == POINT_LAYER)
+   {
+      if (vecExtent.size() != 6 )
+      {
+         qLogger->Error("extent must have 6 values: x0,y0,z0,x1,y1,z1");
+         bError = true;
+      }
+   }
+   else
+   {
+      if (vecExtent.size() != 4 )
+      {
+         qLogger->Error("extent must have 4 values: x0,y0,x1,y1");
+         bError = true;
+      }
    }
 
    if (bError)
@@ -270,6 +285,10 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
    {
       return _createelevationlayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger);
    }
+   else if (eLayer == POINT_LAYER)
+   {
+      return _createpointlayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger);
+   }
    else
    {
       return ERROR_UNSUPPORTED;
@@ -300,7 +319,7 @@ int _createimagelayer(const std::string& sLayerName, const std::string& sLayerPa
       return ERROR_WRITE_PERMISSION;
    }
 
-   return _createDirectories(sLayerPath, qLogger, vecExtent, nLod, false);
+   return _createDirectoriesXY(sLayerPath, qLogger, vecExtent, nLod, false);
 }
 
 //------------------------------------------------------------------------------
@@ -326,13 +345,39 @@ int _createelevationlayer(const std::string& sLayerName, const std::string& sLay
       return ERROR_WRITE_PERMISSION;
    }
 
-   return _createDirectories(sLayerPath, qLogger, vecExtent, nLod, true);
+   return _createDirectoriesXY(sLayerPath, qLogger, vecExtent, nLod, true);
 
 }
 
 //------------------------------------------------------------------------------
 
-int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod, bool bTemp) 
+int _createpointlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger)
+{
+    if (!FileSystem::makedir(sLayerPath))
+   {
+      qLogger->Error("Can't create directory " + sLayerPath);
+      return ERROR_LAYERDIR;
+   }
+
+   boost::shared_ptr<PointLayerSettings> qPointLayerSettings = boost::shared_ptr<PointLayerSettings>(new PointLayerSettings());
+   if (!qPointLayerSettings) {return ERROR_OUTOFMEMORY;}
+
+   qPointLayerSettings->SetLayerName(sLayerName);
+   qPointLayerSettings->SetMaxLod(nLod);
+   qPointLayerSettings->SetTileExtent(vecExtent[0], vecExtent[1], vecExtent[2], vecExtent[3], vecExtent[4], vecExtent[5]);
+
+   if (!qPointLayerSettings->Save(sLayerPath))
+   {
+      qLogger->Error("Can't write into layer path: " + sLayerPath);
+      return ERROR_WRITE_PERMISSION;
+   }
+
+   return _createDirectoriesXYZ(sLayerPath, qLogger, vecExtent, nLod, true);
+}
+
+//------------------------------------------------------------------------------
+
+int _createDirectoriesXY( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod, bool bTemp) 
 {
    // Create Quadtree (default constructor represents WebMercator: EPSG 3857)
    boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
@@ -385,7 +430,7 @@ int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger>
       FileSystem::makedir(oss1.str());
 
       if (bTemp)
-      {
+      { 
          std::ostringstream oss1_tmp;
          oss1_tmp << temptiledir << nLevelOfDetail;
          FileSystem::makedir(oss1_tmp.str());
@@ -418,5 +463,15 @@ int _createDirectories( const std::string& sLayerPath, boost::shared_ptr<Logger>
 
    return 0;
 }
+
+//------------------------------------------------------------------------------
+
+int _createDirectoriesXYZ( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod, bool bTemp)
+{
+   // #todo
+   return 0;
+}
+
+//------------------------------------------------------------------------------
 
 

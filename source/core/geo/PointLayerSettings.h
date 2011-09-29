@@ -16,21 +16,47 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _ELEVATIONDATA_H
-#define _ELEVATIONDATA_H
+#ifndef _POINTLAYERSETTINGS_H
+#define _POINTLAYERSETTINGS_H
 
-#include "math/mathutils.h"
-#include "app/Logger.h"
-#include "app/ProcessingSettings.h"
-#include "ogprocess.h"
-#include "errors.h"
+#include "og.h"
+#include <boost/shared_ptr.hpp>
 #include <string>
+#include <vector>
 
-namespace ElevationData
+class OPENGLOBE_API PointLayerSettings
 {
+public:
+   PointLayerSettings();
+   virtual ~PointLayerSettings(){}
 
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, bool bVirtual, int epsg, std::string sElevationFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1);
+   // Setters/Getters:
+   void SetLayerName(const std::string& sLayername) {_sLayername = sLayername;} 
+   void SetMaxLod(int maxlod) {_maxlod = maxlod;}
+   void SetTileExtent(int64 x0, int64 y0, int64 z0, int64 x1, int64 y1, int64 z1) { _tilecoord[0] = x0; _tilecoord[1] = y0; _tilecoord[2] = z0; _tilecoord[3] = x1; _tilecoord[4] = y1; _tilecoord[5] = z1;}
 
-}
+   std::string GetLayerName(){return _sLayername;}
+   int GetMaxLod(){return _maxlod;}
+   void GetTileExtent(int64& x0, int64& y0, int64& z0, int64& x1, int64& y1, int64& z1){x0 = _tilecoord[0]; y0 = _tilecoord[1]; z0 = _tilecoord[2]; x1 = _tilecoord[3]; y1 = _tilecoord[4]; z1 = _tilecoord[5];}
+
+   // Load from XML
+   static boost::shared_ptr<PointLayerSettings> Load(const std::string& layerdir);
+
+   // Save to XML
+   bool Save(const std::string& layerdir);
+
+protected:
+   std::string _sLayername;
+   std::string _sLayertype;
+   int         _maxlod;
+   std::string _srs;
+   std::vector<int64> _tilecoord;
+   
+
+private:
+   static std::string _xmlsettingsfile;
+   static std::string _jsonsettingsfile;
+};
+
 
 #endif

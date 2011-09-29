@@ -46,7 +46,9 @@ public:
    int GetLod(){return _lod;}
 
    void SetExtent(int64 x0, int64 y0, int64 x1, int64 y1);
+   void SetExtent(int64 x0, int64 y0, int64 z0, int64 x1, int64 y1, int64 z1);
    void GetExtent(int64& x0, int64& y0, int64& x1, int64& y1);
+   void GetExtent(int64& x0, int64& y0, int64& z0, int64& x1, int64& y1, int64& z1);
 
    void SetStatusMessage(const std::string sMsg) { _sStatusMessage = sMsg;} 
    std::string GetStatusMessage() {return _sStatusMessage;}
@@ -63,6 +65,7 @@ protected:
    std::string _sFinishTime;     // time when processing ended
    int _lod;                     // level of detail
    std::vector<int64> _vExtent;  // extent
+   int64 _z0, _z1;
 
 };
 

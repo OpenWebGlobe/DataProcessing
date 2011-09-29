@@ -49,6 +49,9 @@
     <Filter Include="boost\atomic\detail">
       <UniqueIdentifier>{b99ac59e-b9ea-4278-a1d0-bdf681165364}</UniqueIdentifier>
     </Filter>
+    <Filter Include="boost\json-spirit">
+      <UniqueIdentifier>{18528c2c-40b1-4b77-b414-eb395471f49a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
@@ -152,6 +155,24 @@
       <Filter>geo</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\core\math\GeoCoord.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\boost\json-spirit\json_spirit_reader.cpp">
+      <Filter>boost\json-spirit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\boost\json-spirit\json_spirit_value.cpp">
+      <Filter>boost\json-spirit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\boost\json-spirit\json_spirit_writer.cpp">
+      <Filter>boost\json-spirit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\geo\PointLayerSettings.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\geo\PointCloudReader.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\math\CloudPoint.cpp">
       <Filter>math</Filter>
     </ClCompile>
   </ItemGroup>
@@ -324,6 +345,45 @@
       <Filter>geo</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\core\math\GeoCoord.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit.h">
+      <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_error_position.h">
+      <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_reader.h">
+      <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_reader_template.h">
+      <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_stream_reader.h">
+      <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_utils.h">
+      <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_value.h">
+      <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_writer.h">
+      <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_writer_options.h">
+      <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\boost\json-spirit\json_spirit_writer_template.h">
+      <Filter>boost\json-spirit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\geo\PointLayerSettings.h">
+      <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\geo\PointCloudReader.h">
+      <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\math\CloudPoint.h">
       <Filter>math</Filter>
     </ClInclude>
   </ItemGroup>

@@ -24,7 +24,6 @@
 #include "io/FileSystem.h"
 #include "math/ElevationPoint.h"
 #include "math/delaunay/DelaunayTriangulation.h"
-#include "geo/ElevationReader.h"
 #include "geo/ElevationTile.h"
 #include <iostream>
 #include <fstream>

@@ -35,6 +35,8 @@ BeginPropertyMap(ProcessElement);
    XMLProperty(ProcessElement, "FinishTime", _sFinishTime);
    XMLProperty(ProcessElement, "lod", _lod);
    XMLProperty(ProcessElement, "extent", _vExtent);
+   XMLProperty(ProcessElement, "z0", _z0);
+   XMLProperty(ProcessElement, "z1", _z1);
 EndPropertyMap(ProcessElement);
 
 // ProcessElement can be seerialized as std::vector<ProcessElement>
@@ -58,6 +60,8 @@ ProcessElement::ProcessElement()
    _vExtent.push_back(0);
    _vExtent.push_back(0);
    _vExtent.push_back(0);
+   _z0 = 0;
+   _z1 = 1;
 }
 
 
@@ -80,12 +84,37 @@ void ProcessElement::SetExtent(int64 x0, int64 y0, int64 x1, int64 y1)
 
 //------------------------------------------------------------------------------
 
+void ProcessElement::SetExtent(int64 x0, int64 y0, int64 z0, int64 x1, int64 y1, int64 z1)
+{
+   _vExtent[0] = x0;
+   _vExtent[1] = y0;
+   _vExtent[2] = x1;
+   _vExtent[3] = y1;
+   _z0 = z0;
+   _z1 = z1;
+
+}
+
+//------------------------------------------------------------------------------
+
 void ProcessElement::GetExtent(int64& x0, int64& y0, int64& x1, int64& y1)
 {
    x0 = _vExtent[0];
    y0 = _vExtent[1];
    x1 = _vExtent[2];
    y1 = _vExtent[3];
+}
+
+//------------------------------------------------------------------------------
+
+void ProcessElement::GetExtent(int64& x0, int64& y0, int64& z0, int64& x1, int64& y1, int64& z1)
+{
+   x0 = _vExtent[0];
+   y0 = _vExtent[1];
+   x1 = _vExtent[2];
+   y1 = _vExtent[3];
+   z0 = _z0;
+   z1 = _z1;
 }
 
 //------------------------------------------------------------------------------
