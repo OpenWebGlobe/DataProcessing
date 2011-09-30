@@ -45,6 +45,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    LIBRARY_API void Tokenize(std::string& sInput, char cSep, std::vector<long>& sOut);
    LIBRARY_API void Tokenize(std::string& sInput, char cSep, std::vector<unsigned long>& sOut);
    LIBRARY_API void Tokenize(std::string& sInput, char cSep, std::vector<float>& sOut);
+   LIBRARY_API void Tokenize(std::string& sInput, std::string& cSeps, std::vector<double>& sOut);
    LIBRARY_API void Tokenize(std::string& sInput, char cSep, std::vector<double>& sOut);
        
 #endif      

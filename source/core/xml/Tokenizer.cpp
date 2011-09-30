@@ -248,6 +248,35 @@ void Tokenize(std::string& sInput, char cSep, std::vector<float>& sOut)
 }
 
 //---------------------------------------------------------------------------
+void Tokenize(std::string& sInput, std::string& cSeps, std::vector<double>& sOut)
+{
+   sOut.clear();
+   std::string sCurrent;
+   for (size_t i=0;i<sInput.length();i++)
+   {
+      bool bfound = false;
+      char cCmp = sInput.c_str()[i];
+      for (size_t j=0;j<cSeps.length();j++)
+      {
+         if (cCmp == cSeps[j])
+         {
+            // found separator
+            sOut.push_back(atof(sCurrent.c_str()));
+            sCurrent.clear();
+            bfound = true;
+         }
+      }
+
+      if (!bfound)
+      {
+         sCurrent += cCmp;
+      }
+   }
+
+   // add last value too (if there is a value)
+   if (sCurrent.length()>0)
+      sOut.push_back(atof(sCurrent.c_str()));
+}
 
 void Tokenize(std::string& sInput, char cSep, std::vector<double>& sOut)
 {
