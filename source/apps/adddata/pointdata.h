@@ -29,7 +29,7 @@
 namespace PointData
 {
 
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sElevationFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_z0, int64& out_x1, int64& out_y1, int64& out_z1);
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sPointFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_z0, int64& out_x1, int64& out_y1, int64& out_z1);
 
 }
 

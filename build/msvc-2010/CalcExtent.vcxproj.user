@@ -3,7 +3,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--verbose --srs EPSG:4326 --inputdir C:\data\AST\test --filetype tif</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--point --verbose --srs EPSG:21781 --inputdir C:\data\points\ --filetype xyz</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>

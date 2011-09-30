@@ -110,6 +110,7 @@
     <ClInclude Include="..\..\source\core\math\ElevationPointUtils.h" />
     <ClInclude Include="..\..\source\core\math\GeoCoord.h" />
     <ClInclude Include="..\..\source\core\math\mathutils.h" />
+    <ClInclude Include="..\..\source\core\math\Octocode.h" />
     <ClInclude Include="..\..\source\core\math\vec2.h" />
     <ClInclude Include="..\..\source\core\math\vec3.h" />
     <ClInclude Include="..\..\source\core\memory\ReferenceCounter.h" />

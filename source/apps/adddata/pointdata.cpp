@@ -21,9 +21,11 @@
 #include "io/FileSystem.h"
 #include "geo/ElevationLayerSettings.h"
 #include "geo/MercatorQuadtree.h"
+#include "geo/PointCloudReader.h"
 #include "image/ImageLoader.h"
 #include "image/ImageWriter.h"
 #include "math/ElevationPoint.h"
+#include "math/CloudPoint.h"
 #include <sstream>
 #include <fstream>
 #include <ctime>
@@ -32,8 +34,13 @@
 
 namespace PointData
 {
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sElevationFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_z0, int64& out_x1, int64& out_y1, int64& out_z1)
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sPointFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_z0, int64& out_x1, int64& out_y1, int64& out_z1)
    {
+     /* PointCloudReader pr;
+
+      if (pr.Open(sPointFile))
+      {
+      }*/
       return -1;
    }
 

@@ -22,6 +22,8 @@
 #include "ogprocess.h"
 #include "geo/MercatorQuadtree.h"
 #include "geo/CoordinateTransformation.h"
+#include "geo/PointCloudReader.h"
+#include "math/Octocode.h"
 #include "string/FilenameUtils.h"
 #include "string/StringUtils.h"
 #include "io/FileSystem.h"
@@ -179,6 +181,42 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
       // vecfiles contains xyz (or xyzi or xyzirgb) ASCII files.
       // a) find the center of the dataset
       // b) find extent (max,min of x,y and z component)
+
+      double xmin, ymin, zmin;
+      double xmax, ymax, zmax;
+      double xcenter, ycenter, zcenter;
+      double xcenterwgs84, ycenterwgs84;
+
+      xmin=ymin=zmin=1e20;
+      xmax=ymax=zmax=-1e20;
+
+      CloudPoint pt;
+      for (size_t i = 0; i< vecFiles.size();++i)
+      {
+         PointCloudReader pr;
+
+         if (pr.Open(vecFiles[i]))
+         {
+            while (pr.ReadPoint(pt))
+            {
+               qCT->Transform(&pt.x, &pt.y);
+               xmin = math::Min<double>(xmin, pt.x);
+               ymin = math::Min<double>(ymin, pt.y);
+               zmin = math::Min<double>(zmin, pt.elevation);
+               xmax = math::Max<double>(xmax, pt.x);
+               ymax = math::Max<double>(ymax, pt.y);
+               zmax = math::Max<double>(zmax, pt.elevation);
+            }
+         }
+      }
+
+      xcenter = fabs(0.5*(xmax-xmin));
+      ycenter = fabs(0.5*(ymax-ymin));
+      zcenter = fabs(0.5*(zmax-zmin));
+
+      // get WGS84 coords for center:
+      Mercator::Reverse(xcenter, ycenter, xcenterwgs84, ycenterwgs84);
+
 
       return 0;
    }
