@@ -54,35 +54,18 @@ public:
    // Reads next point (normalized mercator coordinates + orthometric elevation). Returns false when all points are read.
    bool ReadPoint(CloudPoint& point);
  
-   //! Get minimal intensity value ((valid after reading all points)
-   int GetMinIntensity() {return _minIntensity;}
-   
-   //! Get maximal intensity value (valid after reading all points)
-   int GetMaxIntensity() {return _maxIntensity;}
-   
-   //! Get max point of Bounding box (valid after reading all points)
-   void GetMaxExtent(double& x, double& y, double& z);
-
-   //! Get min point of Bounding box (valid after reading all points)
-   void GetMinExtent(double& x, double& y, double& z);
-
-   //! Get Center of point cloud
-   void GetCenter(double& x, double& y, double& z);
-
    //! Get Point Cloud type (valid after reading first point)
    PointCloudType GetPointCloudtype(){return _pct;}
 
-protected:
-   int      _minIntensity;
-   int      _maxIntensity;
-   double   _xmin, _ymin, _zmin, _xmax, _ymax, _zmax;
-   double   _xcenter, _ycenter, _zcenter; // center point
 
 private:
    std::ifstream  _ifstream;
    int            _nSourceEPSG;
    std::string    _sFilenameA;
    PointCloudType _pct;
+   std::string    _line;
+   std::string    _separators;
+   size_t         _ptsread;
 
 };
 
