@@ -389,6 +389,9 @@
     <ClInclude Include="..\..\source\core\math\Octocode.h">
       <Filter>math</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\core\math\mat4.h">
+      <Filter>math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\source\core\image\ImageHandler.inl">

@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>adddata --verbose --numthreads 4 --layer ElevationTest --elevation C:\data\SRTM\part.tif --srs EPSG:4326 --fill</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer PointCloudTest  --point C:\data\points\Punktwolke.xyz --srs EPSG:21781 --fill --verbose</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--numthreads 4 --layer SRTMCN --elevation C:\data\test\srtm_58_04.tif --srs EPSG:4326 --fill --verbose</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer PointCloudTest  --point C:\data\points\Punktwolke.xyz --srs EPSG:21781 --fill --verbose</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

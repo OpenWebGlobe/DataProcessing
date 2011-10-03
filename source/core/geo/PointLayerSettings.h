@@ -37,7 +37,7 @@ public:
 
    std::string GetLayerName(){return _sLayername;}
    int GetMaxLod(){return _maxlod;}
-   void GetTileExtent(double& x0, double& y0, double& z0, double& x1, double& y1, double& z1){x0 = _boundary[0]; y0 = _boundary[1]; z0 = _boundary[2]; x1 = _boundary[3]; y1 = _boundary[4]; z1 = _boundary[5];}
+   void GetBoundary(double& x0, double& y0, double& z0, double& x1, double& y1, double& z1){x0 = _boundary[0]; y0 = _boundary[1]; z0 = _boundary[2]; x1 = _boundary[3]; y1 = _boundary[4]; z1 = _boundary[5];}
 
    // Load from XML
    static boost::shared_ptr<PointLayerSettings> Load(const std::string& layerdir);
