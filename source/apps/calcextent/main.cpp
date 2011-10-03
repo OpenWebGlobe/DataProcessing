@@ -173,7 +173,7 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
    }   
 
    boost::shared_ptr<CoordinateTransformation> qCT;
-   qCT = boost::shared_ptr<CoordinateTransformation>(new CoordinateTransformation(epsg, 3785));
+   qCT = boost::shared_ptr<CoordinateTransformation>(new CoordinateTransformation(epsg, 4326));
 
 
    if (bPointCloud)
@@ -185,7 +185,6 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
       double xmin, ymin, zmin;
       double xmax, ymax, zmax;
       double xcenter, ycenter, zcenter;
-      double xcenterwgs84, ycenterwgs84;
 
       xmin=ymin=zmin=1e20;
       xmax=ymax=zmax=-1e20;
@@ -214,10 +213,11 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
       ycenter = fabs(0.5*(ymax-ymin));
       zcenter = fabs(0.5*(zmax-zmin));
 
-      // get WGS84 coords for center:
-      Mercator::Reverse(xcenter, ycenter, xcenterwgs84, ycenterwgs84);
+      std::cout << "Point Cloud Center (WGS84): (" << xcenter << ", " << ycenter << ")\n";
+      std::cout << "Extent (WGS84): (" << xmin << ", " << ymin << ", " << zmin << ")-(" 
+                               << xmax << ", " << ymax << ", " << zmax << ")\n";
 
-
+     
       return 0;
    }
    else

@@ -31,6 +31,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string/StringUtils.h>
 #endif
 
+// uncomment if you don't want to use use boost tokenizer
+#define USE_BOOST_TOKENIZER
+
+#ifdef USE_BOOST_TOKENIZER
+#include <boost/tokenizer.hpp>
+#include <boost/foreach.hpp>
+#endif
+
+
 #include <cstdlib>
 
 //---------------------------------------------------------------------------
@@ -250,6 +259,19 @@ void Tokenize(std::string& sInput, char cSep, std::vector<float>& sOut)
 //---------------------------------------------------------------------------
 void Tokenize(std::string& sInput, std::string& cSeps, std::vector<double>& sOut)
 {
+#ifdef USE_BOOST_TOKENIZER
+   sOut.clear();
+
+   typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
+   boost::char_separator<char> sep((char*)cSeps.c_str());
+
+   tokenizer tokens(sInput, sep);
+
+   BOOST_FOREACH(std::string t, tokens)
+   {
+      sOut.push_back(atof(t.c_str()));
+   }
+#else
    sOut.clear();
    std::string sCurrent;
    for (size_t i=0;i<sInput.length();i++)
@@ -276,7 +298,10 @@ void Tokenize(std::string& sInput, std::string& cSeps, std::vector<double>& sOut
    // add last value too (if there is a value)
    if (sCurrent.length()>0)
       sOut.push_back(atof(sCurrent.c_str()));
+#endif
 }
+
+//------------------------------------------------------------------------------
 
 void Tokenize(std::string& sInput, char cSep, std::vector<double>& sOut)
 {
@@ -300,3 +325,6 @@ void Tokenize(std::string& sInput, char cSep, std::vector<double>& sOut)
    // add last value too
    sOut.push_back(atof(sCurrent.c_str()));
 }
+
+//------------------------------------------------------------------------------
+
