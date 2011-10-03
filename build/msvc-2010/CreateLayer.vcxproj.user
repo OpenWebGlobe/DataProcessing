@@ -8,6 +8,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--force --name LayerName --lod 13 --extent 4223 2850 4228 2931</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--force --type point --name PointCloudTest --lod 16 --boundary 7.6350772579766 47.5310284376075 275.231296 7.64160607969341 47.5355092040644 337.293964</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

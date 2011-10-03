@@ -344,6 +344,27 @@ std::string Int64VecToXML(void* pAddress, std::string sTag)
 TYPE_TO_XML_CONVERSION(std::vector<int64>, Int64VecToXML)
 
 //-----------------------------------------------------------------------------
+std::string DoubleVecToXML(void* pAddress, std::string sTag)
+{
+   std::ostringstream os;
+   os.precision(17);
+   std::vector<double>* pData = (std::vector<double>*)(pAddress);
+
+   if (pData->size()>0) // only write this tag if there is actually data!
+   {
+      os << "<" << sTag << ">";
+
+      for (size_t i=0;i<pData->size();i++)
+      {
+         os << (*pData)[i];
+         if (i!=pData->size()-1) os << " ";
+      }
+      os << "</" << sTag << ">";
+   }
+   return os.str();
+}
+TYPE_TO_XML_CONVERSION(std::vector<double>, DoubleVecToXML)
+
 
 //=============================================================================
 // PART 3: CONVERT STRING TO CUSTOM TYPE
@@ -548,6 +569,24 @@ void XMLToInt64Vec(void* pAddress, std::string sXML)
    Tokenize(sValue, ' ', *pData);
 }
 XML_TO_TYPE_CONVERSION(std::vector<int64>, XMLToInt64Vec)
+
+ //-----------------------------------------------------------------------------
+
+void XMLToDoubleVec(void* pAddress, std::string sXML)
+{
+   std::stringstream os;
+   os << sXML;
+
+   std::vector<double>* pData = (std::vector<double>*)(pAddress);
+   pData->clear();
+
+   bool bValueTag;
+   std::string sTag = ObjectFactory::GetTag(os, bValueTag);
+   std::string sValue = ObjectFactory::GetValue(os);
+
+   Tokenize(sValue, ' ', *pData);
+}
+XML_TO_TYPE_CONVERSION(std::vector<double>, XMLToDoubleVec)
 
 //-----------------------------------------------------------------------------
 

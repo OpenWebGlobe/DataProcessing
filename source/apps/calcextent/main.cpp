@@ -232,10 +232,10 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
       std::cout << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
 
       std::cout << "There are " << numpts << " points...\n";
+      //std::cout << "Point Cloud Center (WGS84): (" << xcenter << ", " << ycenter << ", " << zcenter <<")\n";
       std::cout << "Required for ogCreateLayer:\n";
       std::cout << "-------------------------------------------------------------------------------\n";
       std::cout << "Extent (WGS84): (" << xmin << ", " << ymin << ", " << zmin << ")-(" << xmax << ", " << ymax << ", " << zmax << ")\n";
-      std::cout << "Point Cloud Center (WGS84): (" << xcenter << ", " << ycenter << ", " << zcenter <<")\n";
       std::cout << "-------------------------------------------------------------------------------\n";
 
       return 0;

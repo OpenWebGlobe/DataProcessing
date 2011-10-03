@@ -33,11 +33,11 @@ public:
    // Setters/Getters:
    void SetLayerName(const std::string& sLayername) {_sLayername = sLayername;} 
    void SetMaxLod(int maxlod) {_maxlod = maxlod;}
-   void SetTileExtent(int64 x0, int64 y0, int64 z0, int64 x1, int64 y1, int64 z1) { _tilecoord[0] = x0; _tilecoord[1] = y0; _tilecoord[2] = z0; _tilecoord[3] = x1; _tilecoord[4] = y1; _tilecoord[5] = z1;}
+   void SetBoundary(double x0, double y0, double z0, double x1, double y1, double z1) { _boundary[0] = x0; _boundary[1] = y0; _boundary[2] = z0; _boundary[3] = x1; _boundary[4] = y1; _boundary[5] = z1;}
 
    std::string GetLayerName(){return _sLayername;}
    int GetMaxLod(){return _maxlod;}
-   void GetTileExtent(int64& x0, int64& y0, int64& z0, int64& x1, int64& y1, int64& z1){x0 = _tilecoord[0]; y0 = _tilecoord[1]; z0 = _tilecoord[2]; x1 = _tilecoord[3]; y1 = _tilecoord[4]; z1 = _tilecoord[5];}
+   void GetTileExtent(double& x0, double& y0, double& z0, double& x1, double& y1, double& z1){x0 = _boundary[0]; y0 = _boundary[1]; z0 = _boundary[2]; x1 = _boundary[3]; y1 = _boundary[4]; z1 = _boundary[5];}
 
    // Load from XML
    static boost::shared_ptr<PointLayerSettings> Load(const std::string& layerdir);
@@ -50,7 +50,7 @@ protected:
    std::string _sLayertype;
    int         _maxlod;
    std::string _srs;
-   std::vector<int64> _tilecoord;
+   std::vector<double> _boundary;
    
 
 private:

@@ -27,7 +27,7 @@ BeginPropertyMap(PointLayerSettings);
   XMLProperty(PointLayerSettings, "type" , _sLayertype);
   XMLProperty(PointLayerSettings, "srs", _srs);
   XMLProperty(PointLayerSettings, "maxlod", _maxlod);
-  XMLProperty(PointLayerSettings, "extent", _tilecoord);
+  XMLProperty(PointLayerSettings, "extent", _boundary);
 EndPropertyMap(PointLayerSettings);
 //------------------------------------------------------------------------------
 
@@ -41,12 +41,12 @@ PointLayerSettings::PointLayerSettings()
    _sLayertype = "point";
    _maxlod = 0;
    _srs = "EPSG:3857";
-   _tilecoord.push_back(0);
-   _tilecoord.push_back(0);
-   _tilecoord.push_back(0);
-   _tilecoord.push_back(0);
-   _tilecoord.push_back(0);
-   _tilecoord.push_back(0);
+   _boundary.push_back(0.0);
+   _boundary.push_back(0.0);
+   _boundary.push_back(0.0);
+   _boundary.push_back(0.0);
+   _boundary.push_back(0.0);
+   _boundary.push_back(0.0);
 }
 
 
@@ -95,6 +95,7 @@ bool PointLayerSettings::Save(const std::string& layerdir)
    // write json file (for WebGL version of the globe)
    std::ofstream jout;
    jout.open((FilenameUtils::DelimitPath(layerdir) + _jsonsettingsfile).c_str());
+   jout.precision(17);
 
    if (jout.good())
    {
@@ -103,7 +104,7 @@ bool PointLayerSettings::Save(const std::string& layerdir)
       jout << "   \"name\" : \"" << _sLayername << "\",\n";
       jout << "   \"type\" : \"" << _sLayertype << "\",\n";
       jout << "   \"maxlod\" : " << _maxlod << ",\n";
-      jout << "   \"extent\" : " << "[" << _tilecoord[0] << ", " << _tilecoord[1] << ", " << _tilecoord[2] << ", " << _tilecoord[3] << ", " << _tilecoord[4] << ", " << _tilecoord[5] << "]\n";
+      jout << "   \"extent\" : " << "[" << _boundary[0] << ", " << _boundary[1] << ", " << _boundary[2] << ", " << _boundary[3] << ", " << _boundary[4] << ", " << _boundary[5] << "]\n";
       jout << "}\n";
    }
 
