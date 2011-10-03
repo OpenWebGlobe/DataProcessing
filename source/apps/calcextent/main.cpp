@@ -178,6 +178,9 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
 
    if (bPointCloud)
    {
+      clock_t t0,t1;
+      t0 = clock();
+
       // vecfiles contains xyz (or xyzi or xyzirgb) ASCII files.
       // a) find the center of the dataset
       // b) find extent (max,min of x,y and z component)
@@ -188,6 +191,8 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
 
       xmin=ymin=zmin=1e20;
       xmax=ymax=zmax=-1e20;
+
+      size_t numpts = 0;
 
       CloudPoint pt;
       for (size_t i = 0; i< vecFiles.size();++i)
@@ -205,19 +210,34 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
                xmax = math::Max<double>(xmax, pt.x);
                ymax = math::Max<double>(ymax, pt.y);
                zmax = math::Max<double>(zmax, pt.elevation);
+
+               numpts++;
             }
          }
       }
 
-      xcenter = fabs(0.5*(xmax-xmin));
-      ycenter = fabs(0.5*(ymax-ymin));
-      zcenter = fabs(0.5*(zmax-zmin));
+      xcenter = xmin+ fabs(0.5*(xmax-xmin));
+      ycenter = ymin+fabs(0.5*(ymax-ymin));
+      zcenter = zmin+fabs(0.5*(zmax-zmin));
 
-      std::cout << "Point Cloud Center (WGS84): (" << xcenter << ", " << ycenter << ")\n";
-      std::cout << "Extent (WGS84): (" << xmin << ", " << ymin << ", " << zmin << ")-(" 
-                               << xmax << ", " << ymax << ", " << zmax << ")\n";
+      std::cout.precision(15);
+  
+      for (int i=1;i<23;i++)
+      {
+         std::cout << "LEVEL OF DETAIL " << i << ": ";
+         _calcfromwgs84(i, xmin, ymin, xmax, ymax);
+      }
 
-     
+      t1 = clock();
+      std::cout << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
+
+      std::cout << "There are " << numpts << " points...\n";
+      std::cout << "Required for ogCreateLayer:\n";
+      std::cout << "-------------------------------------------------------------------------------\n";
+      std::cout << "Extent (WGS84): (" << xmin << ", " << ymin << ", " << zmin << ")-(" << xmax << ", " << ymax << ", " << zmax << ")\n";
+      std::cout << "Point Cloud Center (WGS84): (" << xcenter << ", " << ycenter << ", " << zcenter <<")\n";
+      std::cout << "-------------------------------------------------------------------------------\n";
+
       return 0;
    }
    else
