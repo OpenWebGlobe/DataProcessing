@@ -32,15 +32,115 @@
 #include <sstream>
 #include <fstream>
 #include <ctime>
-
+#include <map>
+#include <list>
 #include <omp.h>
 
 
 
 namespace PointData
 {
-   const size_t membuffer = 10000; // number of points to kept in memory
+   //------------------------------------------------------------------------
+   const size_t membuffer = 10000; // number of points to keep in memory
+   //------------------------------------------------------------------------
 
+   class PointMap
+   {
+   public:
+      //------------------------------------------------------------------------
+      PointMap(int levelofdetail)
+      {
+         _numpts = 0;
+         _numkeys = 0;
+         _lod = levelofdetail;
+         _pow = int64(1) << _lod; 
+         _dpow = _pow * _pow;
+      }
+      //------------------------------------------------------------------------
+      virtual ~PointMap()
+      {
+      }
+      //------------------------------------------------------------------------
+      void Clear()
+      {
+         _map.clear();
+      }
+      //------------------------------------------------------------------------
+      void AddPoint(int64 i, int64 j, int64 k, const CloudPoint& pt)
+      {
+         int64 key = _dpow*k + _pow*j + i;
+ 
+         _numpts++;
+         
+         std::map<int64, std::list<CloudPoint> >::iterator it;
+         it = _map.find(key);
+         if (it != _map.end())
+         {
+            // this key already exists, append point
+            it->second.push_back(pt);
+         }
+         else
+         {
+            // this key doesn't exist yet. create new entry
+            std::list<CloudPoint> newList;
+            newList.push_back(pt);
+            _map.insert(std::pair<int64, std::list<CloudPoint> >(key, newList));
+            _numkeys++;
+         }
+      }
+      //------------------------------------------------------------------------
+      size_t GetNumPoints()
+      {
+         return _numpts;
+      }
+      //------------------------------------------------------------------------
+      size_t GetNumKeys()
+      {
+          return _numkeys;
+      }
+      //------------------------------------------------------------------------
+
+      void ExportJSON(const std::string& path)
+      {
+         std::map<int64, std::list<CloudPoint> >::iterator it = _map.begin();
+
+         while (it != _map.end())
+         {
+            int64 key = it->first;
+            int64 i,j,k;
+
+            k = key / _dpow;
+            j = (key - _dpow*k) / _pow;
+            i = key - _dpow*k - j*_pow;
+
+            //std::string sOctocode = Octocode::IndexToOctocode(i,j,k,_lod);
+            // #todo: create or open existing file: path/lod/x/y-z.json
+
+            std::list<CloudPoint>& lstCloudPoints = it->second;
+
+            std::list<CloudPoint>::iterator jt = lstCloudPoints.begin();
+            while (jt != lstCloudPoints.end())
+            {
+               // #todo: write cloud point to file
+               jt++;
+            }
+
+            ++it;
+         }
+      }
+
+
+   private:
+      PointMap(){}
+      std::map<int64, std::list<CloudPoint> > _map;
+      size_t _numpts;
+      size_t _numkeys;
+      int _lod;
+      int64 _pow;
+      int64 _dpow;
+   };
+
+  
    int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sPointFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_z0, int64& out_x1, int64& out_y1, int64& out_z1)
    {
       clock_t t0,t1;
@@ -61,6 +161,7 @@ namespace PointData
 
       std::string sPointLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
       std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "tiles");
+      std::string sTempDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "temp");
 
       boost::shared_ptr<PointLayerSettings> qPointLayerSettings = PointLayerSettings::Load(sPointLayerDir);
       if (!qPointLayerSettings)
@@ -146,9 +247,13 @@ namespace PointData
 
 
       size_t numpts = 0;
+      size_t totalpoints = 0;
+      size_t totalkeys = 0;
 
       CloudPoint pt;
+      CloudPoint pt_octree; // point in octree coords
       PointCloudReader pr;
+      PointMap pointmap(lod);
 
       if (pr.Open(sPointFile))
       {
@@ -166,15 +271,33 @@ namespace PointData
             
             in_geopt.ToCartesian(&in_pt_cart.x, &in_pt_cart.y, &in_pt_cart.z);
             out_pt_octree = Linv.vec3mul(in_pt_cart);
+            pt_octree.r = pt.r;
+            pt_octree.g = pt.g;
+            pt_octree.b = pt.b;
+            pt_octree.a = pt.a;
+            pt_octree.intensity = pt.intensity;
+            pt_octree.x = out_pt_octree.x;
+            pt_octree.y = out_pt_octree.y;
+            pt_octree.elevation = out_pt_octree.z;
 
             int64 octreeX = int64(out_pt_octree.x * lodlen); 
             int64 octreeY = int64(out_pt_octree.y * lodlen); 
             int64 octreeZ = int64(out_pt_octree.z * lodlen); 
 
             // now we have the octree coordinate (octreeX,Y,Z) of the point
-            // 
-            // -> #todo: create or update voxel brick
-            // ->        store on disk (JSON)
+            // -> add the point to pointmap (which is actually a hash map)
+            // -> note: don't calculate the octocode for each point, it would be way too slow.
+            pointmap.AddPoint(octreeX, octreeY, octreeZ, pt_octree);
+
+            if (pointmap.GetNumPoints()>membuffer)
+            {
+               totalpoints+=pointmap.GetNumPoints();
+               totalkeys+=pointmap.GetNumKeys();
+
+               pointmap.ExportJSON(sTileDir);
+
+               pointmap.Clear();
+            }
 
             numpts++;
          }
@@ -184,12 +307,19 @@ namespace PointData
          return -1;
       }
 
+
+       totalpoints+=pointmap.GetNumPoints();
+       totalkeys+=pointmap.GetNumKeys();
     
 
       //------------------------------------------------------------------------
 
       ProcessingUtils::exit_gdal();
 
+
+      std::cout << "Pointmap Stats:\n";
+      std::cout << " numkeys:   " << totalkeys << "\n";
+      std::cout << " numpoints: " << totalpoints << "\n";
 
       t1 = clock();
       std::cout << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
