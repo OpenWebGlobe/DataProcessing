@@ -25,7 +25,6 @@ class OPENGLOBE_API CloudPoint
 {
 public:
    CloudPoint();
-   CloudPoint(const CloudPoint& cp);
    ~CloudPoint();
    
    double         x,y;
