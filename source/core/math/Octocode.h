@@ -23,7 +23,7 @@
 #include <cmath>
 #include <cassert>
 #include <string>
-#include <strstream>
+#include <sstream>
 #include <math/vec3.h>
 #include <math/vec2.h>
 
