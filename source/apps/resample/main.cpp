@@ -23,7 +23,10 @@
 #include "resample.h"
 #include "resample_elevation.h"
 #include "geo/ElevationLayerSettings.h"
+#include "geo/PointLayerSettings.h"
+#include "io/FileSystem.h"
 #include <boost/program_options.hpp>
+#include <set>
 #include <omp.h>
 
 namespace po = boost::program_options;
@@ -288,7 +291,75 @@ int main(int argc, char *argv[])
    }
    else if (layertype == 2) // point
    {
-      // #todo
+      std::string sPointLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
+      std::string sTempIndexDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "temp");
+      std::string sTempTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "temp/tiles");
+      std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "tiles");
+      
+      boost::shared_ptr<PointLayerSettings> qPointLayerSettings = PointLayerSettings::Load(sPointLayerDir);
+      if (!qPointLayerSettings)
+      {
+         qLogger->Error("Failed retrieving point layer settings!");
+         return 6;
+      }
+
+      int lod = qPointLayerSettings->GetMaxLod();
+
+
+      std::set<int64> indices;
+
+      std::vector<std::string> sIndexFiles = FileSystem::GetFilesInDirectory(sTempIndexDir, "idx");
+
+      // create map of all tiles:
+      for (size_t i=0;i<sIndexFiles.size();i++)
+      {
+         //std::cout << "found: " << sIndexFiles[i] << "\n";
+         std::ifstream ifs(sIndexFiles[i], std::ios::binary);
+         int64 value;
+
+         if (ifs.good())
+         {
+            while (!ifs.eof())
+            {
+               ifs.read((char*)&value, sizeof(int64));
+               indices.insert(value);
+            }
+         }
+
+         ifs.close();
+      }
+
+      int64 dpow;
+      int64 pow;
+
+      pow = int64(1) << lod; 
+      dpow = pow * pow;
+      
+      // A) create voxels @ maxlod
+
+      std::set<int64>::iterator it = indices.begin();
+      while (it != indices.end())
+      {
+         int64 i,j,k;
+         int64 key = *it;
+         // convert key -> octree coord (i,j,k)
+         k = key / dpow;
+         j = (key - dpow*k) / pow;
+         i = key - dpow*k - j*pow;
+
+         // Filename:
+         std::ostringstream oss;
+         oss << sTempTileDir << lod << "/" << i << "/" << j << "-" << k << ".dat";
+         std::string sFilename = oss.str();
+
+         // #todo: create voxel from the data in "sFilename"
+
+         it++;
+      }
+
+      // B) create voxels for remaining lods
+      // #todo: lod calc
+
    }
 
 
