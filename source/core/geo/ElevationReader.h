@@ -85,6 +85,9 @@ private:
    double         _dNoDataValue;
    int            _datatype;
    int            _datatype_bytes;
+   
+   double         _maxElvValue;
+   double         _minElvValue;
 
    double         _affineTransformation[6];
    double         _affineTransformation_inverse[6];
