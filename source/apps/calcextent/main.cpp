@@ -173,11 +173,10 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
    }   
 
    boost::shared_ptr<CoordinateTransformation> qCT;
-   qCT = boost::shared_ptr<CoordinateTransformation>(new CoordinateTransformation(epsg, 4326));
-
-
+   
    if (bPointCloud)
    {
+      qCT = boost::shared_ptr<CoordinateTransformation>(new CoordinateTransformation(epsg, 4326));
       clock_t t0,t1;
       t0 = clock();
 
@@ -242,6 +241,8 @@ int _frominput(const std::vector<std::string>& vecFiles, const std::string& srs,
    }
    else
    {
+
+      qCT = boost::shared_ptr<CoordinateTransformation>(new CoordinateTransformation(epsg, 3785));
 
       // create an array of Dataset info for parallel access.
       DataSetInfo* pDataset = new DataSetInfo[vecFiles.size()];
