@@ -1,52 +1,56 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "calcextent", "CalcExtent.vcxproj", "{53BD189F-1BD8-4654-89E8-53B00BFE9D00}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogCalcExtent", "CalcExtent.vcxproj", "{53BD189F-1BD8-4654-89E8-53B00BFE9D00}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "createlayer", "CreateLayer.vcxproj", "{53BD189F-1BD8-4654-89E8-53B00BFE9D01}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogCreateLayer", "CreateLayer.vcxproj", "{53BD189F-1BD8-4654-89E8-53B00BFE9D01}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenWebGlobeProcessing", "OpenWebGlobeProcessing.vcxproj", "{7720B169-3379-4765-9216-6DBB2722588E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adddata", "AddData.vcxproj", "{53BD189F-1BD8-4654-89E8-53B00BFE9D02}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogAddData", "AddData.vcxproj", "{53BD189F-1BD8-4654-89E8-53B00BFE9D02}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "filelocktest", "FileLock_StressTest.vcxproj", "{E382EFB1-1751-4797-B4CB-D8DFD6434768}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogFileLockTest", "FileLock_StressTest.vcxproj", "{E382EFB1-1751-4797-B4CB-D8DFD6434768}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "resample", "Resample.vcxproj", "{FF28D228-021E-4713-B3F4-50AE204EAD01}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogResample", "Resample.vcxproj", "{FF28D228-021E-4713-B3F4-50AE204EAD01}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "resample_mpi", "Resample _mpi.vcxproj", "{41C1D781-2285-47BF-8116-CA756D8C2458}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogResample_mpi", "Resample _mpi.vcxproj", "{41C1D781-2285-47BF-8116-CA756D8C2458}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deploy", "deploy.vcxproj", "{DFC47E3A-9D7F-4002-A5E7-F29A4F47FD26}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogDeploy", "deploy.vcxproj", "{DFC47E3A-9D7F-4002-A5E7-F29A4F47FD26}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "triangulate", "Triangulate.vcxproj", "{1E9DB029-1FF3-40DF-AD84-5D78D4B7B6E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogTriangulate", "Triangulate.vcxproj", "{1E9DB029-1FF3-40DF-AD84-5D78D4B7B6E9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deploy_mpi", "deploy_mpi.vcxproj", "{048834F9-8EEE-4053-8655-C6C276889689}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogDeploy_mpi", "deploy_mpi.vcxproj", "{048834F9-8EEE-4053-8655-C6C276889689}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogHillshading", "Hillshading.vcxproj", "{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogTileRenderer", "TileRenderer.vcxproj", "{53BD189F-1BD8-4654-89E8-53B30BFE9D02}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -94,6 +98,14 @@ Global
 		{048834F9-8EEE-4053-8655-C6C276889689}.Debug|Win32.Build.0 = Debug|Win32
 		{048834F9-8EEE-4053-8655-C6C276889689}.Release|Win32.ActiveCfg = Release|Win32
 		{048834F9-8EEE-4053-8655-C6C276889689}.Release|Win32.Build.0 = Release|Win32
+		{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}.Debug|Win32.ActiveCfg = Debug|Win32
+		{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
+		{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
+		{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}.Release|Win32.Build.0 = Release|Win32
+		{53BD189F-1BD8-4654-89E8-53B30BFE9D02}.Debug|Win32.ActiveCfg = Debug|Win32
+		{53BD189F-1BD8-4654-89E8-53B30BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
+		{53BD189F-1BD8-4654-89E8-53B30BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
+		{53BD189F-1BD8-4654-89E8-53B30BFE9D02}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
