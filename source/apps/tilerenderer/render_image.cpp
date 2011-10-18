@@ -18,9 +18,6 @@
 // This is the triangulate version without mpi intended for regular 
 // workstations. Multi cores are supported (OpenMP) and highly recommended.
 //------------------------------------------------------------------------------
-// Some code adapted from: generate_tiles.py
-// Found at: http://trac.openstreetmap.org/browser/applications/rendering/mapnik
-//------------------------------------------------------------------------------
 #include <mapnik/map.hpp>
 #include <mapnik/datasource_cache.hpp>
 #include <mapnik/font_engine_freetype.hpp>
@@ -32,15 +29,17 @@
 #include <mapnik/load_map.hpp>
 #include <mapnik/envelope.hpp>
 #include <mapnik/proj_transform.hpp>
+
+#if defined(HAVE_CAIRO)
+// cairo
+#include <mapnik/cairo_renderer.hpp>
+#include <cairomm/surface.h>
+#endif
+
 #include <iostream>
 #include <boost/filesystem.hpp>
-#include "render_tile.h"
-#include <string/FilenameUtils.h>
-#include <string/StringUtils.h>
-#include <io/FileSystem.h>
-#include <math/mathutils.h>
 
-//------------------------------------------------------------------------------------
+
 int main ( int argc , char** argv)
 {    
     if (argc != 3)
@@ -55,27 +54,12 @@ int main ( int argc , char** argv)
         std::string mapnik_dir(argv[1]);
 		std::string map_file(argv[2]);
 		std::string map_uri = "image.png";
-		std::string output_path = "D:/data/test/";
-		int minZoom = 1;
-		int maxZoom = 12;
-		bool tsmScheme = false;
-		GoogleProjection gProj = GoogleProjection(maxZoom); // maxlevel 12
-		//projection merc = projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over");
-		//projection longlat = projection("+proj=latlong +datum=WGS84");
 
-		// Boundaries
-		// CH Bounds  double bounds[4] = {5.955870,46.818020,10.492030,47.808380};
-		double bounds[4] = {-180,-90,180,90};
-		double dummy = 0.0;
-	
-		//proj_transform transform = proj_transform(longlat,merc);
+		projection merc = projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over");
+		projection longlat = projection("+proj=latlong +datum=WGS84");
 
-		int x = 1;
-		int y = 1;
-		//int z = 2;
+		int z = 5;
 
-		
-		
 #ifdef _DEBUG
 		std::string plugin_path = mapnik_dir + "/input/debug/";
 #else
@@ -97,58 +81,27 @@ int main ( int argc , char** argv)
 				}
 			}
 		}
-		// Generate map container
-		Map m(tilesize,tilesize);
+
+
+        Map m(5000,3800);
         m.set_background(color_factory::from_string("white"));
 		load_map(m,map_file);
-		projection mapnikProj = projection(m.srs());
+		m.set_srs(merc.params());
+		double bounds[4] = {5.955870,46.818020,10.492030,47.808380};
+		double dummy = 0.0;
+	
+		proj_transform transform = proj_transform(longlat,merc);
+		
+		transform.forward(bounds[0],bounds[1],dummy);
+		transform.forward(bounds[2],bounds[3],dummy);
+		Envelope<double> bbox = Envelope<double>(bounds[0],bounds[1],bounds[2],bounds[3]);
+        
+		m.zoomToBox(bbox);
 
-		if(!FileSystem::DirExists(output_path))
-			FileSystem::makedir(output_path);
-
-		for(int z = minZoom; z < maxZoom + 1; z++)
-		{
-			ituple px0 = gProj.geoCoord2Pixel(dtuple(bounds[0], bounds[3]),z);
-			ituple px1 = gProj.geoCoord2Pixel(dtuple(bounds[2], bounds[1]),z);
-
-			// check if we have directories in place
-			std::string szoom = StringUtils::IntegerToString(z, 10);
-			if(!FileSystem::DirExists(output_path + szoom))
-				FileSystem::makedir(output_path + szoom);
-
-			for(int x = int(px0.a/256.0); x <= int(px1.a/256.0) +1; x++)
-			{
-				// Validate x co-ordinate
-				if((x < 0) || (x >= math::Pow2(z)))
-					continue;
-				// check if we have directories in place
-				std::string str_x = StringUtils::IntegerToString(x,10);
-				if(!FileSystem::DirExists(output_path + szoom + "/" + str_x))
-					FileSystem::makedir(output_path + szoom + "/" + str_x);
-				for(int y = int(px0.b/256.0); y <= int(px1.b/256.0)+1; y++)
-				{
-					// Validate x co-ordinate
-					if((y < 0) || (y >= math::Pow2(z)))
-						continue;
-					// flip y to match OSGEO TMS spec
-					std::string str_y;
-					if(tsmScheme)
-						str_y = StringUtils::IntegerToString(math::Pow2(z-1) - y,10);
-					else
-						str_y = StringUtils::IntegerToString(y,10);
-
-					std::string tile_uri = output_path + szoom + '/' + str_x + '/' + str_y + ".png";
-					// Submit tile to be rendered
-					_renderTile(tile_uri,m,x,y,z,gProj,mapnikProj);
-				}
-			}
-		}
-		// Submit tile to be rendered into the queue
-		/*			t = (name, tile_uri, x, y, z)
-                try:
-                    queue.put(t)
-                except KeyboardInterrupt:
-                    raise SystemExit("Ctrl-c detected, exiting...")*/
+		Image32 buf(m.getWidth(),m.getHeight());
+        agg_renderer<Image32> ren(m,buf);
+        ren.apply();
+        save_to_file<ImageData32>(buf.data(),map_uri,"png");
     }
     catch ( const mapnik::config_error & ex )
     {
