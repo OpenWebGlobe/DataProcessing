@@ -62,7 +62,8 @@ bool PointCloudReader::ReadPoint(CloudPoint& point)
    while (!_ifstream.eof())
    {
       _ifstream.getline(line, 4095);
-      Tokenize(std::string(line), _separators, vOut);
+      std::string string_line(line);
+      Tokenize(string_line, _separators, vOut);
       size_t numColumns = vOut.size();
 
       if (_ptsread == 0) // first point!
