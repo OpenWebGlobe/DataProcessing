@@ -43,6 +43,9 @@ ElevationReader::ElevationReader()
    _pDataset = 0;
    _pElv = 0;
    _pBlockElv = 0;
+   // In future, this values must be customized
+   _maxElvValue = 12000;  // maximum value for elevation, if higher it is treated as NODATA
+   _minElvValue = -8000;  // minimum value for elevation if smaller, it is treated as NODATA
 }
 
 //-----------------------------------------------------------------------------
@@ -415,6 +418,12 @@ bool ElevationReader::_ImportRaster(std::vector<ElevationPoint>& result, double&
 
                default:
                   assert(false);
+               }
+
+               // further NODATA value check:
+               if (fz > _maxElvValue || fz < _minElvValue)
+               {
+                   bNoData = true;
                }
 
                // Transform Point:

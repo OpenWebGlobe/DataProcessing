@@ -29,11 +29,13 @@
 #include "math/mat4.h"
 #include "math/GeoCoord.h"
 #include "math/Octocode.h"
+#include "io/FileSystem.h"
 #include <sstream>
 #include <fstream>
 #include <ctime>
 #include <map>
 #include <list>
+#include <set>
 #include <omp.h>
 
 
@@ -41,7 +43,7 @@
 namespace PointData
 {
    //------------------------------------------------------------------------
-   const size_t membuffer = 10000; // number of points to keep in memory
+   const size_t membuffer = 100000; // number of points to keep in memory
    //------------------------------------------------------------------------
 
    class PointMap
@@ -64,6 +66,8 @@ namespace PointData
       void Clear()
       {
          _map.clear();
+         _numpts = 0;
+         _numkeys = 0;
       }
       //------------------------------------------------------------------------
       void AddPoint(int64 i, int64 j, int64 k, const CloudPoint& pt)
@@ -96,17 +100,18 @@ namespace PointData
       //------------------------------------------------------------------------
       size_t GetNumKeys()
       {
-          return _numkeys;
+          return _index.size();
       }
       //------------------------------------------------------------------------
 
-      void ExportJSON(const std::string& path)
+      void ExportData(const std::string& path)
       {
          std::map<int64, std::list<CloudPoint> >::iterator it = _map.begin();
 
          while (it != _map.end())
          {
             int64 key = it->first;
+            _index.insert(key);
             int64 i,j,k;
 
             k = key / _dpow;
@@ -114,25 +119,81 @@ namespace PointData
             i = key - _dpow*k - j*_pow;
 
             //std::string sOctocode = Octocode::IndexToOctocode(i,j,k,_lod);
-            // #todo: create or open existing file: path/lod/x/y-z.json
+            //create or open existing file: path/lod/x/y-z.json
+
+            std::ostringstream oss;
+            oss << path << _lod << "/" << i << "/" << j << "-" << k << ".dat";
+            std::string sFilename = oss.str();
+
+ 
+            std::ofstream of;
+
+
+            if (FileSystem::FileExists(sFilename))
+            {
+               of.open(sFilename, std::ios::app|std::ios::binary);
+            }
+            else
+            {
+               FileSystem::makeallsubdirs(sFilename);
+               of.open(sFilename, std::ios::binary);
+            }
+
+            of.precision(17);
 
             std::list<CloudPoint>& lstCloudPoints = it->second;
 
             std::list<CloudPoint>::iterator jt = lstCloudPoints.begin();
             while (jt != lstCloudPoints.end())
             {
-               // #todo: write cloud point to file
+               of.write((char*)&jt->x, sizeof(double));
+               of.write((char*)&jt->y, sizeof(double));
+               of.write((char*)&jt->elevation, sizeof(double));
+               of.write((char*)&jt->r, sizeof(double));
+               of.write((char*)&jt->g, sizeof(double));
+               of.write((char*)&jt->b, sizeof(double));
+               of.write((char*)&jt->intensity, sizeof(int));
+   
                jt++;
             }
+
+            of.close();
 
             ++it;
          }
       }
 
+      //------------------------------------------------------------------------
+
+      void ExportIndex(const std::string& sFilename)
+      {
+         std::set<int64>::iterator it = _index.begin();
+
+         std::ofstream of(sFilename, std::ios::binary);
+        
+         if (of.good())
+         {
+            while (it != _index.end())
+            {
+               int64 elm = *it;
+               of.write((char*)&elm, sizeof(int64));
+            
+               it++;
+            }
+         }
+
+         of.close();
+      }
+
+      //------------------------------------------------------------------------
+
+      std::set<int64>& GetIndex(){return _index;}
+
 
    private:
       PointMap(){}
       std::map<int64, std::list<CloudPoint> > _map;
+      std::set<int64> _index;
       size_t _numpts;
       size_t _numkeys;
       int _lod;
@@ -161,7 +222,8 @@ namespace PointData
 
       std::string sPointLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
       std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "tiles");
-      std::string sTempDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "temp");
+      std::string sTempDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "temp/tiles");
+      std::string sIndexFile = FilenameUtils::DelimitPath(sPointLayerDir) + "temp/" + FilenameUtils::ExtractBaseFileName(sPointFile) + ".idx";
 
       boost::shared_ptr<PointLayerSettings> qPointLayerSettings = PointLayerSettings::Load(sPointLayerDir);
       if (!qPointLayerSettings)
@@ -195,7 +257,7 @@ namespace PointData
       ycenter = y0 + fabs(y1-y0);
       zcenter = z0 + fabs(z1-z0); // elevation is currently ignored and set to 0
 
-      double len = 24000; // octree cube size (set to 24km length)
+      double len = 5000; // octree cube size
    
       mat4<double> L, Linv;
    
@@ -244,11 +306,8 @@ namespace PointData
 
       //------------------------------------------------------------------------
 
-
-
       size_t numpts = 0;
       size_t totalpoints = 0;
-      size_t totalkeys = 0;
 
       CloudPoint pt;
       CloudPoint pt_octree; // point in octree coords
@@ -292,9 +351,8 @@ namespace PointData
             if (pointmap.GetNumPoints()>membuffer)
             {
                totalpoints+=pointmap.GetNumPoints();
-               totalkeys+=pointmap.GetNumKeys();
 
-               pointmap.ExportJSON(sTileDir);
+               pointmap.ExportData(sTempDir);
 
                pointmap.Clear();
             }
@@ -307,10 +365,14 @@ namespace PointData
          return -1;
       }
 
+      if (pointmap.GetNumPoints()>0)
+         pointmap.ExportData(sTempDir);
 
-       totalpoints+=pointmap.GetNumPoints();
-       totalkeys+=pointmap.GetNumKeys();
+      totalpoints+=pointmap.GetNumPoints();
     
+      // export list of all written tiles (for future processing)
+      pointmap.ExportIndex(sIndexFile);
+
 
       //------------------------------------------------------------------------
 
@@ -318,7 +380,7 @@ namespace PointData
 
 
       std::cout << "Pointmap Stats:\n";
-      std::cout << " numkeys:   " << totalkeys << "\n";
+      std::cout << " numkeys:   " << pointmap.GetNumKeys() << "\n";
       std::cout << " numpoints: " << totalpoints << "\n";
 
       t1 = clock();
