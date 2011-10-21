@@ -148,7 +148,7 @@ void TarWriter::AddFile(const char* filename,const char* filename_archive)
 void _init(PosixTarHeader* header)
 {
    std::memset(header,0,sizeof(PosixTarHeader));
-   std::sprintf(header->magic,"ustar  ");
+   std::memcpy(header->magic,"ustar  ", sizeof(header->magic));
    std::sprintf(header->mtime,"%011lo",time(NULL));
    std::sprintf(header->mode,"%07o",0644);
    //char * s = ::getlogin();
