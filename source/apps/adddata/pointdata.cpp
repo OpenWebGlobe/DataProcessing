@@ -131,12 +131,12 @@ namespace PointData
 
             if (FileSystem::FileExists(sFilename))
             {
-               of.open(sFilename, std::ios::app|std::ios::binary);
+               of.open(sFilename.c_str(), std::ios::app|std::ios::binary);
             }
             else
             {
                FileSystem::makeallsubdirs(sFilename);
-               of.open(sFilename, std::ios::binary);
+               of.open(sFilename.c_str(), std::ios::binary);
             }
 
             of.precision(17);
@@ -169,7 +169,7 @@ namespace PointData
       {
          std::set<int64>::iterator it = _index.begin();
 
-         std::ofstream of(sFilename, std::ios::binary);
+         std::ofstream of(sFilename.c_str(), std::ios::binary);
         
          if (of.good())
          {
