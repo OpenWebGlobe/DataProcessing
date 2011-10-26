@@ -38,19 +38,19 @@ def download(url, filename):
 # MAIN
 #-------------------------------------------------------------------------------
 # Download external integration
-url = "https://github.com/downloads/OpenWebGlobe/DataProcessing/" + dest
+url = "http://www.openwebglobe.org/downloads/" + dest
 
-#if (os.path.isfile(dest)):
-#   print "externals are already downloaded..."
-#else:
-#   download(url, dest)
-#   print "Extracting externals..."
-#   tar = tarfile.open(dest)
-#   tar.extractall("../")
-#   tar.close()
-#   print "Ok."
+if (os.path.isfile(dest)):
+   print "externals are already downloaded... delete manually if you want to reinstall"
+else:
+   print "Downloading externals, please wait... (500+ MB)"
+   download(url, dest)
+   print "Extracting externals..."
+   tar = tarfile.open(dest)
+   tar.extractall("../")
+   tar.close()
+   print "Ok."
 
-#print "Done."
-
-print "this script doesn't work yet..."   
+print "Done."
+  
 
