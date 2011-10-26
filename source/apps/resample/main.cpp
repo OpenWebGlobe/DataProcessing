@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
       for (size_t i=0;i<sIndexFiles.size();i++)
       {
          //std::cout << "found: " << sIndexFiles[i] << "\n";
-         std::ifstream ifs(sIndexFiles[i], std::ios::binary);
+         std::ifstream ifs(sIndexFiles[i].c_str(), std::ios::binary);
          int64 value;
 
          if (ifs.good())

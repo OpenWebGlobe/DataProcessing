@@ -22,6 +22,7 @@
 #include "math/ElevationPoint.h"
 #include <float.h>
 #include <vector>
+#include <cstddef>
 
 namespace math
 { 

@@ -11,7 +11,7 @@ BOOST_THREADING=multi
 
 GDAL_VERSION=1.7.0
 
-CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal -O2
+CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal -O2 -Werror
 
 TARGETS=\
 	../../bin/ogAddData \
