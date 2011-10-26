@@ -28,30 +28,30 @@
 
 struct dtuple
 {
-	dtuple(double first, double second) { a = first; b= second; }
-	double a;
-	double b;
+   dtuple(double first, double second) { a = first; b= second; }
+   double a;
+   double b;
 };
 
 struct ituple
 {
-	ituple(int first, int second) { a = first; b= second; }
-	int a;
-	int b;
+   ituple(int first, int second) { a = first; b= second; }
+   int a;
+   int b;
 };
 
 class GoogleProjection
 {
 public:
-	GoogleProjection(int levels);
-	virtual ~GoogleProjection();
-	ituple geoCoord2Pixel(dtuple c, int zoom);
-	dtuple pixel2GeoCoord(ituple p, int zoom);
+   GoogleProjection(int levels);
+   virtual ~GoogleProjection();
+   ituple geoCoord2Pixel(dtuple c, int zoom);
+   dtuple pixel2GeoCoord(ituple p, int zoom);
 private:
-	std::vector<double> _Bc;
-	std::vector<double> _Cc;
-	std::vector<ituple> _zc;
-	std::vector<double> _Ac;
+   std::vector<double> _Bc;
+   std::vector<double> _Cc;
+   std::vector<ituple> _zc;
+   std::vector<double> _Ac;
 };
 
 #endif

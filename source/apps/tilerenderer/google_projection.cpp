@@ -43,14 +43,14 @@ GoogleProjection::GoogleProjection(int levels)
 {
     int c = 256;
     for (int d = 0; d <= levels; d++)
-	{
-		double e = c/2;
-		_Bc.push_back(c/360.0);
+   {
+      double e = c/2;
+      _Bc.push_back(c/360.0);
         _Cc.push_back(c/(2 * AGEPI));
         _zc.push_back(ituple(e,e));
         _Ac.push_back(c);
         c *= 2;
-	}
+   }
 }
 
 GoogleProjection::~GoogleProjection()
@@ -59,25 +59,25 @@ GoogleProjection::~GoogleProjection()
 
 dtuple GoogleProjection::pixel2GeoCoord(ituple p, int zoom)
 {
-	ituple e = _zc[zoom];
-	double f = (p.a - e.a)/_Bc[zoom];
-	double g = (p.b - e.b)/-_Cc[zoom];
-	
-	double expg = exp(g);
-	double atang = atan(expg);
+   ituple e = _zc[zoom];
+   double f = (p.a - e.a)/_Bc[zoom];
+   double g = (p.b - e.b)/-_Cc[zoom];
+   
+   double expg = exp(g);
+   double atang = atan(expg);
 
-	double h = RAD_2_DEG*( 2 * atan(exp(g)) - 0.5 * AGEPI);
-	return dtuple(f,h);
+   double h = RAD_2_DEG*( 2 * atan(exp(g)) - 0.5 * AGEPI);
+   return dtuple(f,h);
 }
 
 ituple GoogleProjection::geoCoord2Pixel(dtuple c, int zoom)
 {
-	ituple d = _zc[zoom];
-	double e = d.a + c.a * _Bc[zoom];
-	math::Round<double>(e,0);
-	double f = math::Clip(sin(DEG_2_RAD*(c.b)),-0.9999,0.9999);
+   ituple d = _zc[zoom];
+   double e = d.a + c.a * _Bc[zoom];
+   math::Round<double>(e,0);
+   double f = math::Clip(sin(DEG_2_RAD*(c.b)),-0.9999,0.9999);
 
-	double g = d.b + 0.5*log((1+f)/(1-f))*-_Cc[zoom];
-	math::Round(g, 0);
-	return ituple(int(e),int(g));
+   double g = d.b + 0.5*log((1+f)/(1-f))*-_Cc[zoom];
+   math::Round(g, 0);
+   return ituple(int(e),int(g));
 }

@@ -15,8 +15,13 @@
 ********************************************************************************
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
-// This is the version without mpi intended for regular 
-// workstations. Multi cores are supported (OpenMP) and highly recommended.
+/*                                                                            */
+/*                  MPI Version of resample (for cluster/cloud)               */
+/*                      asynchronous workload distribution                    */
+/*          this is the recommended version for all clusters / clouds         */
+/*                for multicore single computers use resample.cpp             */
+/*                                                                            */
+/******************************************************************************/
 //------------------------------------------------------------------------------
 // Some code adapted from: generate_tiles.py
 // Found at: http://trac.openstreetmap.org/browser/applications/rendering/mapnik
@@ -45,6 +50,7 @@
 #include "errors.h"
 #include <boost/program_options.hpp>
 #include <omp.h>
+#include <mpi.h>
 
 namespace po = boost::program_options;
 

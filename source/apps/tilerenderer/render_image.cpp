@@ -52,53 +52,53 @@ int main ( int argc , char** argv)
     try {
         std::cout << " generating map ... \n";
         std::string mapnik_dir(argv[1]);
-		std::string map_file(argv[2]);
-		std::string map_uri = "image.png";
+      std::string map_file(argv[2]);
+      std::string map_uri = "image.png";
 
-		projection merc = projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over");
-		projection longlat = projection("+proj=latlong +datum=WGS84");
+      projection merc = projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over");
+      projection longlat = projection("+proj=latlong +datum=WGS84");
 
-		int z = 5;
+      int z = 5;
 
 #ifdef _DEBUG
-		std::string plugin_path = mapnik_dir + "/input/debug/";
+      std::string plugin_path = mapnik_dir + "/input/debug/";
 #else
-		std::string plugin_path = mapnik_dir + "/input/release/";	
+      std::string plugin_path = mapnik_dir + "/input/release/";   
 #endif
-		datasource_cache::instance()->register_datasources(plugin_path.c_str()); 
-		std::string font_dir = mapnik_dir + "/fonts/dejavu-fonts-ttf-2.30/ttf/";
+      datasource_cache::instance()->register_datasources(plugin_path.c_str()); 
+      std::string font_dir = mapnik_dir + "/fonts/dejavu-fonts-ttf-2.30/ttf/";
         std::cout << " looking for DejaVuSans fonts in... " << font_dir << "\n";
-		if (boost::filesystem3::exists( font_dir ) )
-		{
-			boost::filesystem3::directory_iterator end_itr; // default construction yields past-the-end
-			for ( boost::filesystem3::directory_iterator itr( font_dir );
-				itr != end_itr;
-				++itr )
-			{
-				if (!boost::filesystem3::is_directory(itr->status()) )
-				{
-					freetype_engine::register_font(itr->path().string());
-				}
-			}
-		}
+      if (boost::filesystem3::exists( font_dir ) )
+      {
+         boost::filesystem3::directory_iterator end_itr; // default construction yields past-the-end
+         for ( boost::filesystem3::directory_iterator itr( font_dir );
+            itr != end_itr;
+            ++itr )
+         {
+            if (!boost::filesystem3::is_directory(itr->status()) )
+            {
+               freetype_engine::register_font(itr->path().string());
+            }
+         }
+      }
 
 
         Map m(5000,3800);
         m.set_background(color_factory::from_string("white"));
-		load_map(m,map_file);
-		m.set_srs(merc.params());
-		double bounds[4] = {5.955870,46.818020,10.492030,47.808380};
-		double dummy = 0.0;
-	
-		proj_transform transform = proj_transform(longlat,merc);
-		
-		transform.forward(bounds[0],bounds[1],dummy);
-		transform.forward(bounds[2],bounds[3],dummy);
-		Envelope<double> bbox = Envelope<double>(bounds[0],bounds[1],bounds[2],bounds[3]);
+      load_map(m,map_file);
+      m.set_srs(merc.params());
+      double bounds[4] = {5.955870,46.818020,10.492030,47.808380};
+      double dummy = 0.0;
+   
+      proj_transform transform = proj_transform(longlat,merc);
+      
+      transform.forward(bounds[0],bounds[1],dummy);
+      transform.forward(bounds[2],bounds[3],dummy);
+      Envelope<double> bbox = Envelope<double>(bounds[0],bounds[1],bounds[2],bounds[3]);
         
-		m.zoomToBox(bbox);
+      m.zoomToBox(bbox);
 
-		Image32 buf(m.getWidth(),m.getHeight());
+      Image32 buf(m.getWidth(),m.getHeight());
         agg_renderer<Image32> ren(m,buf);
         ren.apply();
         save_to_file<ImageData32>(buf.data(),map_uri,"png");

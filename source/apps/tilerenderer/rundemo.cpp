@@ -52,26 +52,26 @@ int main ( int argc , char** argv)
         std::cout << " running demo ... \n";
         std::string mapnik_dir(argv[1]);
 #ifdef _DEBUG
-		std::string plugin_path = mapnik_dir + "/input/debug/";
+      std::string plugin_path = mapnik_dir + "/input/debug/";
 #else
-		std::string plugin_path = mapnik_dir + "/input/release/";	
+      std::string plugin_path = mapnik_dir + "/input/release/";   
 #endif
-		datasource_cache::instance()->register_datasources(plugin_path.c_str()); 
-		std::string font_dir = mapnik_dir + "/fonts/dejavu-fonts-ttf-2.30/ttf/";
+      datasource_cache::instance()->register_datasources(plugin_path.c_str()); 
+      std::string font_dir = mapnik_dir + "/fonts/dejavu-fonts-ttf-2.30/ttf/";
         std::cout << " looking for DejaVuSans fonts in... " << font_dir << "\n";
-		if (boost::filesystem3::exists( font_dir ) )
-		{
-			boost::filesystem3::directory_iterator end_itr; // default construction yields past-the-end
-			for ( boost::filesystem3::directory_iterator itr( font_dir );
-				itr != end_itr;
-				++itr )
-			{
-				if (!boost::filesystem3::is_directory(itr->status()) )
-				{
-					freetype_engine::register_font(itr->path().string());
-				}
-			}
-		}
+      if (boost::filesystem3::exists( font_dir ) )
+      {
+         boost::filesystem3::directory_iterator end_itr; // default construction yields past-the-end
+         for ( boost::filesystem3::directory_iterator itr( font_dir );
+            itr != end_itr;
+            ++itr )
+         {
+            if (!boost::filesystem3::is_directory(itr->status()) )
+            {
+               freetype_engine::register_font(itr->path().string());
+            }
+         }
+      }
         
         Map m(800,600);
         m.set_background(color_factory::from_string("white"));
@@ -191,7 +191,7 @@ int main ( int argc , char** argv)
         {
             parameters p;
             p["type"]="shape";
-			p["file"]=mapnik_dir+"/demo/data/boundaries";
+         p["file"]=mapnik_dir+"/demo/data/boundaries";
             
             Layer lyr("Provinces"); 
             lyr.set_datasource(datasource_cache::instance()->create(p));

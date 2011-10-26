@@ -1,0 +1,12 @@
+copy ..\..\external\mapnik_msvc2010\lib\mapnik_0.7.2.dll ..\..\bin\mapnik_0.7.2.dll
+copy ..\..\external\win32\libltdl3.dll ..\..\bin\libltdl3.dll
+copy ..\..\external\win32\icu\icuuc48.dll ..\..\bin\icuuc48.dll
+copy ..\..\external\win32\icu\icutu48.dll ..\..\bin\icutu48.dll
+copy ..\..\external\win32\icu\icudt48.dll ..\..\bin\icudt48.dll
+copy ..\..\external\win32\zlib.dll ..\..\bin\zlib.dll
+copy ..\..\external\win32\proj.dll ..\..\bin\proj.dll
+copy ..\..\external\win32\tiff.dll ..\..\bin\tiff.dll
+copy ..\..\external\win32\png.dll ..\..\bin\png.dll
+copy ..\..\external\win32\libxml.dll ..\..\bin\libxml.dll
+copy ..\..\external\win32\libcurl.dll ..\..\bin\libcurl.dll
+copy ..\..\external\win32\gdal18.dll ..\..\bin\gdal18.dll
