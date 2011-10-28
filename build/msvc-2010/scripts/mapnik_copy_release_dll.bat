@@ -1,8 +1,9 @@
-copy ..\..\external\mapnik_msvc2010\lib\mapnik_0.7.2.dll ..\..\bin\mapnik_0.7.2.dll
+copy ..\..\external\win32\mapnik_0.7.2.dll ..\..\bin\mapnik_0.7.2.dll
 copy ..\..\external\win32\libltdl3.dll ..\..\bin\libltdl3.dll
 copy ..\..\external\win32\icu\icuuc48.dll ..\..\bin\icuuc48.dll
 copy ..\..\external\win32\icu\icutu48.dll ..\..\bin\icutu48.dll
 copy ..\..\external\win32\icu\icudt48.dll ..\..\bin\icudt48.dll
+copy ..\..\external\win32\libpq\libecpg.dll ..\..\bin\libecpg.dll
 copy ..\..\external\win32\zlib.dll ..\..\bin\zlib.dll
 copy ..\..\external\win32\proj.dll ..\..\bin\proj.dll
 copy ..\..\external\win32\tiff.dll ..\..\bin\tiff.dll

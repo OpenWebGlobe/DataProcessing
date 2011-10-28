@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\apps\tilerenderer\errors.h" />
+    <ClInclude Include="..\..\source\apps\tilerenderer\functions.h" />
     <ClInclude Include="..\..\source\apps\tilerenderer\google_projection.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -56,7 +56,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\mapnik_msvc2010;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\external\freetype2\include\freetype2;$(SolutionDir)..\..\external\freetype2\include;$(SolutionDir)..\..\external\libtool\include;$(SolutionDir)..\..\external\icu\include;$(SolutionDir)..\..\external\mapnik_msvc2010\include;$(SolutionDir)..\..\external\jpeg-8c;$(SolutionDir)..\..\external\LibPNG\include;$(SolutionDir)..\..\external\LibTIFF\include;$(SolutionDir)..\..\external\ZLib\include;$(SolutionDir)..\..\external\libcurl\include;$(SolutionDir)..\..\external\libxml2\include;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\mapnik_msvc2010;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\external\freetype2\include\freetype2;$(SolutionDir)..\..\external\freetype2\include;$(SolutionDir)..\..\external\libtool\include;$(SolutionDir)..\..\external\icu\include;$(SolutionDir)..\..\external\mapnik_msvc2010\include;$(SolutionDir)..\..\external\jpeg-8c;$(SolutionDir)..\..\external\LibPNG\include;$(SolutionDir)..\..\external\LibTIFF\include;$(SolutionDir)..\..\external\ZLib\include;$(SolutionDir)..\..\external\libcurl\include;$(SolutionDir)..\..\external\libxml2\include;$(SolutionDir)..\..\external\gdal;$(MSMPI_INC);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <OpenMPSupport>true</OpenMPSupport>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -64,8 +64,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\win32;$(SolutionDir)lib\Debug;$(SolutionDir)..\..\external\mapnik_msvc2010\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenWebGlobeProcessingd.lib;mapnik_0.7.2d.lib;icuucd.lib;freetyped.lib;ltdl.lib;zlibd.lib;pngd.lib;proj.lib;tiffd.lib;libxmld.lib;libcurld_imp.lib;gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\win32\icu;$(SolutionDir)..\..\external\win32;$(SolutionDir)lib\Debug;$(SolutionDir)..\..\external\mapnik_msvc2010\lib;$(MSMPI_LIB32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>msmpi.lib;OpenWebGlobeProcessingd.lib;mapnik_0.7.2d.lib;icuucd.lib;freetyped.lib;ltdl.lib;zlibd.lib;pngd.lib;proj.lib;tiffd.lib;libxmld.lib;libcurld.lib;gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -89,7 +89,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\mapnik_msvc2010;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\external\freetype2\include\freetype2;$(SolutionDir)..\..\external\freetype2\include;$(SolutionDir)..\..\external\libtool\include;$(SolutionDir)..\..\external\icu\include;$(SolutionDir)..\..\external\mapnik_msvc2010\include;$(SolutionDir)..\..\external\jpeg-8c;$(SolutionDir)..\..\external\LibPNG\include;$(SolutionDir)..\..\external\LibTIFF\include;$(SolutionDir)..\..\external\ZLib\include;$(SolutionDir)..\..\external\libcurl\include;$(SolutionDir)..\..\external\libxml2\include;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\mapnik_msvc2010;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\external\freetype2\include\freetype2;$(SolutionDir)..\..\external\freetype2\include;$(SolutionDir)..\..\external\libtool\include;$(SolutionDir)..\..\external\icu\include;$(SolutionDir)..\..\external\mapnik_msvc2010\include;$(SolutionDir)..\..\external\jpeg-8c;$(SolutionDir)..\..\external\LibPNG\include;$(SolutionDir)..\..\external\LibTIFF\include;$(SolutionDir)..\..\external\ZLib\include;$(SolutionDir)..\..\external\libcurl\include;$(SolutionDir)..\..\external\libxml2\include;$(SolutionDir)..\..\external\gdal;$(MSMPI_INC);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <OpenMPSupport>true</OpenMPSupport>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -103,8 +103,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\mapnik_msvc2010\lib;$(SolutionDir)lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenWebGlobeProcessing.lib;gdal_i.lib;mapnik_0.7.2.lib;icuuc.lib;freetype.lib;ltdl.lib;zlib.lib;png.lib;proj.lib;tiff.lib;libxml.lib;libcurl_imp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\win32\icu;$(SolutionDir)..\..\external\mapnik_msvc2010\lib;$(SolutionDir)lib\Release;$(MSMPI_LIB32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>msmpi.lib;OpenWebGlobeProcessing.lib;gdal_i.lib;mapnik_0.7.2.lib;icuuc.lib;freetype.lib;ltdl.lib;zlib.lib;png.lib;proj.lib;tiff.lib;libxml.lib;libcurl.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -128,6 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\apps\tilerenderer\errors.h" />
+    <ClInclude Include="..\..\source\apps\tilerenderer\functions.h" />
     <ClInclude Include="..\..\source\apps\tilerenderer\google_projection.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

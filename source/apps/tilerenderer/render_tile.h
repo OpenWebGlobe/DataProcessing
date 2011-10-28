@@ -31,7 +31,6 @@
 #include <mapnik/envelope.hpp>
 #include <mapnik/image_util.hpp>
 #include <mapnik/map.hpp>
-//------------------------------------------------------------------------------
  
 //------------------------------------------------------------------------------
 inline void _renderTile(std::string tile_uri, mapnik::Map m, int x, int y, int zoom, GoogleProjection tileproj, mapnik::projection prj)

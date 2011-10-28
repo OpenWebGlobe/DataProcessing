@@ -45,6 +45,7 @@
 #include "errors.h"
 #include <boost/program_options.hpp>
 #include <omp.h>
+#include "functions.h"
 
 namespace po = boost::program_options;
 
@@ -59,6 +60,7 @@ int main ( int argc , char** argv)
       ("numthreads", po::value<int>(), "force number of threads")
       ("min_zoom", po::value<int>(), "[optional] min zoom level")
       ("max_zoom", po::value<int>(), "[optional] max zoom level")
+      ("expired_list", po::value<std::string>(), "[optional] list of expired tiles for update rendering (global rendering will be disabled)")
       ("bounds", po::value<std::vector<double>>(), "[optional] boundaries (default: -180.0 -90.0 180.0 90.0)")
       ;
    
@@ -134,6 +136,14 @@ int main ( int argc , char** argv)
    int maxZoom = 18;
    if(vm.count("max_zoom"))
       maxZoom = vm["max_zoom"].as<int>();
+
+   bool bUpdateMode = false;
+   std::string expire_list;
+   if(vm.count("expire_list"))
+      {
+         expire_list = vm["expire_list"].as<std::string>();
+         bUpdateMode = true;
+      }
 
    // CH Bounds  double bounds[4] = {5.955870,46.818020,10.492030,47.808380};
    double bounds[4] = {-180.0,-90.0,180.0,90.0};
@@ -232,83 +242,127 @@ int main ( int argc , char** argv)
 
       if(!FileSystem::DirExists(output_path))
          FileSystem::makedir(output_path);
-      double avtps = 0.0;
-      int avtps_it = 0;
-      for(int z = minZoom; z < maxZoom + 1; z++)
+      
+      if(!bUpdateMode)
       {
-         ituple px0 = gProj.geoCoord2Pixel(dtuple(bounds[0], bounds[3]),z);
-         ituple px1 = gProj.geoCoord2Pixel(dtuple(bounds[2], bounds[1]),z);
-
-         // check if we have directories in place
-         std::string szoom = StringUtils::IntegerToString(z, 10);
-         if(!FileSystem::DirExists(output_path + szoom))
-            FileSystem::makedir(output_path + szoom);
-
-         for(int x = int(px0.a/256.0); x <= int(px1.a/256.0) +1; x++)
+         std::stringstream oss;
+         oss << "[Rendermode: Normal] Start rendering tiles..\n";
+         qLogger->Info(oss.str());
+         double avtps = 0.0;
+         int avtps_it = 0;
+         for(int z = minZoom; z < maxZoom + 1; z++)
          {
-            // Validate x co-ordinate
-            if((x < 0) || (x >= math::Pow2(z)))
-               continue;
-            // check if we have directories in place
-            std::string str_x = StringUtils::IntegerToString(x,10);
-            if(!FileSystem::DirExists(output_path + szoom + "/" + str_x))
-               FileSystem::makedir(output_path + szoom + "/" + str_x);
-            clock_t t0,t1;
-            t0 = clock();
-            int tileCount = 0;
-            int low = int(px0.b/256.0);
-            int high = int(px1.b/256.0)+1;
-            #pragma omp parallel shared(low,high,x,z,m,gProj,mapnikProj,tsmScheme, output_path, szoom,str_x,tileCount)
-            {
-               #pragma omp for 
-               for(int y = low; y <= high; y++)
-               {
-                  // Validate x co-ordinate
-                  if((y < 0) || (y >= math::Pow2(z)))
-                     continue;
-                  // flip y to match OSGEO TMS spec
-                  std::string str_y;
-                  std::stringstream ss;
-                  if(tsmScheme)
-                  {
-                     ss << math::Pow2(z-1);
-                     str_y = ss.str();
-                  }
-                  else
-                  {
-                     ss << y;
-                     str_y = ss.str();
-                  }
+            ituple px0 = gProj.geoCoord2Pixel(dtuple(bounds[0], bounds[3]),z);
+            ituple px1 = gProj.geoCoord2Pixel(dtuple(bounds[2], bounds[1]),z);
 
-                  std::string tile_uri = output_path + szoom + '/' + str_x + '/' + str_y + ".png";
-                  // Submit tile to be rendered
-                  _renderTile(tile_uri,m,x,y,z,gProj,mapnikProj);
-                  tileCount++;
+            // check if we have directories in place
+            std::string szoom = StringUtils::IntegerToString(z, 10);
+            if(!FileSystem::DirExists(output_path + szoom))
+               FileSystem::makedir(output_path + szoom);
+
+            for(int x = int(px0.a/256.0); x <= int(px1.a/256.0) +1; x++)
+            {
+               // Validate x co-ordinate
+               if((x < 0) || (x >= math::Pow2(z)))
+                  continue;
+               // check if we have directories in place
+               std::string str_x = StringUtils::IntegerToString(x,10);
+               if(!FileSystem::DirExists(output_path + szoom + "/" + str_x))
+                  FileSystem::makedir(output_path + szoom + "/" + str_x);
+               clock_t t0,t1;
+               t0 = clock();
+               int tileCount = 0;
+               int low = int(px0.b/256.0);
+               int high = int(px1.b/256.0)+1;
+               #pragma omp parallel shared(low,high,x,z,m,gProj,mapnikProj,tsmScheme, output_path, szoom,str_x,tileCount)
+               {
+                  #pragma omp for 
+                  for(int y = low; y <= high; y++)
+                  {
+                     // Validate x co-ordinate
+                     if((y < 0) || (y >= math::Pow2(z)))
+                        continue;
+                     // flip y to match OSGEO TMS spec
+                     std::string str_y;
+                     std::stringstream ss;
+                     if(tsmScheme)
+                     {
+                        ss << math::Pow2(z-1);
+                        str_y = ss.str();
+                     }
+                     else
+                     {
+                        ss << y;
+                        str_y = ss.str();
+                     }
+
+                     std::string tile_uri = output_path + szoom + '/' + str_x + '/' + str_y + ".png";
+                     // Submit tile to be rendered
+                     _renderTile(tile_uri,m,x,y,z,gProj,mapnikProj);
+                     tileCount++;
+                  }
+               }
+               t1=clock();
+               double tilesPerSecond = tileCount/(double(t1-t0)/double(CLOCKS_PER_SEC));
+               //std::cout << " average tiles per second: " << tilesPerSecond << "\n";
+               {
+                  std::stringstream oss;
+                  oss << "..average tiles per second: " << tilesPerSecond << "\n";
+                  qLogger->Info(oss.str());
+                  avtps += tilesPerSecond;
+                  avtps_it++;
                }
             }
-            t1=clock();
-            double tilesPerSecond = tileCount/(double(t1-t0)/double(CLOCKS_PER_SEC));
-            //std::cout << " average tiles per second: " << tilesPerSecond << "\n";
-            {
-               std::stringstream oss;
-               oss << "..average tiles per second: " << tilesPerSecond << "\n";
-               qLogger->Info(oss.str());
-               avtps += tilesPerSecond;
-               avtps_it++;
-            }
          }
-      }
-      {
+         {
          std::stringstream oss;
          oss << "Finished rendering with total average " <<  (avtps/avtps_it)  << " Tiles per second!\n";
          qLogger->Info(oss.str());
+         }
       }
-      // Submit tile to be rendered into the queue
-      /*         t = (name, tile_uri, x, y, z)
-                  try:
-                     queue.put(t)
-                  except KeyboardInterrupt:
-                     raise SystemExit("Ctrl-c detected, exiting...")*/
+      else
+      {
+         std::stringstream oss;
+         oss << "[Rendermode: Update] Start rendering tiles..\n reading expire list...\n";
+         qLogger->Info(oss.str());
+         std::vector<Tile> vExpireList = _readExpireList(expire_list);
+         clock_t t0,t1;
+            t0 = clock();
+            int tileCount = 0;
+         #pragma omp parallel shared(qLogger,vExpireList,m,gProj,mapnikProj,tsmScheme, output_path,tileCount)
+         {
+            #pragma omp for 
+            for(int i = 0; i < vExpireList.size(); i++)
+            {
+               std::stringstream ss;
+               Tile t = vExpireList[i];
+              
+
+               std::string szoom = StringUtils::IntegerToString(t.zoom, 10);
+               if(!FileSystem::DirExists(output_path + szoom))
+               FileSystem::makedir(output_path + szoom);
+               std::string str_x = StringUtils::IntegerToString(t.x,10);
+               if(!FileSystem::DirExists(output_path + szoom + "/" + str_x))
+                  FileSystem::makedir(output_path + szoom + "/" + str_x);
+
+               ss << output_path << t.zoom << "/" << t.x << "/" << t.y << ".png";
+               std::string tile_uri = ss.str();
+               _renderTile(tile_uri,m,t.x,t.y,t.zoom,gProj,mapnikProj);
+               if(tileCount % 10000)
+               {
+                  std::stringstream oss;
+                  oss << ".." << tileCount << " processed!\n";
+                  qLogger->Info(oss.str());
+               }
+            }
+         }
+         double tilesPerSecond = tileCount/(double(t1-t0)/double(CLOCKS_PER_SEC));
+         {
+         std::stringstream oss;
+         oss << "Finished rendering with total average " <<  tilesPerSecond  << " Tiles per second!\n";
+         qLogger->Info(oss.str());
+         }
+      }
    }
    catch ( const mapnik::config_error & ex )
    {

@@ -39,6 +39,22 @@
 #define WGS84_E_SQUARED2   0.006739496742
 #define WGS84_RN_POLE      6.399593625758673e+006
 
+
+
+GoogleProjection::GoogleProjection()
+{
+    int c = 256;
+    for (int d = 0; d <= 12; d++)
+   {
+      double e = c/2;
+      _Bc.push_back(c/360.0);
+        _Cc.push_back(c/(2 * AGEPI));
+        _zc.push_back(ituple(e,e));
+        _Ac.push_back(c);
+        c *= 2;
+   }
+}
+
 GoogleProjection::GoogleProjection(int levels)
 {
     int c = 256;

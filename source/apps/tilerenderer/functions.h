@@ -15,44 +15,59 @@
 ********************************************************************************
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
-// This is the triangulate version without mpi intended for regular 
+// This is the resample version without mpi intended for regular 
 // workstations. Multi cores are supported (OpenMP) and highly recommended.
 //------------------------------------------------------------------------------
-// Code adapted from: generate_tiles.py
-// Found at: http://trac.openstreetmap.org/browser/applications/rendering/mapnik
-//------------------------------------------------------------------------------
-#ifndef _GOOGLE_PROJECTION_H
-#define _GOOGLE_PROJECTION_H
 
+#ifndef _FUNCTIONS_H
+#define _FUNCTIONS_H
+
+#include <fstream>
 #include <vector>
+#include <string>
+#include <string/StringUtils.h>
+#include <boost/tokenizer.hpp>
 
-struct dtuple
+struct Tile
 {
-   dtuple(double first, double second) { a = first; b= second; }
-   double a;
-   double b;
+   int x;
+   int y;
+   int zoom;
 };
+//------------------------------------------------------------------------------
 
-struct ituple
+inline std::vector<Tile> _readExpireList(std::string expire_list_file)
 {
-   ituple(int first, int second) { a = first; b= second; }
-   int a;
-   int b;
-};
+   std::ifstream file(expire_list_file.c_str(), std::ios::in);
+   std::vector<Tile> expiredTiles;
+   if (file.good())
+   {
+      char line[4096];
+      std::string sLine;
+      while (!file.eof())
+      {
+         file.getline(line, 4095);
+         sLine = line;
+         boost::char_separator<char> separator("/");
+         boost::tokenizer<boost::char_separator<char> > tokens(sLine, separator);
+         boost::tokenizer<boost::char_separator<char> >::iterator token_iter;
+         int ct = 0;
+         Tile t;
+         for (token_iter = tokens.begin(); token_iter != tokens.end(); token_iter++)
+         {
+            if(ct == 0) {  t.zoom = StringUtils::StringToInteger(*token_iter,10); }
+            if(ct == 1) {  t.x = StringUtils::StringToInteger(*token_iter,10); }
+            if(ct == 2) {  t.y = StringUtils::StringToInteger(*token_iter,10); }
+            ct++;
+         }
+         expiredTiles.push_back(t);
+      }
+   }
+   return expiredTiles;
+}
 
-class GoogleProjection
-{
-public:
-   GoogleProjection();
-   GoogleProjection(int levels);
-   virtual ~GoogleProjection();
-   ituple geoCoord2Pixel(dtuple c, int zoom);
-   dtuple pixel2GeoCoord(ituple p, int zoom);
-private:
-   std::vector<double> _Bc;
-   std::vector<double> _Cc;
-   std::vector<ituple> _zc;
-   std::vector<double> _Ac;
-};
+//------------------------------------------------------------------------------
+
+
 
 #endif
