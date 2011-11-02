@@ -60,7 +60,7 @@ namespace po = boost::program_options;
 
 //-------------------------------------------------------------------
 // Job-Struct
-struct Job
+struct SJob
 {
    int x, y, zoom;
 };
@@ -68,25 +68,30 @@ struct Job
 //------------------------------------------------------------------------------
 // globals:
 mapnik::projection g_mapnikProj;
-mapnik::Map g_map;
+mapnik::Map g_map(256, 256);
 GoogleProjection g_gProj;
 std::string map_file;
 std::string mapnik_dir;
 std::string output_path;
 std::string expire_list;
+bool bUpdateMode;
+double bounds[4];
+int iX = 0;
+int iY = 0;
+int iZ = 0;
+int iN = 0;
+int minZoom;
+int maxZoom;
+std::vector<Tile> vExpireList;
 
 //------------------------------------------------------------------------------
 // MPI Job callback function (called every thread/compute node)
-void jobCallback(const Job& job, int rank)
+void jobCallback(const SJob& job, int rank)
 {
    std::stringstream ss;
    ss << output_path << job.zoom << "/" << job.x << "/" << job.y << ".png";
-   if(job.x >= 0)
-   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj);
-   else
-   {
-      bool blub = false;
-   }
+   //std::cout << "..Render tile " << ss.str() << "on rank: " << rank << "   Tilesize: "<< g_map.getWidth() << " Projection: " << g_mapnikProj.params() << "\n";
+   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj);  
 }
 //------------------------------------------------------------------------------
 void BroadcastString(std::string& sStr, int sender)
@@ -130,31 +135,143 @@ void BroadcastBool(bool& val, int sender)
    MPI_Bcast(&val, 1, bool_type, sender, MPI_COMM_WORLD);
 }
 //------------------------------------------------------------------------------------
+void GenerateRenderJobs(int count, std::vector<SJob> &vJobs)
+{
+   int idx = 0;
+   //----------------------------------
+   // Generate jobs to render ALL tiles
+   //----------------------------------
+   if(!bUpdateMode)
+   {
+      if(iZ < 0) { iZ = minZoom; }
+      for(int z = iZ; z <= maxZoom; z++)
+      {
+         ituple px0 = g_gProj.geoCoord2Pixel(dtuple(bounds[0], bounds[3]),z);
+         ituple px1 = g_gProj.geoCoord2Pixel(dtuple(bounds[2], bounds[1]),z);
+
+         // check if we have directories in place
+         std::string szoom = StringUtils::IntegerToString(z, 10);
+         if(!FileSystem::DirExists(output_path + szoom))
+            FileSystem::makedir(output_path + szoom);
+         int xlow = iX < 0 ? int(px0.a/256.0): iX;
+         int xhigh = int(px1.a/256.0) +1;
+         for(int x = xlow; x <= xhigh; x++)
+         {
+            // Validate x co-ordinate
+            if((x < 0) || (x >= math::Pow2(z)))
+            {
+               continue;
+            }
+            // check if we have directories in place
+            std::string str_x = StringUtils::IntegerToString(x,10);
+            if(!FileSystem::DirExists(output_path + szoom + "/" + str_x))
+               FileSystem::makedir(output_path + szoom + "/" + str_x);
+               
+            int ylow = iY < 0 ? int(px0.b/256.0): iY;
+            int yhigh = int(px1.b/256.0)+1;
+
+            for(int y = ylow; y <= yhigh; y++)
+            {
+               // Validate x co-ordinate
+               if((y < 0) || (y >= math::Pow2(z)))
+               {
+                  continue;
+               }
+               SJob work;
+               work.x = x; 
+               work.y = y;
+               work.zoom = z;
+               vJobs.push_back(work);
+               iY = (y < yhigh)? y+1 : -1;
+               iX = (y < yhigh) ? x: (x < xhigh) ? x+1 : -1;
+               iZ = z;
+               if(idx >= (count-1))
+               {
+                  return;
+               }
+               idx++;
+            }
+            iY = -1;
+         }
+         iX = -1;
+      }
+      if(iZ == maxZoom)
+      {
+         iZ++;
+      }
+      return;
+   }
+   else
+   {
+      //--------------------------------------
+      // Generate jobs to render UPDATED tiles
+      //--------------------------------------
+      if(iN < 0)
+      {
+         vExpireList = _readExpireList(expire_list);
+         iN = 0;
+      }
+      for(size_t i = iN; i < vExpireList.size(); i++)
+      {
+         Tile t = vExpireList[i];
+         // generate folder structure
+         std::string szoom = StringUtils::IntegerToString(t.zoom, 10);
+         if(!FileSystem::DirExists(output_path + szoom))
+            {FileSystem::makedir(output_path + szoom);}
+         std::string str_x = StringUtils::IntegerToString(t.x,10);
+         if(!FileSystem::DirExists(output_path + szoom + "/" + str_x))
+            {FileSystem::makedir(output_path + szoom + "/" + str_x);}
+
+         SJob work;
+         work.x = t.x; 
+         work.y = t.y;
+         work.zoom = t.zoom;
+         vJobs.push_back(work);
+         iN = (i < vExpireList.size()) ? i+1: i;
+         if(idx >= (count-1))
+         {
+            return;
+         }
+         idx++;
+      }
+
+      return;
+   }
+}
+//------------------------------------------------------------------------------
+
 int main ( int argc , char** argv)
-{    
+{   
    //---------------------------------------------------------------------------
    // MPI Init
    //---------------------------------------------------------------------------
-
    int rank, totalnodes;
 
-   MPI_Init(&argc, &argv); 
-   MPI_Comm_size(MPI_COMM_WORLD, &totalnodes);
+   MPI_Init(&argc, &argv);
+   MPI_Comm_size(MPI_COMM_WORLD, &totalnodes); 
    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-   MPIJobManager<Job> jobmgr(4096);
-
    
-   int minZoom = 1;
-   int maxZoom = 18;
-   double bounds[4] = {-180.0,-90.0,180.0,90.0};
 
+   //---------------------------------------------------------------------------
+   // -- init default values
+   minZoom = 1;
+   maxZoom = 18;
+   bUpdateMode = false;
+   iX = -1;
+   iY = -1;
+   iZ = -1; 
+   iN = -1;
+   bounds[0] = -180.0;
+   bounds[1] = -90.0;
+   bounds[2] = 180.0;
+   bounds[3] = 90.0;
    bool bVerbose = false;
-   int queueSize = 10000;
-   bool updateMode = false;
+   int queueSize = 4096;
 
    if (rank == 0)
    {
+      std::cout << ">>> Generating map using mapnik <<<\n";
       po::options_description desc("Program-Options");
       desc.add_options()
          ("mapnik_dir", po::value<std::string>(), "mapnik path")
@@ -165,7 +282,7 @@ int main ( int argc , char** argv)
          ("max_zoom", po::value<int>(), "[optional] max zoom level")
          ("bounds", po::value<std::vector<double>>(), "[optional] boundaries (default: -180.0 -90.0 180.0 90.0)")
          ("mpi_queue_size", po::value<int>(), "[optional] mpi queue size (Default: 10000)")
-         ("verbose_mode", po::value<bool>(), "[optional] Verbose mode")
+         ("verbose", "[optional] Verbose mode")
          ("expired_list", po::value<std::string>(), "[optional] list of expired tiles for update rendering (global rendering will be disabled)")
          ;
    
@@ -178,8 +295,7 @@ int main ( int argc , char** argv)
    
 
       //---------------------------------------------------------------------------
-      // init options:
-
+      // -- init options:
       boost::shared_ptr<ProcessingSettings> qSettings =  ProcessingUtils::LoadAppSettings();
 
       if (!qSettings)
@@ -190,8 +306,8 @@ int main ( int argc , char** argv)
 
 
       bool bError = false;
-      //----------------------------------------
-      // Read commandline
+      //---------------------------------------------------------------------------
+      // -- Read commandline
       try
       {
          po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -236,18 +352,17 @@ int main ( int argc , char** argv)
       if(vm.count("mpi_queue_size"))
          queueSize = vm["mpi_queue_size"].as<int>();
 
-      if(vm.count("verbose_mode"))
-         bVerbose = vm["verbose_mode"].as<bool>();
+      if(vm.count("verbose"))
+         bVerbose = true;
 
       if(vm.count("expire_list"))
       {
          expire_list = vm["expire_list"].as<std::string>();
-         updateMode = true;
+         bUpdateMode = true;
       }
      
 
-      // CH Bounds  double bounds[4] = {5.955870,46.818020,10.492030,47.808380};
-      
+      // CH Bounds  double bounds[4] = {5.955870,46.818020,10.492030,47.808380}; 
       if(vm.count("bounds"))
       {
          std::vector<double> dv = vm["bounds"].as<std::vector<double>>();
@@ -273,15 +388,12 @@ int main ( int argc , char** argv)
          }
       }
 
-      //---------------------------------------------------------------------------
-       //---------------------------------------------------------------------------
       if (bError)
       {
          std::cout << desc;
          return MPI_Abort(MPI_COMM_WORLD, ERROR_PARAMS);
       }
    }
-   bool tsmScheme = false;
 
    BroadcastString(output_path, 0);
    BroadcastString(mapnik_dir, 0);
@@ -292,34 +404,38 @@ int main ( int argc , char** argv)
    BroadcastDouble(bounds[3], 0);
    BroadcastInt(minZoom,0);
    BroadcastInt(maxZoom,0);
+   BroadcastInt(iX,0);
+   BroadcastInt(iY,0);
+   BroadcastInt(iZ,0);
+   BroadcastInt(iN,0);
+   BroadcastInt(queueSize,0);
    BroadcastBool(bVerbose,0);
-   BroadcastBool(updateMode,0);
+   BroadcastBool(bUpdateMode,0);
 
-    
+   MPIJobManager<SJob> jobmgr(queueSize);
+
+   //---------------------------------------------------------------------------
+   //-- MAPNIK RENDERING PROCESS --------
+   //---------------------------------------------------------------------------
    using namespace mapnik;
    try
    {
-      {
-         std::cout << ">>> Generating map on rank " << rank << "...... \n";
-      }
-      GoogleProjection gProj = GoogleProjection(maxZoom); // maxlevel 12
-      //projection merc = projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over");
-      //projection longlat = projection("+proj=latlong +datum=WGS84");
+      std::cout << "Generating tiles on rank " << rank << "...... \n" << std::flush;
+      g_gProj = GoogleProjection(maxZoom);
       double dummy = 0.0;
    
-      //proj_transform transform = proj_transform(longlat,merc);
       #ifdef _DEBUG
       std::string plugin_path = mapnik_dir + "input/debug/";
-      std::cout << "..load plugins from "<<plugin_path<<"\n";
+      std::cout << "..load plugins from "<<plugin_path<<"\n"<< std::flush;
       #else
       std::string plugin_path = mapnik_dir + "input/release/";   
-      std::cout << "..load plugins from "<<plugin_path<<"\n";
+      std::cout << "..load plugins from "<<plugin_path<<"\n"<< std::flush;
       #endif
 
       datasource_cache::instance()->register_datasources(plugin_path.c_str()); 
       std::string font_dir = mapnik_dir + "fonts/dejavu-fonts-ttf-2.30/ttf/";
       {
-         std::cout << "..looking for DejaVuSans fonts in... " << font_dir << "\n";
+         std::cout << "..looking for DejaVuSans fonts in... " << font_dir << "\n"<< std::flush;
       }
       if (boost::filesystem3::exists( font_dir ) )
       {
@@ -334,162 +450,63 @@ int main ( int argc , char** argv)
             }
          }
       }
-      // Generate map container
-      Map m(256,256);
-         m.set_background(color_factory::from_string("white"));
-      load_map(m,map_file);
-      projection mapnikProj = projection(m.srs());
+      //---------------------------------------------------------------------------
+      // -- Generate map container
+      g_map.set_background(color_factory::from_string("white"));
+      std::cout << "..loading map file " << map_file << ".....";
+      load_map(g_map,map_file);
+      std::cout << "....Successful!\n" << std::flush;
 
-      // Create outputpath
+      g_mapnikProj = projection(g_map.srs());
+      //---------------------------------------------------------------------------
+      // -- Create outputpath
       if(!FileSystem::DirExists(output_path))
          FileSystem::makedir(output_path);
-      double avtps = 0.0;
-      int avtps_it = 0;
-      
-      if(rank == 0)
+      bool bDone = false;
+      //---------------------------------------------------------------------------
+      // -- performance measurement
+      int tileCount = 0;
+      int currentJobQueueSize = 0;
+      clock_t t_0, t_1;
+      t_0 = clock();
+      while (!bDone)
       {
-         clock_t t0,t1;
-         int tileCount = 0;
-         t0 = clock();
-         bool bJobQueueEmpty = true;
-         //--------------------------------
-         // Render ALL tiles
-         //--------------------------------
-         if(!updateMode)
+         if (rank == 0)
          {
-            for(int z = minZoom; z < maxZoom + 1; z++)
+            std::vector<SJob> vJobs;
+            GenerateRenderJobs(totalnodes*queueSize, vJobs);
+            currentJobQueueSize = vJobs.size();
+            tileCount += currentJobQueueSize;
+            if (vJobs.size() == 0) // no more jobs
             {
-               ituple px0 = gProj.geoCoord2Pixel(dtuple(bounds[0], bounds[3]),z);
-               ituple px1 = gProj.geoCoord2Pixel(dtuple(bounds[2], bounds[1]),z);
-
-               // check if we have directories in place
-               std::string szoom = StringUtils::IntegerToString(z, 10);
-               if(!FileSystem::DirExists(output_path + szoom))
-                  FileSystem::makedir(output_path + szoom);
-
-               for(int x = int(px0.a/256.0); x <= int(px1.a/256.0) +1; x++)
-               {
-                  // Validate x co-ordinate
-                  if((x < 0) || (x >= math::Pow2(z)))
-                     continue;
-                  // check if we have directories in place
-                  std::string str_x = StringUtils::IntegerToString(x,10);
-                  if(!FileSystem::DirExists(output_path + szoom + "/" + str_x))
-                     FileSystem::makedir(output_path + szoom + "/" + str_x);
-               
-                  int low = int(px0.b/256.0);
-                  int high = int(px1.b/256.0)+1;
-                  //#pragma omp parallel shared(low,high,x,z,m,gProj,mapnikProj,tsmScheme, output_path, szoom,str_x,tileCount)
-                  //{
-                     //#pragma omp for 
-                     for(int y = low; y <= high; y++)
-                     {
-                        // Validate x co-ordinate
-                        if((y < 0) || (y >= math::Pow2(z)))
-                           continue;
-                        // flip y to match OSGEO TMS spec
-                        std::string str_y;
-                        std::stringstream ss;
-                        if(tsmScheme)
-                        {
-                           ss << math::Pow2(z-1);
-                           str_y = ss.str();
-                        }
-                        else
-                        {
-                           ss << y;
-                           str_y = ss.str();
-                        }
-                        std::string tile_uri = output_path + szoom + '/' + str_x + '/' + str_y + ".png";
-                        // Submit tile to be rendered
-                        //_renderTile(tile_uri,m,x,y,z,gProj,mapnikProj);
-                        Job work;
-                        work.x = x; 
-                        work.y = y;
-                        work.zoom = z;
-                        jobmgr.AddJob(work);
-                        bJobQueueEmpty = false;
-                        tileCount++;
-                        if(tileCount >= queueSize)
-                        {
-                           jobmgr.Process(jobCallback, bVerbose);
-                           t1=clock();
-                           bJobQueueEmpty = true;
-                           double tilesPerSecond = tileCount/(double(t1-t0)/double(CLOCKS_PER_SEC));
-                           std::cout << "..generated " << tileCount << " at " << tilesPerSecond << " tiles per second\n";
-                           avtps += tilesPerSecond;
-                           avtps_it++;
-                           t0 = clock();
-                           tileCount = 0;
-                        }
-                     }
-                  //}
-               }
+               bDone = true;
+               t_1 = clock();
+               double time=(double(t_1-t_0)/double(CLOCKS_PER_SEC));
+               double tps = tileCount/time;
+               std::cout << ">>> Finished rendering " << tileCount << " tiles at " << tps << " tiles per second! TOTAL TIME: " << time << "<<<\n" << std::flush;
+            
             }
-            // process remaining tiles
-            if(!bJobQueueEmpty)
+            else
             {
-               jobmgr.Process(jobCallback, bVerbose);
-               t1=clock();
-               bJobQueueEmpty = true;
-               double tilesPerSecond = tileCount/(double(t1-t0)/double(CLOCKS_PER_SEC));
-               std::cout << "..generated " << tileCount << " at " << tilesPerSecond << " tiles per second\n";
-               avtps += tilesPerSecond;
-               avtps_it++;
+               jobmgr.AddJobs(vJobs);
             }
+         }
+ 
+         MPI_Barrier(MPI_COMM_WORLD);
+         BroadcastBool(bDone, 0);
+         if (!bDone)
+         {  
+            clock_t t0,t1;
+            t0 = clock();
+            jobmgr.Process(jobCallback, bVerbose);
+            t1 = clock();
+            double tilesPerSecond = currentJobQueueSize/(double(t1-t0)/double(CLOCKS_PER_SEC));
+            std::cout << "..generated " << currentJobQueueSize << " tiles at " << tilesPerSecond << " tiles per second on rank " << rank << "\n" << std::flush;
          }
          else
          {
-            //--------------------------------
-            // Render UPDATED tiles
-            //--------------------------------
-            std::vector<Tile> vExpireList = _readExpireList(expire_list);
-            for(size_t i = 0; i < vExpireList.size(); i++)
-            {
-               std::stringstream ss;
-               Tile t = vExpireList[i];
-               ss << output_path << t.zoom << "/" << t.x << "/" << t.y << ".png";
-               std::string tile_uri = ss.str();
-               // Submit tile to be rendered
-               Job work;
-               work.x = t.x; 
-               work.y = t.y;
-               work.zoom = t.zoom;
-               jobmgr.AddJob(work);
-               bJobQueueEmpty = false;
-               tileCount++;
-               if(tileCount >= queueSize)
-               {
-                  jobmgr.Process(jobCallback, bVerbose);
-                  t1=clock();
-                  bJobQueueEmpty = true;
-                  double tilesPerSecond = tileCount/(double(t1-t0)/double(CLOCKS_PER_SEC));
-                  std::cout << "..generated " << tileCount << " at " << tilesPerSecond << " tiles per second\n";
-                  avtps += tilesPerSecond;
-                  avtps_it++;
-                  t0 = clock();
-                  tileCount = 0;
-               }
-            }
-            // process remaining tiles
-            if(!bJobQueueEmpty)
-            {
-               jobmgr.Process(jobCallback, bVerbose);
-               t1=clock();
-               bJobQueueEmpty = true;
-               double tilesPerSecond = tileCount/(double(t1-t0)/double(CLOCKS_PER_SEC));
-               std::cout << "..generated " << tileCount << " at " << tilesPerSecond << " tiles per second\n";
-               avtps += tilesPerSecond;
-               avtps_it++;
-            } 
-         }
-         MPI_Finalize();
-         std::cout << ">>> Finished rendering with total average " <<  (avtps/avtps_it)  << " Tiles per second!n";
-      }
-      else
-      {
-         jobmgr.Process(jobCallback, bVerbose);
-         MPI_Finalize();
+            MPI_Finalize();
+         } 
       }
    }
    catch ( const mapnik::config_error & ex )

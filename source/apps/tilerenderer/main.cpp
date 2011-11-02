@@ -250,6 +250,9 @@ int main ( int argc , char** argv)
          qLogger->Info(oss.str());
          double avtps = 0.0;
          int avtps_it = 0;
+         int total_tiles = 0;
+         clock_t t_0, t_1;
+         t_0 = clock();
          for(int z = minZoom; z < maxZoom + 1; z++)
          {
             ituple px0 = gProj.geoCoord2Pixel(dtuple(bounds[0], bounds[3]),z);
@@ -269,8 +272,6 @@ int main ( int argc , char** argv)
                std::string str_x = StringUtils::IntegerToString(x,10);
                if(!FileSystem::DirExists(output_path + szoom + "/" + str_x))
                   FileSystem::makedir(output_path + szoom + "/" + str_x);
-               clock_t t0,t1;
-               t0 = clock();
                int tileCount = 0;
                int low = int(px0.b/256.0);
                int high = int(px1.b/256.0)+1;
@@ -302,21 +303,21 @@ int main ( int argc , char** argv)
                      tileCount++;
                   }
                }
-               t1=clock();
-               double tilesPerSecond = tileCount/(double(t1-t0)/double(CLOCKS_PER_SEC));
-               //std::cout << " average tiles per second: " << tilesPerSecond << "\n";
+               total_tiles += tileCount;
+               if(tileCount % 1000 == 0)
                {
                   std::stringstream oss;
-                  oss << "..average tiles per second: " << tilesPerSecond << "\n";
+                  oss << ".. " << total_tiles << " tiles processed!\n";
                   qLogger->Info(oss.str());
-                  avtps += tilesPerSecond;
-                  avtps_it++;
                }
             }
          }
          {
+         t_1 = clock();
+         double time=(double(t_1-t_0)/double(CLOCKS_PER_SEC));
+         double tps = total_tiles/time;
          std::stringstream oss;
-         oss << "Finished rendering with total average " <<  (avtps/avtps_it)  << " Tiles per second!\n";
+         oss << ">>> Finished rendering " << total_tiles << " tiles at " << tps << " tiles per second! TOTAL TIME: " << time << "<<<\n";
          qLogger->Info(oss.str());
          }
       }
@@ -326,9 +327,9 @@ int main ( int argc , char** argv)
          oss << "[Rendermode: Update] Start rendering tiles..\n reading expire list...\n";
          qLogger->Info(oss.str());
          std::vector<Tile> vExpireList = _readExpireList(expire_list);
-         clock_t t0,t1;
-            t0 = clock();
-            int tileCount = 0;
+         clock_t t_0,t_1;
+         t_0 = clock();
+         int tileCount = 0;
          #pragma omp parallel shared(qLogger,vExpireList,m,gProj,mapnikProj,tsmScheme, output_path,tileCount)
          {
             #pragma omp for 
@@ -348,18 +349,20 @@ int main ( int argc , char** argv)
                ss << output_path << t.zoom << "/" << t.x << "/" << t.y << ".png";
                std::string tile_uri = ss.str();
                _renderTile(tile_uri,m,t.x,t.y,t.zoom,gProj,mapnikProj);
-               if(tileCount % 10000)
+               if(tileCount % 1000)
                {
                   std::stringstream oss;
-                  oss << ".." << tileCount << " processed!\n";
+                  oss << ".." << tileCount << " tiles processed!\n";
                   qLogger->Info(oss.str());
                }
             }
          }
-         double tilesPerSecond = tileCount/(double(t1-t0)/double(CLOCKS_PER_SEC));
          {
+         t_1 = clock();
+         double time=(double(t_1-t_0)/double(CLOCKS_PER_SEC));
+         double tps = tileCount/time;
          std::stringstream oss;
-         oss << "Finished rendering with total average " <<  tilesPerSecond  << " Tiles per second!\n";
+         oss << ">>> Finished rendering " << tileCount << " tiles at " << tps << " tiles per second! TOTAL TIME: " << time << "<<<\n";
          qLogger->Info(oss.str());
          }
       }
