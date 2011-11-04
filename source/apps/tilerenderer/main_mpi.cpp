@@ -83,7 +83,7 @@ int iN = 0;
 int minZoom;
 int maxZoom;
 std::vector<Tile> vExpireList;
-
+int render_lnr = 0;
 //------------------------------------------------------------------------------
 // MPI Job callback function (called every thread/compute node)
 void jobCallback(const SJob& job, int rank)
@@ -91,7 +91,8 @@ void jobCallback(const SJob& job, int rank)
    std::stringstream ss;
    ss << output_path << job.zoom << "/" << job.x << "/" << job.y << ".png";
    //std::cout << "..Render tile " << ss.str() << "on rank: " << rank << "   Tilesize: "<< g_map.getWidth() << " Projection: " << g_mapnikProj.params() << "\n";
-   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj);  
+   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj);
+   render_lnr++;
 }
 //------------------------------------------------------------------------------
 void BroadcastString(std::string& sStr, int sender)
@@ -426,10 +427,10 @@ int main ( int argc , char** argv)
    
       #ifdef _DEBUG
       std::string plugin_path = mapnik_dir + "input/debug/";
-      std::cout << "..load plugins from "<<plugin_path<<"\n"<< std::flush;
+      std::cout << "..set plugin-path to "<<plugin_path<<"\n"<< std::flush;
       #else
       std::string plugin_path = mapnik_dir + "input/release/";   
-      std::cout << "..load plugins from "<<plugin_path<<"\n"<< std::flush;
+      std::cout << "..set plugin-path to "<<plugin_path<<"\n"<< std::flush;
       #endif
 
       datasource_cache::instance()->register_datasources(plugin_path.c_str()); 
@@ -449,13 +450,14 @@ int main ( int argc , char** argv)
                freetype_engine::register_font(itr->path().string());
             }
          }
-      }
+         std::cout << "....Ok!\n" << std::flush;
+      } else { std::cout << "....#Error# Font directory not found!\n" << std::flush; }
       //---------------------------------------------------------------------------
       // -- Generate map container
       g_map.set_background(color_factory::from_string("white"));
-      std::cout << "..loading map file " << map_file << ".....";
+      std::cout << "..loading map file \"" << map_file << "\".....";
       load_map(g_map,map_file);
-      std::cout << "....Successful!\n" << std::flush;
+      std::cout << "....Ok!\n" << std::flush;
 
       g_mapnikProj = projection(g_map.srs());
       //---------------------------------------------------------------------------
@@ -484,7 +486,6 @@ int main ( int argc , char** argv)
                double time=(double(t_1-t_0)/double(CLOCKS_PER_SEC));
                double tps = tileCount/time;
                std::cout << ">>> Finished rendering " << tileCount << " tiles at " << tps << " tiles per second! TOTAL TIME: " << time << "<<<\n" << std::flush;
-            
             }
             else
             {
@@ -501,7 +502,6 @@ int main ( int argc , char** argv)
             jobmgr.Process(jobCallback, bVerbose);
             t1 = clock();
             double tilesPerSecond = currentJobQueueSize/(double(t1-t0)/double(CLOCKS_PER_SEC));
-            std::cout << "..generated " << currentJobQueueSize << " tiles at " << tilesPerSecond << " tiles per second on rank " << rank << "\n" << std::flush;
          }
          else
          {

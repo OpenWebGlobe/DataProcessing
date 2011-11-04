@@ -58,14 +58,48 @@ public:
    // Add job stack (
    void AddJobStack(const std::stack<SJob>& js) { if (_rank == 0) _jobstack = js;}
 
-   // or add (many) single jobs
-   void AddJob(const SJob& j) { if (_rank == 0) _jobstack.push(j);}
+   // Add job vector (
+   void AddJobs(const std::vector<SJob>& js) 
+   {
+      if (_rank == 0)
+      {
+         for(int i = 0; i < js.size(); i ++)
+         {
+            _jobstack.push(js[i]);
+         }
+      }
+   }
 
+   // or add (many) single jobs
+   void AddJob(const SJob& j) 
+   { 
+      if (_rank == 0) 
+      {
+         _jobstack.push(j);
+      }
+   }
+
+   //---------------------------------------------------------------------------
    // Start Processing data. For each job the specified callback function is called.
    // you can also pass some userdata to it. But please keep in mind everything must be thread safe.
    void Process(CallBack_Process fnc, bool bVerbose=false)
    {
-    
+      if (_rank == 0 && _totalnodes == 1)
+      {
+         std::vector<SJob> vJobs;
+         while (_jobstack.size()>0)
+         {
+            vJobs.push_back(_jobstack.top());
+            _jobstack.pop();
+         }
+
+#        pragma omp parallel for
+         for (int i=0;i<(int)vJobs.size();i++)
+         {
+              fnc(vJobs[i], 0);
+         }
+      }
+
       if (_rank == 0) 
       {
          int totaljobs = (int)_jobstack.size();
@@ -103,44 +137,25 @@ public:
                      freenodes.push_back(targetnode);
                   }
                }
-               else
-               {
-                  // do some processing on root, only do one job per core
-                  std::vector<SJob> vJobs;
-                  for (int t=0;t<_nMaxthreads;t++)
-                  {
-                     if (_jobstack.size()>0)
-                     {
-                        vJobs.push_back(_jobstack.top());
-                        _jobstack.pop();
-                     }
-                  }
-
-#                 pragma omp parallel for
-                  for (int i=0;i<(int)vJobs.size();i++)
-                  {
-                       fnc(vJobs[i], _rank);
-                  }
-
-                  if (bVerbose)
-                  {
-                     tprog1 = clock();
-                     double time_passed = double(tprog1-tprog0)/double(CLOCKS_PER_SEC);
-                     if (time_passed > 200) // print progress report after some time
-                     {
-                        double progress = double(int(10000.0*double(totaljobs-_jobstack.size())/double(totaljobs))/100.0);
-                        std::cout << "[PROGRESS] Processed " << totaljobs-_jobstack.size() << "/" << totaljobs << " jobs (" << progress << "%)\n" << std::flush;
-                        tprog0 = tprog1;
-                     }
-                  }
-
-                  it++;
-               }
             }
-
-            for (size_t i=0;i<freenodes.size();i++)
+            if(freenodes.size() > 0)
             {
-               _MakeJobPacket(_jobstack, freenodes[i]);
+               std::vector<SJob> vecJobsRoot =_MakeRootJobPacket(_jobstack);
+               if(freenodes.size() > 1)
+               {
+                  for (size_t i=0;i<freenodes.size()-1;i++)
+                  {
+                     _MakeJobPacket(_jobstack, freenodes[i]);
+                  }
+               }
+               // -- Process on rank 0
+               std::cout << "-->>Rank " << _rank << " is processing " << vecJobsRoot.size()<< " jobs....!\n"<< std::flush;
+               #pragma omp parallel for
+               for (int i=0;i<(int)vecJobsRoot.size();i++)
+               {
+                    fnc(vecJobsRoot[i], _rank);
+               }
+               std::cout << "<<--Rank " << _rank << " finished processing " << vecJobsRoot.size()<< " jobs!\n"<< std::flush;
             }
          }
 
@@ -152,18 +167,18 @@ public:
       } 
       else
       {
-         std::vector<Job> vecJobs;
+         std::vector<SJob> vecJobs;
          while (_ReceiveJobs(vecJobs))
          {
+            std::cout << "-->>Rank " << _rank << " is processing " << vecJobs.size()<< " jobs....!\n"<< std::flush;
             #pragma omp parallel for
             for (int i=0;i<(int)vecJobs.size();i++)
             {
                  fnc(vecJobs[i], _rank);
             }
-
+            std::cout << "<<--Rank " << _rank << " finished processing " << vecJobs.size()<< " jobs!\n"<< std::flush;
          }
       }
-
       MPI_Barrier(MPI_COMM_WORLD);
    }
 
@@ -185,17 +200,21 @@ protected:
    void _SendJobs(std::vector<SJob>& vecJobs, int target)
    {
       MPI_Request request;
+
+      std::cout << " ..Sending "<< vecJobs.size()<<" jobs to rank " << target << "\n"<< std::flush;
       int count = vecJobs.size() * sizeof(SJob);
       if (count > 0)
       {
-         MPI_Isend (&vecJobs[0], count, MPI_BYTE, target, 77, MPI_COMM_WORLD, &request);
+         void* adr = (void*) &(vecJobs[0]);
+         MPI_Isend (adr, count, MPI_BYTE, target, 77, MPI_COMM_WORLD, &request);
          _lstActiveRequests.push_back(std::pair<MPI_Request, int>(request, target));
       }
    }
    //---------------------------------------------------------------------------
    void _SendTerminate(int target)
    {
-      MPI_Send(0, 0, MPI_BYTE, target, 77, MPI_COMM_WORLD);
+      unsigned char data = 88;
+      MPI_Send(&data, 1, MPI_BYTE, target, 88, MPI_COMM_WORLD);
    }
    //---------------------------------------------------------------------------
    // receive jobs or return false if there are no more jobs!
@@ -207,23 +226,33 @@ protected:
       MPI_Status status;
       int msglen;
 
-      MPI_Probe(0, 77, MPI_COMM_WORLD, &status);
-      MPI_Get_count(&status, MPI_BYTE, &msglen);
+      while(true)
+      {
+         int flag = 0;
+         MPI_Iprobe(0, 88, MPI_COMM_WORLD, &flag, &status);
+         
+         if (flag) // "terminate"
+         {
+            std::cout << " ..Rank "<< _rank <<" received TERMINATE signal\n" << std::flush;
+            char buffer;
+            MPI_Irecv (&buffer, 1, MPI_BYTE, 0, 88, MPI_COMM_WORLD, &request);
+            MPI_Wait(&request, &status);
+            return false;
+         }
 
-      if (msglen > 0)
-      {
-         vecJobs.resize(msglen / sizeof(SJob));
-         MPI_Irecv (&vecJobs[0], msglen, MPI_BYTE, 0, 77, MPI_COMM_WORLD, &request);
-         MPI_Wait(&request, &status);
+         MPI_Iprobe(0, 77, MPI_COMM_WORLD, &flag, &status);
+        
+         if (flag)
+         {
+            MPI_Get_count(&status, MPI_BYTE, &msglen);
+            vecJobs.resize(msglen / sizeof(SJob));
+            void* adr = (void*) &(vecJobs[0]);
+            MPI_Irecv (adr, msglen, MPI_BYTE, 0, 77, MPI_COMM_WORLD, &request);
+            MPI_Wait(&request, &status);
+            std::cout << " ..Rank "<< _rank <<" received "<< vecJobs.size() << " Jobs\n" << std::flush;
+            return true;
+         }
       }
-      else  // "terminate"
-      {
-         int buffer;
-         MPI_Irecv (&buffer, 0, MPI_BYTE, 0, 77, MPI_COMM_WORLD, &request);
-         MPI_Wait(&request, &status);
-         return false;
-      }
-      return true;
    }
    //---------------------------------------------------------------------------
    void _MakeJobPacket( std::stack<SJob> &jobs, int i) 
@@ -242,6 +271,21 @@ protected:
       {
          _SendJobs(vJobs, i);
       }
+   }
+
+   //---------------------------------------------------------------------------
+   std::vector<SJob> _MakeRootJobPacket(std::stack<SJob> &jobs) 
+   {
+      std::vector<SJob> vJobs;
+      for (int w=0;w<_nMaxWorkSize;w++)
+      {
+         if (jobs.size()>0)
+         {
+            vJobs.push_back(jobs.top());
+            jobs.pop();
+         }
+      }
+      return vJobs;
    }
 
 private:

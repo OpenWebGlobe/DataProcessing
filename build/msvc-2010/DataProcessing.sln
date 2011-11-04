@@ -49,10 +49,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogDeploy_mpi", "deploy_mpi.
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogHillshading", "Hillshading.vcxproj", "{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogTileRenderer", "TileRenderer.vcxproj", "{53BD189F-1BD8-4654-89E8-53B30BFE9D02}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogTileRenderer_mpi", "TileRenderer_mpi.vcxproj", "{53BD189F-1BD8-4654-89E8-53990BFE9D02}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

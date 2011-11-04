@@ -1,28 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommand>mpiexec</LocalDebuggerCommand>
-    <DebuggerFlavor>MpiClusterDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-n 4 $(TargetPath) --mapnik_dir D:\owl_develop\DataProcessing\external\mapnik_msvc2010 --map_file D:\data\tmp_generated_full.xml --output_path D:/data/test/ --numthreads=10  --min_zoom=12 --max_zoom=12 --bounds 5.955870 46.818020 10.492030 47.808380 --mpi_queue_size=1000</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>--mapnik_dir Z:\bin\mapnik --map_file Z:\bin\mapnik\tmp_generated_full_Z.xml --output_path D:/data/test/ --numthreads=2  --min_zoom=12 --max_zoom=12 --bounds 5.955870 46.818020 10.492030 47.808380 --mpi_queue_size=4096</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\..\bin</LocalDebuggerWorkingDirectory>
-    <MpiDebuggerSchedulerNode>localhost/4</MpiDebuggerSchedulerNode>
-    <MpiDebuggerApplicationArguments>--mapnik_dir D:\owl_develop\DataProcessing\external\mapnik_msvc2010 --map_file D:\data\tmp_generated_full.xml --output_path D:/data/test/ --numthreads=10  --min_zoom=12 --max_zoom=12 --bounds 5.955870 46.818020 10.492030 47.808380 --mpi_queue_size=1000</MpiDebuggerApplicationArguments>
+    <MpiDebuggerSchedulerNode>localhost/2</MpiDebuggerSchedulerNode>
+    <MpiDebuggerApplicationArguments>--mapnik_dir Z:\bin\mapnik --map_file Z:\bin\mapnik\tmp_generated_full_Z.xml --output_path D:/data/test/ --numthreads=10  --min_zoom=12 --max_zoom=14 --bounds 5.955870 46.818020 10.492030 47.808380 --mpi_queue_size=500</MpiDebuggerApplicationArguments>
     <MpiDebuggerDeploymentDirectory>$(ProjectDir)..\..\bin</MpiDebuggerDeploymentDirectory>
     <MpiDebuggerWorkingDirectory>$(ProjectDir)..\..\bin</MpiDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>-n 4 $(TargetPath) --mapnik_dir D:\owl_develop\DataProcessing\external\mapnik_msvc2010 --map_file D:\data\tmp_generated_full.xml --output_path D:/data/test/ --numthreads=10  --min_zoom=12 --max_zoom=12 --bounds 5.955870 46.818020 10.492030 47.808380 --mpi_queue_size=1000</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--mapnik_dir Z:\bin\mapnik --map_file Z:\bin\mapnik\tmp_generated_full_Z.xml --output_path D:/data/test/ --numthreads=2  --min_zoom=12 --max_zoom=12 --bounds 5.955870 46.818020 10.492030 47.808380 --mpi_queue_size=256</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\..\bin</LocalDebuggerWorkingDirectory>
-    <DebuggerFlavor>MpiClusterDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>mpiexec</LocalDebuggerCommand>
-    <MpiDebuggerSchedulerNode>localhost/2</MpiDebuggerSchedulerNode>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
+    <MpiDebuggerSchedulerNode>localhost/4</MpiDebuggerSchedulerNode>
     <MpiDebuggerDeploymentDirectory>$(ProjectDir)..\..\bin</MpiDebuggerDeploymentDirectory>
     <MpiDebuggerWorkingDirectory>$(ProjectDir)..\..\bin</MpiDebuggerWorkingDirectory>
     <MpiDebuggerApplicationCommand>
     </MpiDebuggerApplicationCommand>
-    <MpiDebuggerApplicationArguments>--mapnik_dir D:\owl_develop\DataProcessing\external\mapnik_msvc2010 --map_file D:\data\tmp_generated_full.xml --output_path D:/data/test/ --numthreads=10  --min_zoom=12 --max_zoom=12 --bounds 5.955870 46.818020 10.492030 47.808380 --mpi_queue_size=786</MpiDebuggerApplicationArguments>
+    <MpiDebuggerApplicationArguments>--mapnik_dir D:\owl_develop\DataProcessing\external\mapnik_msvc2010 --map_file D:\data\tmp_generated_full.xml --output_path D:/data/test/ --numthreads=10  --min_zoom=12 --max_zoom=12 --bounds 5.955870 46.818020 10.492030 47.808380 --mpi_queue_size=32768</MpiDebuggerApplicationArguments>
     <MpiDebuggerMpiExecCommand>
     </MpiDebuggerMpiExecCommand>
     <MpiDebuggerDeployCommonRuntime>true</MpiDebuggerDeployCommonRuntime>

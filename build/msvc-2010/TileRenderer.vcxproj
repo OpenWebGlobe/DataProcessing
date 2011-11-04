@@ -55,7 +55,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;MAPNIK_DEBUG;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\mapnik_msvc2010;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\external\freetype2\include\freetype2;$(SolutionDir)..\..\external\freetype2\include;$(SolutionDir)..\..\external\libtool\include;$(SolutionDir)..\..\external\icu\include;$(SolutionDir)..\..\external\mapnik_msvc2010\include;$(SolutionDir)..\..\external\jpeg-8c;$(SolutionDir)..\..\external\LibPNG\include;$(SolutionDir)..\..\external\LibTIFF\include;$(SolutionDir)..\..\external\ZLib\include;$(SolutionDir)..\..\external\libcurl\include;$(SolutionDir)..\..\external\libxml2\include;$(SolutionDir)..\..\external\gdal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <OpenMPSupport>true</OpenMPSupport>
