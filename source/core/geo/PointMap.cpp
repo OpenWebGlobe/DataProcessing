@@ -18,6 +18,62 @@
 
 #include "PointMap.h"
 
+#pragma warning (disable : 4290 )
+#pragma warning (disable : 4250 )
+#pragma warning (disable : 4244 )
+
+#define STXXL_BOOST_RANDOM
+#define STXXL_BOOST_CONFIG
+#define STXXL_BOOSTss_RANDOM
+#define STXXL_BOOST_TIMESTAMP
+#define STXXL_BOOST_THREADS
+#include "stxxl/all"
+
+
+//------------------------------------------------------------------------
+
+typedef int64 key_type;          // key is octocode
+typedef unsigned int data_type;  // data: number of points in octocode
+
+struct cmp : public std::less<key_type>
+{
+    static key_type min_value()
+    {
+        return (std::numeric_limits<key_type>::min)();
+    }
+    static key_type max_value()
+    {
+        return (std::numeric_limits<key_type>::max)();
+    }
+};
+
+#define BLOCK_SIZE (32 * 1024)
+#define CACHE_SIZE (2 * 1024 * 1024 / BLOCK_SIZE)
+#define CACHE_ELEMENTS (BLOCK_SIZE * CACHE_SIZE / (sizeof(key_type) + sizeof(data_type)))
+
+typedef stxxl::map<key_type, data_type, cmp, BLOCK_SIZE, BLOCK_SIZE> map_type;
+typedef map_type::iterator map_iterator;
+
+class PointMap_private
+{
+public:
+   // ctor
+   PointMap_private()
+   {  
+      _index = new map_type(CACHE_SIZE * BLOCK_SIZE / 2, CACHE_SIZE * BLOCK_SIZE / 2);
+   }
+   // dtor
+   virtual ~PointMap_private()
+   {
+      if (_index)
+      {
+         delete _index;
+      }
+   }
+   // map
+   map_type* _index;
+   
+};
 
 //------------------------------------------------------------------------
 PointMap::PointMap(int levelofdetail)
@@ -27,10 +83,18 @@ PointMap::PointMap(int levelofdetail)
    _lod = levelofdetail;
    _pow = int64(1) << _lod; 
    _dpow = _pow * _pow;
+   _pPriv = new PointMap_private();
+
+   
 }
 //------------------------------------------------------------------------
 PointMap::~PointMap()
 {
+   if (_pPriv)
+   {
+      delete _pPriv;
+      _pPriv = 0;
+   }
 }
 //------------------------------------------------------------------------
 void PointMap::Clear()
@@ -60,17 +124,14 @@ void PointMap::AddPoint(int64 i, int64 j, int64 k, const CloudPoint& pt)
       newList.push_back(pt);
       _map.insert(std::pair<int64, std::list<CloudPoint> >(key, newList));
       _numkeys++;
+
+      _pPriv->_index->insert(std::pair<int64,unsigned int>(key, 0));
    }
 }
 //------------------------------------------------------------------------
 size_t PointMap::GetNumPoints()
 {
    return _numpts;
-}
-//------------------------------------------------------------------------
-size_t PointMap::GetNumKeys()
-{
-    return _index.size();
 }
 //------------------------------------------------------------------------
 
@@ -81,7 +142,6 @@ void PointMap::ExportData(const std::string& path)
    while (it != _map.end())
    {
       int64 key = it->first;
-      _index.insert(key);
       int64 i,j,k;
 
       k = key / _dpow;
@@ -137,17 +197,16 @@ void PointMap::ExportData(const std::string& path)
 
 void PointMap::ExportIndex(const std::string& sFilename)
 {
-   std::set<int64>::iterator it = _index.begin();
+   map_iterator it = _pPriv->_index->begin();
 
    std::ofstream of(sFilename.c_str(), std::ios::binary);
   
    if (of.good())
    {
-      while (it != _index.end())
+      while (it != _pPriv->_index->end())
       {
-         int64 elm = *it;
+         int64 elm = it->first;
          of.write((char*)&elm, sizeof(int64));
-      
          it++;
       }
    }
@@ -155,12 +214,4 @@ void PointMap::ExportIndex(const std::string& sFilename)
    of.close();
 }
 
-//------------------------------------------------------------------------
-
-std::set<int64>& PointMap::GetIndex()
-{
-   return _index;
-}
-
-//------------------------------------------------------------------------
-
+//-------------------------------------------------------------------------

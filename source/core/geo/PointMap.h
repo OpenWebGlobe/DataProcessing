@@ -33,6 +33,7 @@
 
 
 //------------------------------------------------------------------------
+class PointMap_private;
 
 class OPENGLOBE_API PointMap
 {
@@ -44,7 +45,7 @@ public:
    // dtor
    virtual ~PointMap();
    
-   // clear all data (free mem)
+   // clear all point data (free mem). Index is not cleared.
    void Clear();
 
    // add a point
@@ -53,21 +54,17 @@ public:
    // get number of points
    size_t GetNumPoints();
 
-   // get number of keys
-   size_t GetNumKeys();
+   // export data
    void ExportData(const std::string& path);
 
-   // export index to file
+   // export index list to file
    void ExportIndex(const std::string& sFilename);
    
-   // get index
-   std::set<int64>& GetIndex();
-
 
 private:
    PointMap(){}
+   PointMap_private* _pPriv;
    std::map<int64, std::list<CloudPoint> > _map;
-   std::set<int64> _index;
    size_t _numpts;
    size_t _numkeys;
    int _lod;

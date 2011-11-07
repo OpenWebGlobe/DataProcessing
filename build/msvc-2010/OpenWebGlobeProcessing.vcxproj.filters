@@ -175,6 +175,9 @@
     <ClCompile Include="..\..\source\core\math\CloudPoint.cpp">
       <Filter>math</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\geo\PointMap.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
@@ -391,6 +394,9 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\math\mat4.h">
       <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\geo\PointMap.h">
+      <Filter>geo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

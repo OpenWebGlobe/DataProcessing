@@ -222,7 +222,6 @@ namespace PointData
 
 
       std::cout << "Pointmap Stats:\n";
-      std::cout << " numkeys:   " << pointmap.GetNumKeys() << "\n";
       std::cout << " numpoints: " << totalpoints << "\n";
 
       t1 = clock();

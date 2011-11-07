@@ -24,6 +24,7 @@
     <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp" />
     <ClCompile Include="..\..\source\core\geo\PointCloudReader.cpp" />
     <ClCompile Include="..\..\source\core\geo\PointLayerSettings.cpp" />
+    <ClCompile Include="..\..\source\core\geo\PointMap.cpp" />
     <ClCompile Include="..\..\source\core\geo\ProcessStatus.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageHandler.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageLoader.cpp" />
@@ -89,6 +90,7 @@
     <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h" />
     <ClInclude Include="..\..\source\core\geo\PointCloudReader.h" />
     <ClInclude Include="..\..\source\core\geo\PointLayerSettings.h" />
+    <ClInclude Include="..\..\source\core\geo\PointMap.h" />
     <ClInclude Include="..\..\source\core\geo\ProcessStatus.h" />
     <ClInclude Include="..\..\source\core\image\ImageHandler.h" />
     <ClInclude Include="..\..\source\core\image\ImageLoader.h" />
@@ -181,7 +183,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>BUILD_OPENGLOBELIB;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;$(SolutionDir)..\..\external\jpeg-8c;$(SolutionDir)..\..\external\stxxl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4290;4250;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -211,7 +213,7 @@ copy $(SolutionDir)\..\..\external\win32\*.dll $(SolutionDir)\..\..\bin</Command
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>BUILD_OPENGLOBELIB;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;$(SolutionDir)..\..\external\jpeg-8c;$(SolutionDir)..\..\external\stxxl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4290;4250;4244</DisableSpecificWarnings>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <GlobalOptimizations>false</GlobalOptimizations>
       <Parallelization>true</Parallelization>
