@@ -29,7 +29,7 @@ PointMap::PointMap(int levelofdetail)
    _dpow = _pow * _pow;
 }
 //------------------------------------------------------------------------
-virtual PointMap::~PointMap()
+PointMap::~PointMap()
 {
 }
 //------------------------------------------------------------------------
