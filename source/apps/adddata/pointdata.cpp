@@ -38,6 +38,12 @@
 #include <set>
 #include <omp.h>
 
+#define STXXL_BOOST_CONFIG
+#define STXXL_BOOST_RANDOM
+#define STXXL_BOOST_TIMESTAMP
+#define STXXL_BOOST_THREADS
+#include "stxxl/vector"
+
 
 
 namespace PointData

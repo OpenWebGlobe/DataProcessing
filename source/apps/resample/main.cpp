@@ -25,6 +25,7 @@
 #include "geo/ElevationLayerSettings.h"
 #include "geo/PointLayerSettings.h"
 #include "io/FileSystem.h"
+#include "math/Octocode.h"
 #include <boost/program_options.hpp>
 #include <set>
 #include <omp.h>
@@ -359,6 +360,22 @@ int main(int argc, char *argv[])
 
       // B) create voxels for remaining lods
       // #todo: lod calc
+      it = indices.begin();
+      while (it != indices.end())
+      {
+         int64 i,j,k;
+         int64 key = *it;
+         // convert key -> octree coord (i,j,k)
+         k = key / dpow;
+         j = (key - dpow*k) / pow;
+         i = key - dpow*k - j*pow;
+
+         std::string sOctocode = Octocode::IndexToOctocode(i,j,k,lod);
+         std::string sParent = Octocode::GetParent(sOctocode);
+
+         it++;
+      }
+
 
    }
 

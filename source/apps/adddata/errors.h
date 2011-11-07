@@ -30,7 +30,7 @@
 #define ERROR_FILE               11    // file error (process status file)
 
 // General Errors:
-#define ERROR_OUTOFMEMORY        101;  // not enough memory
+#define ERROR_NOMEMORY        101;     // not enough memory
 
 #endif
 

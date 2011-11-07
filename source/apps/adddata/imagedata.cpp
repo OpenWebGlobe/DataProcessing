@@ -144,7 +144,7 @@ namespace ImageData
       if (!vImage)
       {
          qLogger->Error("Can't load image into memory!\n");
-         return ERROR_OUTOFMEMORY;
+         return ERROR_NOMEMORY;
       }
       // iterate through all tiles and create them
    #pragma omp parallel for
