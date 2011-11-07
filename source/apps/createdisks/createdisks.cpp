@@ -288,7 +288,7 @@ int main(int argc, char * argv[])
            std::cout << "Writing config file\n";
            for (size_t i=0;i<disks_arr.size();++i)
            {
-              fout << "disk=" << disks_arr[i] << "," << buffer_size << "," << sCall.c_str() << "\n";
+              fout << "disk=" << disks_arr[i] << "," << length / MB << "," << sCall.c_str() << "\n";
            }
         }
         fout.close();
