@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
                pointfile.precision(17);
                pointfile << (median.x-0.5)*OCTREE_CUBE_SIZE << "," << (median.y-0.5)*OCTREE_CUBE_SIZE << "," << (median.elevation-0.5)*OCTREE_CUBE_SIZE << ",";
                pointfile.precision(3);
-               pointfile          << unsigned char(mr*255.0) << "," << unsigned char(mg*255.0) << "," << unsigned char(mb*255.0) << "\n";
+               pointfile          << int(mr*255.0) << "," << int(mg*255.0) << "," << int(mb*255.0) << "\n";
             }
          }
 
