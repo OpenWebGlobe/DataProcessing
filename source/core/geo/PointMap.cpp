@@ -61,6 +61,7 @@ public:
    PointMap_private()
    {  
       _index = new map_type(CACHE_SIZE * BLOCK_SIZE / 2, CACHE_SIZE * BLOCK_SIZE / 2);
+      _resetiterator = true;
    }
    // dtor
    virtual ~PointMap_private()
@@ -72,6 +73,8 @@ public:
    }
    // map
    map_type* _index;
+   bool      _resetiterator;
+   map_iterator _it;
    
 };
 
@@ -179,9 +182,9 @@ void PointMap::ExportData(const std::string& path)
          of.write((char*)&jt->x, sizeof(double));
          of.write((char*)&jt->y, sizeof(double));
          of.write((char*)&jt->elevation, sizeof(double));
-         of.write((char*)&jt->r, sizeof(double));
-         of.write((char*)&jt->g, sizeof(double));
-         of.write((char*)&jt->b, sizeof(double));
+         of.write((char*)&jt->r, sizeof(unsigned char));
+         of.write((char*)&jt->g, sizeof(unsigned char));
+         of.write((char*)&jt->b, sizeof(unsigned char));
          of.write((char*)&jt->intensity, sizeof(int));
 
          jt++;
@@ -215,3 +218,63 @@ void PointMap::ExportIndex(const std::string& sFilename)
 }
 
 //-------------------------------------------------------------------------
+
+
+void PointMap::ImportIndex(const std::vector<std::string>& sIndexFiles)
+{
+   Clear();
+   _pPriv->_index->clear();
+   
+   // create map of all tiles:
+   for (size_t i=0;i<sIndexFiles.size();i++)
+   {
+      //std::cout << "found: " << sIndexFiles[i] << "\n";
+      std::ifstream ifs(sIndexFiles[i].c_str(), std::ios::binary);
+      int64 value;
+   
+      if (ifs.good())
+      {
+         while (!ifs.eof())
+         {
+            ifs.read((char*)&value, sizeof(int64));
+            _pPriv->_index->insert(std::pair<int64,unsigned int>(value, 0));
+         }
+      }
+
+     
+   
+      ifs.close();
+   }
+
+}
+
+//------------------------------------------------------------------------------
+
+int64 PointMap::GetIndexSize()
+{
+   return _pPriv->_index->size();
+}
+
+//------------------------------------------------------------------------------
+
+bool PointMap::GetNextIndex(int64& idx)
+{
+   if (_pPriv->_resetiterator)
+   {
+      _pPriv->_it = _pPriv->_index->begin();
+      _pPriv->_resetiterator = false;
+   }
+
+   if (_pPriv->_it != _pPriv->_index->end())
+   {
+      idx = _pPriv->_it->first;
+      _pPriv->_it++;
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
+
+//------------------------------------------------------------------------------

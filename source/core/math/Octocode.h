@@ -27,6 +27,9 @@
 #include <math/vec3.h>
 #include <math/vec2.h>
 
+
+#define OCTREE_CUBE_SIZE 5000
+
 //! \class Octocode
 //! \brief Class for Octocode management
 //! \author Martin Christen, martin.christen@fhnw.ch

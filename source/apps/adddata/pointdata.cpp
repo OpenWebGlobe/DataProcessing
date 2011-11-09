@@ -95,11 +95,11 @@ namespace PointData
       // Calculate matrix for octree voxel data transformation
       
       double xcenter, ycenter, zcenter;
-      xcenter = x0 + fabs(x1-x0);
-      ycenter = y0 + fabs(y1-y0);
-      zcenter = z0 + fabs(z1-z0); // elevation is currently ignored and set to 0
+      xcenter = x0 + fabs(x1-x0)*0.5;
+      ycenter = y0 + fabs(y1-y0)*0.5;
+      zcenter = z0 + fabs(z1-z0)*0.5; // elevation is currently ignored and set to 0
 
-      double len = 5000; // octree cube size
+      double len = OCTREE_CUBE_SIZE; // octree cube size
    
       mat4<double> L, Linv;
    
@@ -109,7 +109,7 @@ namespace PointData
 
       // center to cartesian coord
       vec3<double> vCenter;
-      GeoCoord geoCenter(xcenter, ycenter, 0);
+      GeoCoord geoCenter(xcenter, ycenter, zcenter);
       geoCenter.GetCartesian(vCenter);
 
       // create orthonormal basis
@@ -213,6 +213,12 @@ namespace PointData
       totalpoints+=pointmap.GetNumPoints();
     
       // export list of all written tiles (for future processing)
+       if (bVerbose)
+      {
+         oss << "Exporting index...\n";
+         qLogger->Info(oss.str());
+         oss.str("");
+      }
       pointmap.ExportIndex(sIndexFile);
 
 

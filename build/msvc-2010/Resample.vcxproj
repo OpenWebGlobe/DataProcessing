@@ -129,10 +129,12 @@
     <ClCompile Include="..\..\source\apps\resample\main.cpp" />
     <ClCompile Include="..\..\source\apps\resample\resample.cpp" />
     <ClCompile Include="..\..\source\apps\resample\resample_elevation.cpp" />
+    <ClCompile Include="..\..\source\apps\resample\resample_pointcloud.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\apps\resample\resample.h" />
     <ClInclude Include="..\..\source\apps\resample\resample_elevation.h" />
+    <ClInclude Include="..\..\source\apps\resample\resample_pointcloud.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -24,11 +24,15 @@
 #include "resample_elevation.h"
 #include "geo/ElevationLayerSettings.h"
 #include "geo/PointLayerSettings.h"
+#include "geo/PointMap.h"
 #include "io/FileSystem.h"
 #include "math/Octocode.h"
+#include "math/CloudPoint.h"
 #include <boost/program_options.hpp>
 #include <set>
+#include <cassert>
 #include <omp.h>
+
 
 namespace po = boost::program_options;
 
@@ -296,6 +300,7 @@ int main(int argc, char *argv[])
       std::string sTempIndexDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "temp");
       std::string sTempTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "temp/tiles");
       std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "tiles");
+      std::string sPointFileXYZ = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir)) + "allpoints.xyz";
       
       boost::shared_ptr<PointLayerSettings> qPointLayerSettings = PointLayerSettings::Load(sPointLayerDir);
       if (!qPointLayerSettings)
@@ -304,6 +309,10 @@ int main(int argc, char *argv[])
          return 6;
       }
 
+      // ascii pointfile
+      std::ofstream pointfile(sPointFileXYZ);
+      pointfile.precision(17);
+
       int lod = qPointLayerSettings->GetMaxLod();
 
 
@@ -311,25 +320,7 @@ int main(int argc, char *argv[])
 
       std::vector<std::string> sIndexFiles = FileSystem::GetFilesInDirectory(sTempIndexDir, "idx");
 
-      // create map of all tiles:
-      for (size_t i=0;i<sIndexFiles.size();i++)
-      {
-         //std::cout << "found: " << sIndexFiles[i] << "\n";
-         std::ifstream ifs(sIndexFiles[i].c_str(), std::ios::binary);
-         int64 value;
-
-         if (ifs.good())
-         {
-            while (!ifs.eof())
-            {
-               ifs.read((char*)&value, sizeof(int64));
-               indices.insert(value);
-            }
-         }
-
-         ifs.close();
-      }
-
+ 
       int64 dpow;
       int64 pow;
 
@@ -338,11 +329,16 @@ int main(int argc, char *argv[])
       
       // A) create voxels @ maxlod
 
-      std::set<int64>::iterator it = indices.begin();
-      while (it != indices.end())
+      PointMap pm(lod);
+
+      pm.ImportIndex(sIndexFiles);
+
+      //std::set<int64>::iterator it = indices.begin();
+      int64 key;
+      while (pm.GetNextIndex(key))
       {
          int64 i,j,k;
-         int64 key = *it;
+
          // convert key -> octree coord (i,j,k)
          k = key / dpow;
          j = (key - dpow*k) / pow;
@@ -353,14 +349,67 @@ int main(int argc, char *argv[])
          oss << sTempTileDir << lod << "/" << i << "/" << j << "-" << k << ".dat";
          std::string sFilename = oss.str();
 
+         std::ifstream ifs(sFilename.c_str(), std::ios::binary);
+         if (ifs.good())
+         {
+            size_t filesize = 0;
+            size_t current_position = ifs.tellg();
+            ifs.seekg(0, std::ios::end);
+            filesize = ifs.tellg();
+            ifs.seekg(current_position);
+
+
+            int64 numPoints = filesize / sizeof(CloudPoint);
+            double numPointsd(numPoints);
+            CloudPoint pt;
+            CloudPoint median;
+            double mr = 0;
+            double mg = 0;
+            double mb = 0;
+
+            for (int s=0;s<numPoints;s++)
+            {
+               ifs.read((char*)&pt.x, sizeof(double));
+               ifs.read((char*)&pt.y, sizeof(double));
+               ifs.read((char*)&pt.elevation, sizeof(double));
+               ifs.read((char*)&pt.r, sizeof(unsigned char));
+               ifs.read((char*)&pt.g, sizeof(unsigned char));
+               ifs.read((char*)&pt.b, sizeof(unsigned char));
+               ifs.read((char*)&pt.intensity, sizeof(int));
+
+    
+               mr += pt.r / 255.0 / numPointsd;
+               mg += pt.g / 255.0 / numPointsd;
+               mb += pt.b / 255.0 / numPointsd;
+               median.intensity += pt.intensity / numPointsd;
+
+               median.x += pt.x / numPointsd;
+               median.y += pt.y / numPointsd;
+               median.elevation += pt.elevation / numPointsd;
+            }
+
+            if (numPoints>0)
+            {
+               pointfile.precision(17);
+               pointfile << (median.x-0.5)*OCTREE_CUBE_SIZE << "," << (median.y-0.5)*OCTREE_CUBE_SIZE << "," << (median.elevation-0.5)*OCTREE_CUBE_SIZE << ",";
+               pointfile.precision(3);
+               pointfile          << unsigned char(mr*255.0) << "," << unsigned char(mg*255.0) << "," << unsigned char(mb*255.0) << "\n";
+            }
+         }
+
+
+         ifs.close();
+
+
          // #todo: create voxel from the data in "sFilename"
 
-         it++;
       }
+
+      pointfile.close();
 
       // B) create voxels for remaining lods
       // #todo: lod calc
-      it = indices.begin();
+      /*it = indices.begin();
       while (it != indices.end())
       {
          int64 i,j,k;
@@ -374,12 +423,8 @@ int main(int argc, char *argv[])
          std::string sParent = Octocode::GetParent(sOctocode);
 
          it++;
-      }
-
-
+      }*/
    }
 
-
    return 0;
-
 }

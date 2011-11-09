@@ -59,7 +59,14 @@ public:
 
    // export index list to file
    void ExportIndex(const std::string& sFilename);
+
+   // import index from a list of files
+   void ImportIndex(const std::vector<std::string>& sIndexFiles);
+
+   int64 GetIndexSize();
    
+   bool GetNextIndex(int64& idx);
+
 
 private:
    PointMap(){}
