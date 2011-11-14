@@ -6,7 +6,7 @@
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>--mapnik_dir Z:\bin\mapnik --map_file Z:\bin\mapnik\tmp_generated_full_Z.xml --output_path D:/data/test/ --numthreads=2  --min_zoom=12 --max_zoom=12 --bounds 5.955870 46.818020 10.492030 47.808380</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--mapnik_dir Y:\bin\mapnik --map_file Y:\bin\mapnik\transparent_layer.xml --output_path Y:/02_ProcessedData/osm/ --numthreads=8  --min_zoom=12 --max_zoom=12 --bounds 5.955870 46.818020 10.492030 47.808380</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
