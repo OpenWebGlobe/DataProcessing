@@ -6,7 +6,7 @@
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--layer PointCloudTest  --point C:\data\points\Punktwolke.xyz --srs EPSG:21781 --fill --verbose</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--grey16image D:\programming\MSE_MTh_03\data\ASTGTM2_N44E024_dem.tif --srs EPSG:4326 --layer ASTN44E024 --fill</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
