@@ -305,6 +305,63 @@ namespace ProcessingUtils
       return vData;
    }
    //---------------------------------------------------------------------------
+   OPENGLOBE_API boost::shared_array<unsigned short> Image16BitToMemoryGreyScale(const DataSetInfo& oDataset)
+   {
+      boost::shared_array<unsigned short> vData;
+
+      if (!oDataset.bGood)  // invalid dataset
+      {
+         return vData;
+      }
+
+      // currently only datasets with 3 bands (RGB) are supported
+      /*if (oDataset.nBands != 3)
+      {
+         return vData;
+      }*/
+
+      // load Dataset
+      GDALDataset* s_fh = (GDALDataset*)GDALOpen(oDataset.sFilename.c_str(), GA_ReadOnly);
+      if(!s_fh)
+      {
+         return vData;
+      }
+
+
+      // allocate memory
+
+      vData = boost::shared_array<unsigned short>(new unsigned short[oDataset.nSizeX * oDataset.nSizeY]);
+
+      if (!vData)
+      {
+         std::cout << "OUT OF MEMORY\n";
+         GDALClose(s_fh);
+         return vData;
+      }
+
+      // load full image to memory
+
+       CPLErr err = s_fh->RasterIO(
+         GF_Read,                      // eRWFlag
+         0,                            // nXOff
+         0,                            // nYOff
+         oDataset.nSizeX,              // nXSize
+         oDataset.nSizeY,              // nYSize
+         (void*)vData.get(),           // pData
+         oDataset.nSizeX,              // nBufXSize
+         oDataset.nSizeY,              // nBufYSize
+         GDT_Byte,                     // eBufType
+         1,                            // nBandCount
+         NULL,                         // panBandMap (1,2,3)
+         1,                            // nPixelSpace (use 4 if qImageBuffer is RGBA)
+         1*oDataset.nSizeX,            // nLineSpace
+         1                             // nBandSpace
+         );
+      
+      GDALClose(s_fh);
+
+      return vData;
+   }
 
 } // namespace
 
