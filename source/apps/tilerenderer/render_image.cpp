@@ -46,8 +46,8 @@ int main ( int argc , char** argv)
     using namespace mapnik;
     try {
         std::cout << " generating map ... \n";
-        std::string mapnik_dir(argv[1]);
-      std::string map_file("Y:/bin/mapnik/osm.xml");
+        std::string mapnik_dir("L:/Mth_OSM/bin/mapnik/");
+      std::string map_file("L:/Mth_OSM/bin/mapnik/area_layer.xml");
       std::string map_uri = "image.png";
 
       projection merc = projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over");

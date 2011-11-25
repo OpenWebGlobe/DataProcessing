@@ -90,3 +90,30 @@ bool ImageWriter::WriteJPG(const std::string& sFilename, ImageObject& image, int
    return false;
 
 }
+
+//------------------------------------------------------------------------------
+
+bool ImageWriter::WriteRaw32(const std::string& sFilename, Raw32ImageObject& image)
+{
+   if (WriteRaw32(sFilename, image.GetWidth(), image.GetHeight(), image.GetRawData().get()))
+   {
+      return true;
+   }
+   return false;
+}
+
+//------------------------------------------------------------------------------
+
+bool ImageWriter::WriteRaw32(const std::string& sFilename, int w, int h, float* data)
+{
+   std::fstream off(sFilename.c_str(), std::ios::out | std::ios::binary);
+   if (off.good())
+   {
+      int len = h*w*4;
+      off.write((char*)data, (std::streamsize)len);
+      off.close();
+      return true;
+   }
+   return false;
+}
+//------------------------------------------------------------------------------

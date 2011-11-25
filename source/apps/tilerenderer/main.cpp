@@ -62,6 +62,7 @@ int main ( int argc , char** argv)
       ("max_zoom", po::value<int>(), "[optional] max zoom level")
       ("expired_list", po::value<std::string>(), "[optional] list of expired tiles for update rendering (global rendering will be disabled)")
       ("bounds", po::value<std::vector<double>>(), "[optional] boundaries (default: -180.0 -90.0 180.0 90.0)")
+      ("verbose", "[optional] Verbose mode")
       ;
    
    po::positional_options_description p;
@@ -69,7 +70,7 @@ int main ( int argc , char** argv)
    po::variables_map vm;
    po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
    po::notify(vm);
-
+   
    //---------------------------------------------------------------------------
    // init options:
 
@@ -92,6 +93,7 @@ int main ( int argc , char** argv)
    }
 
    bool bError = false;
+   bool bVerbose = false;
    //----------------------------------------
    // Read commandline
    try
@@ -136,6 +138,9 @@ int main ( int argc , char** argv)
    int maxZoom = 18;
    if(vm.count("max_zoom"))
       maxZoom = vm["max_zoom"].as<int>();
+
+   if(vm.count("verbose"))
+         bVerbose = true;
 
    bool bUpdateMode = false;
    std::string expire_list;
@@ -299,7 +304,7 @@ int main ( int argc , char** argv)
 
                      std::string tile_uri = output_path + szoom + '/' + str_x + '/' + str_y + ".png";
                      // Submit tile to be rendered
-                     _renderTile(tile_uri,m,x,y,z,gProj,mapnikProj);
+                     _renderTile(tile_uri,m,x,y,z,gProj,mapnikProj,bVerbose);
                      tileCount++;
                   }
                }

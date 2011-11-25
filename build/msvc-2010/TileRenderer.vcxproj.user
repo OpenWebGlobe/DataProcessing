@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--mapnik_dir Z:\bin\mapnik --map_file Z:\bin\mapnik\tmp_generated_full_Z.xml --output_path D:/data/test/ --numthreads=2  --min_zoom=1 --max_zoom=1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--mapnik_dir D:\programming\MSE_MTh_03\git\DataProcessing\external\mapnik_msvc2010 --map_file D:\programming\MSE_MTh_03\git\DataProcessing\external\mapnik_msvc2010\area_layer.xml --output_path Z:\02_ProcessedData\osm\area_layer_local --verbose --numthreads=8  --min_zoom=12 --max_zoom=12 --bounds 5.955870 46.818020 10.492030 47.808380</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

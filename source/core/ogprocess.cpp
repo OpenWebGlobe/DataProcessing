@@ -305,9 +305,9 @@ namespace ProcessingUtils
       return vData;
    }
    //---------------------------------------------------------------------------
-   OPENGLOBE_API boost::shared_array<unsigned short> Image16BitToMemoryGreyScale(const DataSetInfo& oDataset)
+   OPENGLOBE_API boost::shared_array<float> ImageToMemoryGreyScale(const DataSetInfo& oDataset)
    {
-      boost::shared_array<unsigned short> vData;
+      boost::shared_array<float> vData;
 
       if (!oDataset.bGood)  // invalid dataset
       {
@@ -330,7 +330,7 @@ namespace ProcessingUtils
 
       // allocate memory
 
-      vData = boost::shared_array<unsigned short>(new unsigned short[oDataset.nSizeX * oDataset.nSizeY]);
+      vData = boost::shared_array<float>(new float[oDataset.nSizeX * oDataset.nSizeY]);
 
       if (!vData)
       {
@@ -338,6 +338,16 @@ namespace ProcessingUtils
          GDALClose(s_fh);
          return vData;
       }
+
+      GDALRasterBand* band = s_fh->GetRasterBand(1);
+
+      GDALDataType t = band->GetRasterDataType();
+
+      double bNoData = band->GetNoDataValue(); // -> speichern
+
+
+      std::cout << "DATATYPE: " << t << "\n";
+
 
       // load full image to memory
 
@@ -350,12 +360,12 @@ namespace ProcessingUtils
          (void*)vData.get(),           // pData
          oDataset.nSizeX,              // nBufXSize
          oDataset.nSizeY,              // nBufYSize
-         GDT_Byte,                     // eBufType
+         GDT_Float32,                  // eBufType
          1,                            // nBandCount
-         NULL,                         // panBandMap (1,2,3)
-         1,                            // nPixelSpace (use 4 if qImageBuffer is RGBA)
-         1*oDataset.nSizeX,            // nLineSpace
-         1                             // nBandSpace
+         NULL,                         // panBandMap
+         4,                            // nPixelSpace (in bytes)
+         4*oDataset.nSizeX,            // nLineSpace
+         0                             // nBandSpace
          );
       
       GDALClose(s_fh);

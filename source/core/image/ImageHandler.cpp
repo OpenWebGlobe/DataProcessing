@@ -383,3 +383,74 @@ void ImageObject::SavePPM(std::string sFilename)
          //out.FillFromBGRA(this->GetRawData().get()); 
       }
  }
+
+
+ //------------------ Raw32ImageObject-----------------------------------------
+ //----------------------------------------------------------------------------
+
+Raw32ImageObject::Raw32ImageObject()
+{
+   _width = 0;
+   _height = 0;
+}
+
+//----------------------------------------------------------------------------
+
+Raw32ImageObject::~Raw32ImageObject()
+{
+
+}
+
+//------------------------------------------------------------------------------
+
+void Raw32ImageObject::AllocateImage(unsigned int w, unsigned int h)
+{
+   _width = w;
+   _height = h;
+   
+   _qData = boost::shared_array<float>(new float[w*h]); 
+}
+
+//------------------------------------------------------------------------------
+
+void Raw32ImageObject::SetValue(int x, int y,float input)
+{
+   _qData[x+(y*_width)] = input;
+}
+
+//------------------------------------------------------------------------------
+
+void Raw32ImageObject::SetValue(int offset,float input)
+{
+   _qData[offset] = input;
+}
+
+//------------------------------------------------------------------------------
+
+float Raw32ImageObject::GetValue(int x, int y)
+{
+   return _qData[x+(y*_width)];
+}
+
+//------------------------------------------------------------------------------
+
+float Raw32ImageObject::GetValue(int offset)
+{
+   return _qData[offset];
+}
+
+
+//------------------------------------------------------------------------------
+void Raw32ImageObject::Fill(float*  input)
+{
+   float* dst = _qData.get();
+      
+   for (size_t y=0;y<_height;y++)
+   {
+      for (size_t x=0;x<_width;x++)
+      {
+         size_t adr=_width*y+x;
+         dst[adr] = input[adr];
+      }
+   }
+}

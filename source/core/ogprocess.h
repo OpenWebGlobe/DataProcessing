@@ -99,7 +99,7 @@ namespace ProcessingUtils
    OPENGLOBE_API boost::shared_array<unsigned char> ImageToMemoryRGB(const DataSetInfo& oDataset);
    //---------------------------------------------------------------------------
    // Load image with 1 channels to GreyScale 16 Bit.
-   OPENGLOBE_API boost::shared_array<unsigned short> Image16BitToMemoryGreyScale(const DataSetInfo& oDataset);
+   OPENGLOBE_API boost::shared_array<float> ImageToMemoryGreyScale(const DataSetInfo& oDataset);
 
   
 }

@@ -62,6 +62,38 @@ bool ImageLoader::LoadFromDisk(Img::FileFormat eFormat, const std::string& sFile
 
 //------------------------------------------------------------------------------
 
+bool ImageLoader::LoadRaw32FromDisk(const std::string& sFilename, int w, int h,  Raw32ImageObject& outputdata)
+{
+   std::vector<float> vecData;
+   std::ifstream ifs;
+   
+#ifdef OS_WINDOWS
+   std::wstring sFilenameW = StringUtils::Utf8_To_wstring(sFilename);
+   ifs.open(sFilenameW.c_str(), std::ios::in | std::ios::binary);
+#else
+   ifs.open(sFilename.c_str(), std::ios::in | std::ios::binary);
+#endif
+   if (ifs.good())
+   {
+      unsigned char s;
+      while (!ifs.eof())
+      {  
+         ifs.read((char*)&s, 1);
+         vecData.push_back(s);  
+      }
+   }
+   else
+   {
+      return false;
+   }
+   outputdata.AllocateImage(w,h);
+   outputdata.Fill(&vecData[0]);
+   
+   return true;
+}
+
+//------------------------------------------------------------------------------
+
 bool ImageLoader::LoadFromMemory(Img::FileFormat eFormat, const unsigned char* pData, const unsigned int nSize, Img::PixelFormat eDestPixelFormat, ImageObject& outputimage)
 {
    unsigned int w,h;
@@ -106,6 +138,13 @@ bool ImageLoader::LoadFromMemory(Img::FileFormat eFormat, const unsigned char* p
                return true;
             }
          }
+         break;
+      }
+      case Img::Format_RAW32:
+      {
+         int x,y;
+         float comp;
+
          break;
       }
       default:

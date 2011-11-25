@@ -38,6 +38,9 @@ public:
    // writes JPG image. Note: Image is converted to RGB.
    static bool WriteJPG(const std::string& sFilename, ImageObject& image, int quality);
 
+   // writes Raw data format 32 bit channeldepth.
+   static bool WriteRaw32(const std::string& sFilename, Raw32ImageObject& image);
+   static bool WriteRaw32(const std::string& sFilename, int w, int h, float* data);
  
 };
 

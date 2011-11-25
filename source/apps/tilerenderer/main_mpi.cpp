@@ -75,6 +75,7 @@ std::string mapnik_dir;
 std::string output_path;
 std::string expire_list;
 bool bUpdateMode;
+bool bVerbose = false;
 int queueSize = 4096;
 double bounds[4];
 int iX = 0;
@@ -91,7 +92,7 @@ void jobCallback(const SJob& job, int rank)
    std::stringstream ss;
    ss << output_path << job.zoom << "/" << job.x << "/" << job.y << ".png";
    //std::cout << "..Render tile " << ss.str() << "on rank: " << rank << "   Tilesize: "<< g_map.getWidth() << " Projection: " << g_mapnikProj.params() << "\n";
-   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj);
+   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose);
 }
 //------------------------------------------------------------------------------
 void BroadcastString(std::string& sStr, int sender)
@@ -266,7 +267,7 @@ int main ( int argc , char** argv)
    bounds[1] = -90.0;
    bounds[2] = 180.0;
    bounds[3] = 90.0;
-   bool bVerbose = false;
+   
 
    if (rank == 0)
    {

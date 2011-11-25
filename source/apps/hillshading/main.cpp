@@ -121,20 +121,20 @@ int main(int argc, char *argv[])
    std::string sTempTileDir = sLayerPath + "temp/tiles/";
    std::string sTileDir = sLayerPath + "tiles/";
 
-   boost::shared_ptr<ElevationLayerSettings> qElevationLayerSettings = ElevationLayerSettings::Load(sLayerPath);
-   if (!qElevationLayerSettings)
+   boost::shared_ptr<ImageLayerSettings> qImageLayerSettings = ImageLayerSettings::Load(sLayerPath);
+   if (!qImageLayerSettings)
    {
-      qLogger->Error("Failed retrieving elevation layer settings! Make sure to create it using 'createlayer'.");
-      return ERROR_ELVLAYERSETTINGS;
+      qLogger->Error("Failed retrieving image layer settings! Make sure to create it using 'createlayer'.");
+      return ERROR_IMAGELAYERSETTINGS;
    }
-   int lod = qElevationLayerSettings->GetMaxLod();
+   int lod = qImageLayerSettings->GetMaxLod();
    int64 layerTileX0, layerTileY0, layerTileX1, layerTileY1;
-   qElevationLayerSettings->GetTileExtent(layerTileX0, layerTileY0, layerTileX1, layerTileY1);
+   qImageLayerSettings->GetTileExtent(layerTileX0, layerTileY0, layerTileX1, layerTileY1);
    std::ostringstream oss;
    if (bVerbose)
    {
-      oss << "\nElevation Layer:\n";
-      oss << "     name = " << qElevationLayerSettings->GetLayerName() << "\n";
+      oss << "\nRaw Image Layer:\n";
+      oss << "   name = " << qImageLayerSettings->GetLayerName() << "\n";
       oss << "   maxlod = " << lod << "\n";
       oss << "   extent = " << layerTileX0 << ", " << layerTileY0 << ", " << layerTileX1 << ", " << layerTileY1 << "\n";
       qLogger->Info(oss.str());
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
    int64 height = layerTileY1-layerTileY0+1;
    if (width<3 || height<3)
    {
-      qLogger->Error("Extent is too small for elevation processing");
+      qLogger->Error("Extent is too small for hillshading processing");
       return ERROR_ELVLAYERSETTINGS;
    }
 
@@ -170,11 +170,16 @@ int main(int argc, char *argv[])
       qLogger->Info(oss.str());
       oss.str("");
    }
-   GDALAllRegister();
-   OGRRegisterAll();
-#ifndef _DEBUG
-#     pragma omp parallel for
-#endif
+
+   if (!ProcessingUtils::init_gdal())
+   {
+      std::cout << "Warning: gdal-data directory not found. Ouput may be wrong!\n";
+      return 1;
+   }   
+
+//#ifndef _DEBUG
+//#     pragma omp parallel for
+//#endif
    for (int64 xx = layerTileX0+1; xx < layerTileX1; ++xx)
    {
       for (int64 yy = layerTileY0+1; yy < layerTileY1; ++yy)
@@ -183,58 +188,53 @@ int main(int argc, char *argv[])
 
          //std::cout << sCurrentQuadcode << "\n";
          HSProcessChunk pData;
+         pData.dfXMax = -1e20;
+         pData.dfYMax = -1e20;
+         pData.dfXMin = 1e20;
+         pData.dfYMin = 1e20;
+         pData.data.AllocateImage(768, 768);
+
          for (int ty=-1;ty<=1;ty++)
          {
             for (int tx=-1;tx<=1;tx++)
             {
                std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx+tx,yy+ty,lod);
-               std::string sTilefile = ProcessingUtils::GetTilePath(sTempTileDir, ".pts" , lod, xx+tx, yy+ty);
+               std::string sTilefile = ProcessingUtils::GetTilePath(sTempTileDir, ".raw" , lod, xx+tx, yy+ty);
                   
                double sx0, sy1, sx1, sy0;
                qQuadtree->QuadKeyToMercatorCoord(sQuadcode, sx0, sy1, sx1, sy0);
-               if(ty==-1 && tx == -1)
-               {
-                  pData.dfXMin = sx0;
-                  pData.dfYMax = sy0;
-               }
-               if(ty == 1 && tx == 1)
-               {
-                  
-                  pData.dfXMax = sx1;
-                  pData.dfYMin = sy1;
-               }
+               
+               pData.dfXMax = math::Max<double>(pData.dfXMax, sx1);
+               pData.dfYMax = math::Max<double>(pData.dfXMax, sy1);
+               pData.dfXMin = math::Min<double>(pData.dfXMin, sx0);
+               pData.dfYMin = math::Min<double>(pData.dfXMin, sy0);
+
+               assert(sx0 < sx1);
+               assert(sy0 < sy1);
 
                //std::cout << "   " << sTilefile << "\n";
 
                std::ifstream fin;
                fin.open(sTilefile.c_str(), std::ios::binary);
-               
+               int offset = 0;
                if (fin.good())
                {
                   while (!fin.eof())
                   {
-                     ElevationPoint pt;
-                     fin.read((char*)&(pt.x), sizeof(double));
-                     fin.read((char*)&(pt.y), sizeof(double));
-                     fin.read((char*)&(pt.elevation), sizeof(double));
-                     fin.read((char*)&(pt.weight), sizeof(double));
+                     float value;
+                     fin.read((char*)&(value), sizeof(float));
                      if (!fin.eof())
                      {
-                        pData.adfX.push_back(pt.x);
-                        pData.adfY.push_back(pt.y);
-                        pData.adfElevation.push_back(pt.elevation);
+                        pData.data.SetValue(offset, value);
                      }
+                     offset++;
                   }
                }
                fin.close();
             }
          }
          // Generate tile
-         pData.eAlgorithm = GGA_InverseDistanceToAPower;
-         void *pOptions = NULL;
-         process_hillshading(pData, xx, yy, lod, 5, 256, 256, pOptions);
-         CPLFree( pOptions );
-         
+         process_hillshading(sTileDir, pData, xx, yy, lod, 5, 256, 256);
       }
    }
    GDALDestroyDriverManager();

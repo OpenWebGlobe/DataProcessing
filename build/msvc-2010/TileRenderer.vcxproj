@@ -126,8 +126,8 @@
     <ClCompile Include="..\..\source\apps\tilerenderer\main.cpp" />
     <ClCompile Include="..\..\source\apps\tilerenderer\render_tile.h" />
     <ClCompile Include="..\..\source\apps\tilerenderer\render_image.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\source\apps\tilerenderer\rundemo.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

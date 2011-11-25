@@ -34,7 +34,7 @@ namespace GreyImageData
    //------------------------------------------------------------------------------
    // Image Operations
 
-   inline void _ReadImageDataMem(unsigned short* buffer, int bufferwidth, int bufferheight, int x, int y, unsigned short* value)
+   inline void _ReadImageDataMem(float* buffer, int bufferwidth, int bufferheight, int x, int y, float* value)
    {
       if (x<0) x = 0;
       if (y<0) y = 0;
@@ -42,14 +42,11 @@ namespace GreyImageData
       if (y>bufferheight-1) y = bufferheight-1;
 
       *value = buffer[bufferwidth*1*y+1*x];
-    /* *r = buffer[bufferwidth*3*y+3*x];
-      *g = buffer[bufferwidth*3*y+3*x+1];
-      *b = buffer[bufferwidth*3*y+3*x+2];*/
    }
 
    //---------------------------------------------------------------------------
 
-   inline void _ReadImageValueBilinear(unsigned short* buffer, int bufferwidth, int bufferheight, double x, double y, unsigned short* value)
+   inline void _ReadImageValueBilinear(float* buffer, int bufferwidth, int bufferheight, double x, double y, float* value)
    {
       double uf = math::Fract<double>(x);
       double vf = math::Fract<double>(y);
@@ -66,10 +63,10 @@ namespace GreyImageData
       u11 = nPixelX+1;
       v11 = nPixelY+1;
 
-      unsigned short value00;
-      unsigned short value10;
-      unsigned short value01;
-      unsigned short value11;
+      float value00;
+      float value10;
+      float value01;
+      float value11;
 
       _ReadImageDataMem(buffer, bufferwidth, bufferheight, u00,v00,&value00);
       _ReadImageDataMem(buffer, bufferwidth, bufferheight, u10,v10,&value10);
@@ -80,10 +77,7 @@ namespace GreyImageData
 
       valued = (double(value00)*(1-uf)*(1-vf)+double(value10)*uf*(1-vf)+double(value01)*(1-uf)*vf+double(value11)*uf*vf)+0.5;
       
-
-      //valued = math::Clamp<double>(valued, 0.0, 10000.0);
-
-      *value = (unsigned short) valued;
+      *value = (float) valued;
    }
 
    //---------------------------------------------------------------------------

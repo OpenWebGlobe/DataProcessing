@@ -51,7 +51,8 @@ namespace GreyImageData
       std::ostringstream oss;
 
       std::string sImageLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
-      std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sImageLayerDir) + "tiles");
+
+      std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sImageLayerDir) + "temp/tiles");
 
       boost::shared_ptr<ImageLayerSettings> qImageLayerSettings = ImageLayerSettings::Load(sImageLayerDir);
       if (!qImageLayerSettings)
@@ -139,8 +140,8 @@ namespace GreyImageData
       out_y1 = imageTileY1;
 
       // Load image 
-      boost::shared_array<unsigned short> vImage = ProcessingUtils::Image16BitToMemoryGreyScale(oInfo);
-      unsigned short* pImage = vImage.get();
+      boost::shared_array<float> vImage = ProcessingUtils::ImageToMemoryGreyScale(oInfo);
+      float* pImage = vImage.get();
 
       if (!vImage)
       {
@@ -156,10 +157,10 @@ namespace GreyImageData
       {
          for (int64 yy = imageTileY0; yy <= imageTileY1; ++yy)
          {
-            boost::shared_array<unsigned char> vTile;
+            boost::shared_array<float> vTile;
 
             std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
-            std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".png" , lod, xx, yy);
+            std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".raw" , lod, xx, yy);
 
             if (bVerbose)
             {
@@ -191,8 +192,8 @@ namespace GreyImageData
             if (FileSystem::FileExists(sTilefile))
             {
                qLogger->Info(sTilefile + " already exists, updating");
-               ImageObject outputimage;
-               if (ImageLoader::LoadFromDisk(Img::Format_PNG, sTilefile, Img::PixelFormat_RGBA, outputimage))
+               Raw32ImageObject outputimage;
+               if (ImageLoader::LoadRaw32FromDisk(sTilefile, tilesize,tilesize, outputimage))
                {
                   if (outputimage.GetHeight() == tilesize && outputimage.GetWidth() == tilesize)
                   {
@@ -205,11 +206,12 @@ namespace GreyImageData
             if (bCreateNew)
             {
                // create new tile memory and clear to fully transparent
-               vTile = boost::shared_array<unsigned char>(new unsigned char[tilesize*tilesize*4]);
-               memset(vTile.get(),0,tilesize*tilesize*4);
+               vTile = boost::shared_array<float>(new float[tilesize*tilesize]);
+               //vTile = boost::shared_array<unsigned char>(new unsigned char[tilesize*tilesize*4]);
+               //memset(vTile.get(),0,tilesize*tilesize*4);
             }
 
-            unsigned char* pTile = vTile.get();
+            float* pTile = vTile.get();
 
             // Copy image to tile:
             double px0m, py0m, px1m, py1m;
@@ -258,13 +260,14 @@ namespace GreyImageData
                   // pixel coordinate in original image
                   double dPixelX = (oInfo.affineTransformation_inverse[0] + xd * oInfo.affineTransformation_inverse[1] + yd * oInfo.affineTransformation_inverse[2]);
                   double dPixelY = (oInfo.affineTransformation_inverse[3] + xd * oInfo.affineTransformation_inverse[4] + yd * oInfo.affineTransformation_inverse[5]);
-                  unsigned short value;
+                  float value;
+
 
                   // out of image -> set transparent
                   if (dPixelX<0 || dPixelX>oInfo.nSizeX ||
                      dPixelY<0 || dPixelY>oInfo.nSizeY)
                   {
-                     value = 0;
+                     value = -9999;
                   }
                   else
                   {
@@ -273,28 +276,22 @@ namespace GreyImageData
                      _ReadImageValueBilinear(pImage, oInfo.nSizeX, oInfo.nSizeY, dPixelX, dPixelY, &value);
 
                      // scale to 256 AND REMOVE VOID PIXELS (-9999 values) !!!! 
-                     double valued = math::Clamp(math::Floor<double>(((double)value)/(8500.0/256.0)),0.0, 8500.0);
-                     value = (unsigned short) valued;
+                     //if (value<-5000) value = -9999;
+                     //value = math::Clamp<float>(unsigned char(value/1000.0f*256.0f), 0, 255);
+     
                   }
 
-                  size_t adr=4*ty*tilesize+4*tx;
+                  size_t adr=1*ty*tilesize+1*tx;
                      if (bFill)
                      {
-                        if (pTile[adr+3] == 0)
+                        if (pTile[adr] == -9999)
                         {
-                           pTile[adr+0] = value;  
-                           pTile[adr+1] = value;  
-                           pTile[adr+2] = value; 
-                           pTile[adr+3] = 255;
+                           pTile[adr] = value;  
                         }
                      }
                      else // if (bOverwrite)
                      {
-                        // currently RGB for testing purposes!
-                        pTile[adr+0] = value;  
-                        pTile[adr+1] = value;  
-                        pTile[adr+2] = value; 
-                        pTile[adr+3] = 255;
+                        pTile[adr] = value;  
                      }
                }
             }
@@ -305,7 +302,7 @@ namespace GreyImageData
                qLogger->Info("Storing tile: " + sTilefile);
             }
 
-            ImageWriter::WritePNG(sTilefile, pTile, tilesize, tilesize);
+            ImageWriter::WriteRaw32(sTilefile, tilesize, tilesize, pTile);
 
             // unlock file. Other computers/processes/threads can access it again.
             FileSystem::Unlock(sTilefile, lockhandle);

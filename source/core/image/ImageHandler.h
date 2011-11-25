@@ -95,6 +95,30 @@ protected:
    unsigned int _height; 
 };
 
+//----------------------------------------------------------------------------
+class OPENGLOBE_API Raw32ImageObject
+{
+public:
+   Raw32ImageObject();
+   virtual ~Raw32ImageObject();
+   
+   //! \brief Allocate Image Data
+   void AllocateImage(unsigned int w, unsigned int h);   
+   void Fill(float*  input);
+   unsigned int   GetWidth(){return _width;}
+   unsigned int   GetHeight(){return _height;}
+   void SetValue(int offset, float input);
+   void SetValue(int x, int y, float input);
+   float GetValue(int offset);
+   float GetValue(int x, int y);
+
+   boost::shared_array<float> GetRawData() { return _qData;}
+protected:
+   boost::shared_array<float> _qData; 
+   unsigned int _width;
+   unsigned int _height; 
+};
+
 
 #include "image/ImageHandler.inl"
 
