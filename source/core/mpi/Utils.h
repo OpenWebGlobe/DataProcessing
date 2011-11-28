@@ -86,18 +86,15 @@ public:
    {
       if (_rank == 0 && _totalnodes == 1)
       {
-         std::vector<SJob> vJobs;
-         while (_jobstack.size()>0)
+         std::vector<SJob> vecJobsRoot =_MakeRootJobPacket(_jobstack);
+         // -- Process on rank 0
+         std::cout << "-->>Rank " << _rank << " is processing " << vecJobsRoot.size()<< " jobs....!\n"<< std::flush;
+         #pragma omp parallel for
+         for (int i=0;i<(int)vecJobsRoot.size();i++)
          {
-            vJobs.push_back(_jobstack.top());
-            _jobstack.pop();
+               fnc(vecJobsRoot[i], _rank);
          }
-
-#        pragma omp parallel for
-         for (int i=0;i<(int)vJobs.size();i++)
-         {
-              fnc(vJobs[i], 0);
-         }
+         std::cout << "<<--Rank " << _rank << " finished processing " << vecJobsRoot.size()<< " jobs!\n"<< std::flush;
       }
 
       if (_rank == 0) 

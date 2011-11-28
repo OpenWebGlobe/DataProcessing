@@ -280,9 +280,11 @@ int main ( int argc , char** argv)
                int tileCount = 0;
                int low = int(px0.b/256.0);
                int high = int(px1.b/256.0)+1;
+#ifndef _DEBUG
                #pragma omp parallel shared(low,high,x,z,m,gProj,mapnikProj,tsmScheme, output_path, szoom,str_x,tileCount)
                {
                   #pragma omp for 
+#endif
                   for(int y = low; y <= high; y++)
                   {
                      // Validate x co-ordinate
@@ -307,7 +309,9 @@ int main ( int argc , char** argv)
                      _renderTile(tile_uri,m,x,y,z,gProj,mapnikProj,bVerbose);
                      tileCount++;
                   }
+#ifndef _DEBUG
                }
+#endif
                total_tiles += tileCount;
                if(tileCount % 1000 == 0)
                {

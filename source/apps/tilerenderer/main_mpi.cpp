@@ -510,17 +510,17 @@ int main ( int argc , char** argv)
    }
    catch ( const mapnik::config_error & ex )
    {
-      std::cerr << "### Configuration ERROR: " << ex.what() << std::endl;
+      std::cout << "### Configuration ERROR: " << ex.what() << std::endl;
       return ERROR_CONFIG;
    }
    catch ( const std::exception & ex )
    {
-      std::cerr << "### std::exception: " << ex.what() << std::endl;
+      std::cout << "### std::exception: " << ex.what() << std::endl;
       return ERROR_MAPNIK;
    }
    catch ( ... )
    {
-      std::cerr << "### Unknown exception." << std::endl;
+      std::cout << "### Unknown exception." << std::endl;
       return EXIT_FAILURE;
    }
    return EXIT_SUCCESS;

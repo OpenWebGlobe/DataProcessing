@@ -284,7 +284,7 @@ namespace GreyImageData
                   size_t adr=1*ty*tilesize+1*tx;
                      if (bFill)
                      {
-                        if (pTile[adr] == -9999)
+                        if (pTile[adr] == -9999 || bCreateNew)
                         {
                            pTile[adr] = value;  
                         }
