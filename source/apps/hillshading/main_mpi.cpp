@@ -177,6 +177,8 @@ void BroadcastBool(bool& val, int sender)
 void GenerateRenderJobs(int count, int lod, std::vector<SJob> &vJobs)
 {
    int idx = 0;
+   if(bVerbose)
+     std::cout << " Generating " << count << " jobs starting from (z, x, y) " << "(" << lod << ", " << iX << ", " << iY << ")\n";
    for (int64 xx = iX; xx < layerTileX1; ++xx)
    {
       for (int64 yy = iY; yy < layerTileY1; ++yy)
@@ -382,7 +384,6 @@ int main(int argc, char *argv[])
          MPI_Finalize();
       } 
    }
-   GDALDestroyDriverManager();
    return 0;
 }
 

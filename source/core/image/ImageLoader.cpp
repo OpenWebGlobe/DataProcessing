@@ -64,32 +64,37 @@ bool ImageLoader::LoadFromDisk(Img::FileFormat eFormat, const std::string& sFile
 
 bool ImageLoader::LoadRaw32FromDisk(const std::string& sFilename, int w, int h,  Raw32ImageObject& outputdata)
 {
-   std::vector<float> vecData;
    std::ifstream ifs;
    
 #ifdef OS_WINDOWS
    std::wstring sFilenameW = StringUtils::Utf8_To_wstring(sFilename);
-   ifs.open(sFilenameW.c_str(), std::ios::in | std::ios::binary);
+   ifs.open(sFilenameW.c_str(), std::ios::binary);
 #else
-   ifs.open(sFilename.c_str(), std::ios::in | std::ios::binary);
+   ifs.open(sFilename.c_str(), std::ios::binary);
 #endif
-   if (ifs.good())
-   {
-      unsigned char s;
-      while (!ifs.eof())
-      {  
-         ifs.read((char*)&s, 1);
-         vecData.push_back(s);  
-      }
-   }
-   else
-   {
-      return false;
-   }
    outputdata.AllocateImage(w,h);
-   outputdata.Fill(&vecData[0]);
-   
-   return true;
+      int offset = 0;
+      if (ifs.good())
+      {
+         while (!ifs.eof())
+         {
+                     
+            float value;
+            ifs.read((char*)&(value), sizeof(float));
+            if (!ifs.eof())
+            {
+               outputdata.SetValue(offset, value);
+            }
+            offset++;
+         }
+         ifs.close();
+         return true;
+      }
+      else
+      {
+         ifs.close();
+         return false;
+      }
 }
 
 //------------------------------------------------------------------------------

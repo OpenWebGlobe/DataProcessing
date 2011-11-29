@@ -73,6 +73,13 @@ namespace GreyImageData
       _ReadImageDataMem(buffer, bufferwidth, bufferheight, u01,v01,&value01);
       _ReadImageDataMem(buffer, bufferwidth, bufferheight, u11,v11,&value11);
 
+
+      if (value00<-5000.0f || value10<-5000.0f || value01<-5000.0f || value11<-5000.0f)
+      {
+         *value = -9999.0f;
+         return;
+      }
+
       double valued;
 
       valued = (double(value00)*(1-uf)*(1-vf)+double(value10)*uf*(1-vf)+double(value01)*(1-uf)*vf+double(value11)*uf*vf)+0.5;

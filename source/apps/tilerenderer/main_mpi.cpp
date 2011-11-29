@@ -91,6 +91,12 @@ void jobCallback(const SJob& job, int rank)
 {
    std::stringstream ss;
    ss << output_path << job.zoom << "/" << job.x << "/" << job.y << ".png";
+   std::ofstream myfile;
+   std::stringstream tile_log;
+   tile_log << output_path << "tile_joblist_rank"<<rank<<".log";
+   myfile.open (tile_log.str(), std::ios::out | std::ios::app);
+   myfile << "Tile: Z: " << job.zoom << "  X: " << job.x << "  Y: "<< job.y << "\n";
+   myfile.close();
    //std::cout << "..Render tile " << ss.str() << "on rank: " << rank << "   Tilesize: "<< g_map.getWidth() << " Projection: " << g_mapnikProj.params() << "\n";
    _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose);
 }
@@ -145,6 +151,8 @@ void GenerateRenderJobs(int count, std::vector<SJob> &vJobs)
    if(!bUpdateMode)
    {
       if(iZ < 0) { iZ = minZoom; }
+      if(bVerbose)
+         std::cout << " Generating " << count << " jobs (z, x, y) starting from " << "(" << iZ << ", " << iX << ", " << iY << ")\n";
       for(int z = iZ; z <= maxZoom; z++)
       {
          ituple px0 = g_gProj.geoCoord2Pixel(dtuple(bounds[0], bounds[3]),z);

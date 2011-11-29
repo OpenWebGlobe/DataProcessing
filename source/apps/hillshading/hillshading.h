@@ -238,12 +238,12 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, int 
             pTile[adr+2] = scaledValue; 
             pTile[adr+3] = 255;
          }
+         CPLFree(pCalcObj);
       }
    }
    std::stringstream tilepath;
    tilepath << filepath << "/" << zoom << "/" << x << "/" << y << ".png";
    ImageWriter::WritePNG(tilepath.str(), pTile, width, height);
-
 }
 
 

@@ -89,15 +89,16 @@ public:
          std::vector<SJob> vecJobsRoot =_MakeRootJobPacket(_jobstack);
          // -- Process on rank 0
          std::cout << "-->>Rank " << _rank << " is processing " << vecJobsRoot.size()<< " jobs....!\n"<< std::flush;
+#ifndef _DEBUG
          #pragma omp parallel for
+#endif
          for (int i=0;i<(int)vecJobsRoot.size();i++)
          {
                fnc(vecJobsRoot[i], _rank);
          }
          std::cout << "<<--Rank " << _rank << " finished processing " << vecJobsRoot.size()<< " jobs!\n"<< std::flush;
       }
-
-      if (_rank == 0) 
+      else if (_rank == 0) 
       {
          int totaljobs = (int)_jobstack.size();
          clock_t tprog0, tprog1;
@@ -113,11 +114,22 @@ public:
          {
             _MakeJobPacket(_jobstack, i);
          }
+
+         if(bVerbose)
+         {
+            std::cout << " Prepared " << (totaljobs-_jobstack.size()) << " jobs of "<< totaljobs << " for external nodes...\n";
+         }
+         
       
          while (_lstActiveRequests.size()>0)
          {
+            if(bVerbose)
+            {
+               std::cout << " Remaining requests: " << _lstActiveRequests.size() << "\n";
+            }
+         
             std::vector<int> freenodes;
-
+            
             std::list< std::pair<MPI_Request, int> >::iterator it = _lstActiveRequests.begin();
             if (it != _lstActiveRequests.end())
             {
@@ -137,14 +149,14 @@ public:
             }
             if(freenodes.size() > 0)
             {
-               std::vector<SJob> vecJobsRoot =_MakeRootJobPacket(_jobstack);
-               if(freenodes.size() > 1)
+               for (size_t i=0;i<freenodes.size();i++)
                {
-                  for (size_t i=0;i<freenodes.size()-1;i++)
-                  {
-                     _MakeJobPacket(_jobstack, freenodes[i]);
-                  }
+                  _MakeJobPacket(_jobstack, freenodes[i]);
                }
+            }
+            /*if (_jobstack.size()>0)
+            {
+               std::vector<SJob> vecJobsRoot =_MakeRootJobPacket(_jobstack);
                // -- Process on rank 0
                std::cout << "-->>Rank " << _rank << " is processing " << vecJobsRoot.size()<< " jobs....!\n"<< std::flush;
                #pragma omp parallel for
@@ -153,7 +165,7 @@ public:
                     fnc(vecJobsRoot[i], _rank);
                }
                std::cout << "<<--Rank " << _rank << " finished processing " << vecJobsRoot.size()<< " jobs!\n"<< std::flush;
-            }
+            }*/
          }
 
          // send terminate

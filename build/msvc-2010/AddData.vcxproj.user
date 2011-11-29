@@ -6,7 +6,7 @@
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--greyimage D:\programming\MSE_MTh_03\data\ASTGTM2_N44E024_dem.tif --srs EPSG:4326 --layer ASTN44E024 --fill</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--greyimage D:\programming\MSE_MTh_03\data\aster_small\ASTGTM2_N44E023_dem.tif --srs EPSG:4326 --layer aster4x4 --fill</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
