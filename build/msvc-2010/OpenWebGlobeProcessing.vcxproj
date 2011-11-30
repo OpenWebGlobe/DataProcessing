@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\source\core\app\Logger.cpp" />
     <ClCompile Include="..\..\source\core\app\ProcessingSettings.cpp" />
+    <ClCompile Include="..\..\source\core\app\QueueManager.cpp" />
     <ClCompile Include="..\..\source\core\boost\json-spirit\json_spirit_reader.cpp" />
     <ClCompile Include="..\..\source\core\boost\json-spirit\json_spirit_value.cpp" />
     <ClCompile Include="..\..\source\core\boost\json-spirit\json_spirit_writer.cpp" />
@@ -56,6 +57,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\source\core\app\Logger.h" />
     <ClInclude Include="..\..\source\core\app\ProcessingSettings.h" />
+    <ClInclude Include="..\..\source\core\app\QueueManager.h" />
     <ClInclude Include="..\..\source\core\boost\atomic.hpp" />
     <ClInclude Include="..\..\source\core\boost\atomic\detail\base.hpp" />
     <ClInclude Include="..\..\source\core\boost\atomic\detail\builder.hpp" />

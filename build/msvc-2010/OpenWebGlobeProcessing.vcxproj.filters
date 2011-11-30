@@ -175,6 +175,9 @@
     <ClCompile Include="..\..\source\core\math\CloudPoint.cpp">
       <Filter>math</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\app\QueueManager.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
@@ -391,6 +394,9 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\math\mat4.h">
       <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\app\QueueManager.h">
+      <Filter>app</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
