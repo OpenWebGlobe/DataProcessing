@@ -19,6 +19,19 @@
 #ifndef _HTTP_POST_
 #define _HTTP_POST_
 
+#include "og.h"
+#include <string>
+
+class OPENGLOBE_API HttpPost
+{
+public:
+   HttpPost(){}
+   virtual ~HttpPost(){}
+
+   //! \description Send Data using multipart/formdata
+   static unsigned int SendBinary(const std::string& url, std::string& form_name, std::string& form_filename, unsigned char* pData, size_t size);
+
+};
 
 
 #endif

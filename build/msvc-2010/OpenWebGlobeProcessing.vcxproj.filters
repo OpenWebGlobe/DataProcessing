@@ -181,9 +181,6 @@
     <ClCompile Include="..\..\source\core\geo\PointMap.cpp">
       <Filter>geo</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\core\http\Downloader.cpp">
-      <Filter>http</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\source\core\http\Post.cpp">
       <Filter>http</Filter>
     </ClCompile>
@@ -414,12 +411,6 @@
     <ClInclude Include="..\..\source\core\geo\PointMap.h">
       <Filter>geo</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\source\core\http\Downloader.h">
-      <Filter>http</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\core\http\Post .h">
-      <Filter>http</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\source\core\http\Get.h">
       <Filter>http</Filter>
     </ClInclude>
@@ -427,6 +418,9 @@
       <Filter>http</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\core\app\QueueManager.h" />
+    <ClInclude Include="..\..\source\core\http\Post.h">
+      <Filter>http</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\source\core\image\ImageHandler.inl">

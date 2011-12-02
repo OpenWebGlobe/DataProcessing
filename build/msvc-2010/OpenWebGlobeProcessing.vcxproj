@@ -27,7 +27,6 @@
     <ClCompile Include="..\..\source\core\geo\PointLayerSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\PointMap.cpp" />
     <ClCompile Include="..\..\source\core\geo\ProcessStatus.cpp" />
-    <ClCompile Include="..\..\source\core\http\Downloader.cpp" />
     <ClCompile Include="..\..\source\core\http\Get.cpp" />
     <ClCompile Include="..\..\source\core\http\Header.cpp" />
     <ClCompile Include="..\..\source\core\http\Post.cpp" />
@@ -98,10 +97,9 @@
     <ClInclude Include="..\..\source\core\geo\PointLayerSettings.h" />
     <ClInclude Include="..\..\source\core\geo\PointMap.h" />
     <ClInclude Include="..\..\source\core\geo\ProcessStatus.h" />
-    <ClInclude Include="..\..\source\core\http\Downloader.h" />
     <ClInclude Include="..\..\source\core\http\Get.h" />
     <ClInclude Include="..\..\source\core\http\Header.h" />
-    <ClInclude Include="..\..\source\core\http\Post .h" />
+    <ClInclude Include="..\..\source\core\http\Post.h" />
     <ClInclude Include="..\..\source\core\image\ImageHandler.h" />
     <ClInclude Include="..\..\source\core\image\ImageLoader.h" />
     <ClInclude Include="..\..\source\core\image\ImageWriter.h" />
