@@ -3,11 +3,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--layer PointCloudTest --verbose --type point</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer PointCloudTest --verbose --type point --pointfile</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--layer PointCloudTest --verbose --type point</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--layer PointCloudTest --verbose --type point pointfile</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

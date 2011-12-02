@@ -26,6 +26,7 @@
 //------------------------------------------------------------------------------
 // MPI Version of the tile rendering mechanism
 // Some code adapted from: generate_tiles.py
+// Multi Database Version (_alt suffix for mapfiles required)
 // Found at: http://trac.openstreetmap.org/browser/applications/rendering/mapnik
 //------------------------------------------------------------------------------
 #include <mapnik/map.hpp>
@@ -75,7 +76,6 @@ std::string mapnik_dir;
 std::string output_path;
 std::string expire_list;
 bool bUpdateMode;
-bool bVerbose = false;
 int queueSize = 4096;
 double bounds[4];
 int iX = 0;
@@ -92,8 +92,17 @@ void jobCallback(const SJob& job, int rank)
    std::stringstream ss;
    ss << output_path << job.zoom << "/" << job.x << "/" << job.y << ".png";
    //std::cout << "..Render tile " << ss.str() << "on rank: " << rank << "   Tilesize: "<< g_map.getWidth() << " Projection: " << g_mapnikProj.params() << "\n";
-   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose);
+   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj);
 }
+
+bool replace(std::string& str, const std::string& from, const std::string& to) {
+    size_t start_pos = str.find(from);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
+
 //------------------------------------------------------------------------------
 void BroadcastString(std::string& sStr, int sender)
 {
@@ -267,11 +276,12 @@ int main ( int argc , char** argv)
    bounds[1] = -90.0;
    bounds[2] = 180.0;
    bounds[3] = 90.0;
-   
+   bool bVerbose = false;
 
    if (rank == 0)
    {
       std::cout << ">>> Generating map using mapnik <<<\n";
+      std::cout << ">>> MULTIDATABASE VERSION _alt suffix required for second map definition file <<<\n";
       po::options_description desc("Program-Options");
       desc.add_options()
          ("mapnik_dir", po::value<std::string>(), "mapnik path")
@@ -454,7 +464,11 @@ int main ( int argc , char** argv)
       //---------------------------------------------------------------------------
       // -- Generate map container
       g_map.set_background(color_factory::from_string("white"));
-      std::cout << "..loading map file \"" << map_file << "\".....";
+      if(rank % 2 == 0)
+      {
+         replace(map_file, ".xml", "_alt.xml");
+      }
+      std::cout << "..loading map file \"" << map_file  << "\".....";
       load_map(g_map,map_file);
       std::cout << "....Ok!\n" << std::flush;
 

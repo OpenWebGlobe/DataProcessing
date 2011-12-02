@@ -33,8 +33,12 @@
 #include <mapnik/map.hpp>
  
 //------------------------------------------------------------------------------
-inline void _renderTile(std::string tile_uri, mapnik::Map m, int x, int y, int zoom, GoogleProjection tileproj, mapnik::projection prj)
+inline void _renderTile(std::string tile_uri, mapnik::Map m, int x, int y, int zoom, GoogleProjection tileproj, mapnik::projection prj, bool verbose = false)
 {
+   if(verbose)
+   {
+#define MAPNIK_DEBUG
+   }
    // Calculate pixel positions of bottom-left & top-right
    ituple p0(x * 256, (y + 1) * 256);
    ituple p1((x + 1) * 256, y * 256);
@@ -62,6 +66,10 @@ inline void _renderTile(std::string tile_uri, mapnik::Map m, int x, int y, int z
    mapnik::agg_renderer<mapnik::Image32> ren(m,buf);
    ren.apply();
    mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
+      if(verbose)
+   {
+#undef MAPNIK_DEBUG
+   }
 }
 
 #endif

@@ -26,6 +26,9 @@
     <ClCompile Include="..\..\source\core\geo\PointLayerSettings.cpp" />
     <ClCompile Include="..\..\source\core\geo\PointMap.cpp" />
     <ClCompile Include="..\..\source\core\geo\ProcessStatus.cpp" />
+    <ClCompile Include="..\..\source\core\http\Downloader.cpp" />
+    <ClCompile Include="..\..\source\core\http\Get.cpp" />
+    <ClCompile Include="..\..\source\core\http\Post.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageHandler.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageLoader.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageWriter.cpp" />
@@ -92,6 +95,10 @@
     <ClInclude Include="..\..\source\core\geo\PointLayerSettings.h" />
     <ClInclude Include="..\..\source\core\geo\PointMap.h" />
     <ClInclude Include="..\..\source\core\geo\ProcessStatus.h" />
+    <ClInclude Include="..\..\source\core\http\Downloader.h" />
+    <ClInclude Include="..\..\source\core\http\Get.h" />
+    <ClInclude Include="..\..\source\core\http\Header.h" />
+    <ClInclude Include="..\..\source\core\http\Post .h" />
     <ClInclude Include="..\..\source\core\image\ImageHandler.h" />
     <ClInclude Include="..\..\source\core\image\ImageLoader.h" />
     <ClInclude Include="..\..\source\core\image\ImageWriter.h" />
@@ -189,6 +196,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libstxxld.lib;jpeg-8c.lib;gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>jpeg-8c.lib;gdal_id.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\boost\lib\win32-icc12;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>

@@ -21,6 +21,7 @@
 #include "errors.h"
 #include "imagedata.h"
 #include "elevationdata.h"
+#include "greyimagedata.h"
 #include "pointdata.h"
 #include "app/ProcessingSettings.h"
 #include "geo/MercatorQuadtree.h"
@@ -44,6 +45,7 @@ enum ELayerType
 {
    IMAGE_LAYER,
    ELEVATION_LAYER,
+   GREYIMAGE_LAYER,
    POINT_LAYER,
 };
 
@@ -56,6 +58,7 @@ int main(int argc, char *argv[])
    desc.add_options()
        ("image", po::value<std::string>(), "image file to add")
        ("elevation",  po::value<std::string>(), "elevation file to add")
+       ("greyimage",  po::value<std::string>(), "grey image file to add")
 	   ("point", po::value<std::string>(), "point file to add")
        ("srs", po::value<std::string>(), "spatial reference system for input file")
        ("layer", po::value<std::string>(), "name of layer to add the data")
@@ -115,7 +118,7 @@ int main(int argc, char *argv[])
 
    //---------------------------------------------------------------------------
 
-   if (!vm.count("image") && !vm.count("elevation") && !vm.count("point"))
+   if (!vm.count("image") && !vm.count("elevation") && !vm.count("greyimage") && !vm.count("point"))
    {
       bError = true;
    }
@@ -129,6 +132,11 @@ int main(int argc, char *argv[])
    {
       eLayer = ELEVATION_LAYER;
       sFile = vm["elevation"].as<std::string>();
+   }
+   else if  (vm.count("greyimage"))
+   {
+      eLayer = GREYIMAGE_LAYER;
+      sFile = vm["greyimage"].as<std::string>();
    }
    else if  (vm.count("point"))
    {
@@ -300,6 +308,10 @@ int main(int argc, char *argv[])
    if (eLayer == IMAGE_LAYER) 
    {
       retval = ImageData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1);
+   }
+   else if (eLayer == GREYIMAGE_LAYER)
+   {
+      retval = GreyImageData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
    else if (eLayer == ELEVATION_LAYER)
    {

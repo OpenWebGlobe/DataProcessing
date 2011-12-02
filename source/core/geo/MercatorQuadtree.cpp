@@ -244,7 +244,7 @@ bool MercatorQuadtree::QuadKeyToMercatorCoord(const std::string& quadKey, double
 {
    QuadKeyToNormalizedCoord(quadKey, x0, y0, x1, y1);
 
-   // Create Mercator Coordinates [-pi,-pi]-[pi,pi]
+   // Create Mercator Coordinates [-1,-1]-[1,1]
 
    x0 = 2.0*x0 - 1.0;
    y0 = 2.0*y0 - 1.0;

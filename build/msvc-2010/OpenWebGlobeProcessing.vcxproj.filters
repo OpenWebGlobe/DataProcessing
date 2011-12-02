@@ -52,6 +52,9 @@
     <Filter Include="boost\json-spirit">
       <UniqueIdentifier>{18528c2c-40b1-4b77-b414-eb395471f49a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="http">
+      <UniqueIdentifier>{608ffaa9-e060-407b-8e4d-e9fd8cab5f27}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
@@ -177,6 +180,15 @@
     </ClCompile>
     <ClCompile Include="..\..\source\core\geo\PointMap.cpp">
       <Filter>geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\http\Downloader.cpp">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\http\Post.cpp">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\http\Get.cpp">
+      <Filter>http</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -397,6 +409,18 @@
     </ClInclude>
     <ClInclude Include="..\..\source\core\geo\PointMap.h">
       <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\http\Downloader.h">
+      <Filter>http</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\http\Post .h">
+      <Filter>http</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\http\Get.h">
+      <Filter>http</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\http\Header.h">
+      <Filter>http</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

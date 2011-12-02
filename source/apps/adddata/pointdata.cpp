@@ -39,7 +39,6 @@
 #include <set>
 #include <omp.h>
 
-
 namespace PointData
 {
    const size_t membuffer = 100000; // number of points to keep in memory

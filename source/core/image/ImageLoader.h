@@ -49,6 +49,7 @@ namespace Img
       Format_JPG,    // JPG File Format (baseline only)
       Format_TGA,    // TGA File Format
       Format_GIF,    // GIF File Format
+      Format_RAW32,
    };
 }
 
@@ -61,6 +62,7 @@ public:
    virtual ~ImageLoader() {}
    // synchrousous loading from disk
    static bool LoadFromDisk(Img::FileFormat eFormat, const std::string& sFilename, Img::PixelFormat eDestPixelFormat, ImageObject& outputimage);
+   static bool LoadRaw32FromDisk(const std::string& sFilename, int w, int h,  Raw32ImageObject& outputdata);
    
    // decompress from memory
    static bool LoadFromMemory(Img::FileFormat eFormat, const unsigned char* pData, const unsigned int nSize, Img::PixelFormat eDestPixelFormat, ImageObject& outputimage);   

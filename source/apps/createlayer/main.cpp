@@ -44,7 +44,7 @@
 //-----------------------------------------------------------------------------
 
 int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std::string& processpath);
-int _createimagelayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
+int _createimagelayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger, bool temp = false);
 int _createelevationlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
 int _createpointlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<double>& vecBoundary, boost::shared_ptr<Logger> qLogger);
 int _createDirectoriesXY( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod, bool bTemp); 
@@ -97,6 +97,7 @@ int main(int argc, char *argv[])
 enum ELayerType
 {
    IMAGE_LAYER,
+   IMAGE_LAYER_TEMP,
    ELEVATION_LAYER,
    POI_LAYER,
    POINT_LAYER,
@@ -200,6 +201,10 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
       {
          eLayer = IMAGE_LAYER;
       }
+      else if (sLayerType == "imagetemp")
+      {
+         eLayer = IMAGE_LAYER_TEMP;
+      }
       else if (sLayerType == "elevation")
       {
          eLayer = ELEVATION_LAYER;
@@ -281,7 +286,11 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
 
    if (eLayer == IMAGE_LAYER)
    {
-      return _createimagelayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger);
+      return _createimagelayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger, false);
+   }
+   if (eLayer == IMAGE_LAYER_TEMP)
+   {
+      return _createimagelayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger, true);
    }
    else if (eLayer == ELEVATION_LAYER)
    {
@@ -300,7 +309,7 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
 
 //------------------------------------------------------------------------------
 
-int _createimagelayer(const std::string& sLayerName, const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger)
+int _createimagelayer(const std::string& sLayerName, const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger, bool temp)
 {
    if (!FileSystem::makedir(sLayerPath))
    {
@@ -321,7 +330,7 @@ int _createimagelayer(const std::string& sLayerName, const std::string& sLayerPa
       return ERROR_WRITE_PERMISSION;
    }
 
-   return _createDirectoriesXY(sLayerPath, qLogger, vecExtent, nLod, false);
+   return _createDirectoriesXY(sLayerPath, qLogger, vecExtent, nLod, temp);
 }
 
 //------------------------------------------------------------------------------

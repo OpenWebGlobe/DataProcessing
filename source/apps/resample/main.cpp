@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
        ("maxpoints", po::value<int>(), "[optional] for elevation layer: max number of points per tile. Default is 512.")
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "optional info")
+       ("pointfile", "generate file with thinned out points")
        ;
 
    po::variables_map vm;
@@ -77,6 +78,7 @@ int main(int argc, char *argv[])
    bool bVerbose = false;
    int layertype = 0; // 0: image, 1:elevation, 2: point
    int nMaxpoints = 512;
+   bool bPointfile = false;
 
 
    try
@@ -144,6 +146,12 @@ int main(int argc, char *argv[])
       {
          nMaxpoints = v;
       }
+   }
+
+   if (vm.count("pointfile"))
+   {
+      std::cout << "writing pointfile\n";
+      bPointfile = true;
    }
 
    //---------------------------------------------------------------------------
@@ -310,8 +318,13 @@ int main(int argc, char *argv[])
       }
 
       // ascii pointfile
-      std::ofstream pointfile(sPointFileXYZ);
-      pointfile.precision(17);
+      std::ofstream pointfile;
+      
+      if (bPointfile)
+      {
+         pointfile.open(sPointFileXYZ);
+         pointfile.precision(17);
+      }
 
       int lod = qPointLayerSettings->GetMaxLod();
 
@@ -358,7 +371,6 @@ int main(int argc, char *argv[])
             filesize = ifs.tellg();
             ifs.seekg(current_position);
 
-
             int64 numPoints = filesize / sizeof(CloudPoint);
             double numPointsd(numPoints);
             CloudPoint pt;
@@ -377,7 +389,6 @@ int main(int argc, char *argv[])
                ifs.read((char*)&pt.b, sizeof(unsigned char));
                ifs.read((char*)&pt.intensity, sizeof(int));
 
-    
                mr += pt.r / 255.0 / numPointsd;
                mg += pt.g / 255.0 / numPointsd;
                mb += pt.b / 255.0 / numPointsd;
@@ -388,7 +399,7 @@ int main(int argc, char *argv[])
                median.elevation += pt.elevation / numPointsd;
             }
 
-            if (numPoints>0)
+            if (bPointfile && numPoints>0)
             {
                pointfile.precision(17);
                pointfile << (median.x-0.5)*OCTREE_CUBE_SIZE << "," << (median.y-0.5)*OCTREE_CUBE_SIZE << "," << (median.elevation-0.5)*OCTREE_CUBE_SIZE << ",";
@@ -405,7 +416,10 @@ int main(int argc, char *argv[])
 
       }
 
-      pointfile.close();
+      if (bPointfile)
+      {
+         pointfile.close();
+      }
 
       // B) create voxels for remaining lods
       // #todo: lod calc

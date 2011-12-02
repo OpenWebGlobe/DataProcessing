@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\apps\adddata\elevationdata.cpp" />
+    <ClCompile Include="..\..\source\apps\adddata\greyimagedata.cpp" />
     <ClCompile Include="..\..\source\apps\adddata\imagedata.cpp" />
     <ClCompile Include="..\..\source\apps\adddata\main.cpp" />
     <ClCompile Include="..\..\source\apps\adddata\pointdata.cpp" />
@@ -135,6 +136,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\source\apps\adddata\elevationdata.h" />
     <ClInclude Include="..\..\source\apps\adddata\errors.h" />
+    <ClInclude Include="..\..\source\apps\adddata\greyimagedata.h" />
     <ClInclude Include="..\..\source\apps\adddata\imagedata.h" />
     <ClInclude Include="..\..\source\apps\adddata\pointdata.h" />
   </ItemGroup>
