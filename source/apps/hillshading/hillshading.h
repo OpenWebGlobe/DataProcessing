@@ -18,8 +18,11 @@
 // This is the triangulate version without mpi intended for regular 
 // workstations. Multi cores are supported (OpenMP) and highly recommended.
 // -----------------------------------------------------------------------------
-// Contains some code from GDAL library gdal_grid.cpp originally created by
-// Andrey Kiselev <dron@ak4719.spb.edu>
+// Contains some code from GDAL library file GDALDEM.CPP originally created by
+// Matthew Perry, perrygeo at gmail.com
+// Even Rouault, even dot rouault at mines dash paris dot org
+// Howard Butler, hobu.inc at gmail.com
+// Chris Yesson, chris dot yesson at ioz dot ac dot uk
 //------------------------------------------------------------------------------
 #ifndef _HILLSHADING_H
 #define _HILLSHADING_H
@@ -36,6 +39,7 @@
 #include "cpl_string.h"
 
 #define AGEPI       3.1415926535897932384626433832795028841971693993751
+#define SCALE       1.1920930376163765926810017443897e-7;
 
 
 // Move a 3x3 pafWindow over each cell 
@@ -58,24 +62,6 @@ typedef struct
     double azRadians;
     double square_z_scale_factor;
 } GDALHillshadeAlgData;
-
-/* Unoptimized formulas are :
-    x = psData->z*((afWin[0] + afWin[3] + afWin[3] + afWin[6]) -
-        (afWin[2] + afWin[5] + afWin[5] + afWin[8])) /
-        (8.0 * psData->ewres * psData->scale);
-
-    y = psData->z*((afWin[6] + afWin[7] + afWin[7] + afWin[8]) -
-        (afWin[0] + afWin[1] + afWin[1] + afWin[2])) /
-        (8.0 * psData->nsres * psData->scale);
-
-    slope = M_PI / 2 - atan(sqrt(x*x + y*y));
-
-    aspect = atan2(y,x);
-
-    cang = sin(alt * degreesToRadians) * sin(slope) +
-           cos(alt * degreesToRadians) * cos(slope) *
-           cos(az * degreesToRadians - M_PI/2 - aspect);
-*/
 
 inline float GDALHillshadeAlg (float* afWin, float fDstNoDataValue, void* pData)
 {
@@ -169,187 +155,95 @@ struct HSProcessChunk
    double dfXMin, dfXMax, dfYMin, dfYMax;
 };
 
-inline void process_hillshading(std::string filepath, HSProcessChunk pData, int x, int y, int zoom, int z_depth, int width = 256, int height = 256)
+inline void process_hillshading(std::string filepath, HSProcessChunk pData, int x, int y, int zoom, double z_depth, int width = 256, int height = 256)
 {
    int nXSize = pData.data.GetWidth();
    int nYSize = pData.data.GetHeight();
-   int offsetX = nXSize - width;
-   int offsetY = nYSize - height;
+   int offsetX = (nXSize - width)/2;
+   int offsetY = (nYSize - height)/2;
+
+   double dem_z  = z_depth;
+   double dem_azimut = 315;
+   double dem_altitude = 45;
+   double dem_scale = 1;
 
    boost::shared_array<unsigned char> vTile;
+
+  /* vTile = boost::shared_array<unsigned char>(new unsigned char[nXSize*nYSize*4]);
+   memset(vTile.get(),0,nXSize*nYSize*4);
+   unsigned char* pTile = vTile.get();
+
+   for(size_t dx = 0; dx < nXSize; dx++)
+   {
+      for(size_t dy = 0; dy < nYSize;dy++)
+      {
+            // Write PNG
+         size_t adr=4*(dy)*nXSize+4*(dx);
+         unsigned char scaledValue = (pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value*255.0); 
+         if (pTile[adr+3] == 0)
+         {
+            pTile[adr+0] = scaledValue;  
+            pTile[adr+1] = scaledValue;  
+            pTile[adr+2] = scaledValue; 
+            pTile[adr+3] = 255;
+         }
+      }
+   }
+   */
    // create new tile memory and clear to fully transparent
+   
    vTile = boost::shared_array<unsigned char>(new unsigned char[width*height*4]);
    memset(vTile.get(),0,width*height*4);
 
    unsigned char* pTile = vTile.get();
-
-   for(size_t x = 1; x < nXSize-1; x++)
+   
+   for(size_t dx = offsetX; dx < (2*offsetX); dx++)
    {
-      for(size_t y = 1; y < nYSize-1;x++)
+      for(size_t dy = offsetY; dy < (2*offsetY);dy++)
       {
          float afWin[9];
          //      0 1 2
          //      3 4 5
          //      6 7 8
-         afWin[0] = pData.data.GetValue(x-1,y-1);
-         afWin[1] = pData.data.GetValue(x-1,y-1);
-         afWin[2] = pData.data.GetValue(x-1,y-1);
-         afWin[3] = pData.data.GetValue(x-1,y-1);
+         afWin[0] = pData.data.GetValue(dx-1,dy-1)*SCALE;
+         afWin[1] = pData.data.GetValue(dx,dy-1)*SCALE;
+         afWin[2] = pData.data.GetValue(dx+1,dy-1)*SCALE;
+         afWin[3] = pData.data.GetValue(dx-1,dy)*SCALE;
          // Hotspot
-         afWin[4] = pData.data.GetValue(x,y);
+         afWin[4] = pData.data.GetValue(dx,dy)*SCALE;
          // -->
-         afWin[5] = pData.data.GetValue(x-1,y-1);
-         afWin[6] = pData.data.GetValue(x-1,y-1);
-         afWin[7] = pData.data.GetValue(x-1,y-1);
-         afWin[8] = pData.data.GetValue(x-1,y-1);
+         afWin[5] = pData.data.GetValue(dx+1,dy)*SCALE;
+         afWin[6] = pData.data.GetValue(dx-1,dy+1)*SCALE;
+         afWin[7] = pData.data.GetValue(dx,dy+1)*SCALE;
+         afWin[8] = pData.data.GetValue(dx+1,dy+1)*SCALE;
 
          double  adfGeoTransform[6];
-         adfGeoTransform[0] = 0;
-         adfGeoTransform[1] = 1;
-         adfGeoTransform[2] = 0;
-         adfGeoTransform[3] = 0;
-         adfGeoTransform[4] = 0;
-         adfGeoTransform[5] = 1;
+         adfGeoTransform[0] = pData.dfXMin;                                              // top left x 
+         adfGeoTransform[1] = fabs(pData.dfXMax -pData.dfXMin) / pData.data.GetWidth();  //w-e pixel resolution 
+         adfGeoTransform[2] = 0;                                                        // rotation, 0 if image is "north up" 
+         adfGeoTransform[3] = pData.dfYMax;                                              // top left y 
+         adfGeoTransform[4] = 0;                                                         // rotation, 0 if image is "north up" 
+         adfGeoTransform[5] = -fabs(pData.dfYMax -pData.dfYMin) / pData.data.GetHeight();// n-s pixel resolution 
 
-         GDALHillshadeAlgData* pCalcObj = (GDALHillshadeAlgData*)GDALCreateHillshadeData(adfGeoTransform, 5,0,0, 1);
-         float value = GDALHillshadeAlg(afWin,-9999,pCalcObj);
+         GDALHillshadeAlgData* pCalcObj = (GDALHillshadeAlgData*)GDALCreateHillshadeData(adfGeoTransform, dem_z,dem_scale,dem_altitude, dem_azimut,0);
+         float value = GDALHillshadeAlg(afWin,0,pCalcObj);
 
          // Write PNG
-         if(x >= offsetX && x < (nXSize - offsetX) && y >= offsetY && x < (nYSize - offsetY))
+         size_t adr=4*(dy-offsetY)*width+4*(dx-offsetX);
+         unsigned char scaledValue = unsigned char(value); //(pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value); 
+         if (pTile[adr+3] == 0)
          {
-            size_t adr=4*(y-offsetY)*width+4*(x-offsetX);
-            unsigned char scaledValue = math::Floor(value*255.0);
-            if (pTile[adr+3] == 0)
-            {
-               pTile[adr+0] = scaledValue;  
-               pTile[adr+1] = scaledValue;  
-               pTile[adr+2] = scaledValue; 
-               pTile[adr+3] = 255;
-            }
+            pTile[adr+0] = scaledValue;  
+            pTile[adr+1] = scaledValue;  
+            pTile[adr+2] = scaledValue; 
+            pTile[adr+3] = 255;
          }
+         CPLFree(pCalcObj);
       }
    }
-   std::stringstring tilepath;
-   tilepath << filepath << "/" << zoom << "/" << y << "/" << x;
+   std::stringstream tilepath;
+   tilepath << filepath << "/" << zoom << "/" << x << "/" << y << ".png";
    ImageWriter::WritePNG(tilepath.str(), pTile, width, height);
-
-  /* char            **papszCreateOptions = NULL;
-   std::stringstream ss;
-   ss << "tile_" << y << ".tif";
-   void  *abyRaster = CPLMalloc( nXSize * nYSize * GDALGetDataTypeSize(GDALDataType::GDT_Float64));
-
-   const char *pszFormat = "GTiff";
-   GDALDriver *poDriver;
-   poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
-   GDALDataset *poDstDS;       
-   poDstDS = poDriver->Create(ss.str().c_str(), nXSize, nYSize, 1, GDALDataType::GDT_Float64, papszCreateOptions );
-   GDALRasterBand *poBand;
-   
-
-   OGRSpatialReference oSRS;
-   oSRS.SetWellKnownGeogCS( "EPSG:3857" );
-   char *pszSRS_WKT = NULL;
-   oSRS.exportToWkt( &pszSRS_WKT );
-   
-   
-   double  adfGeoTransform[6];
-   adfGeoTransform[0] = 0;
-   adfGeoTransform[1] = 1;
-   adfGeoTransform[2] = 0;
-   adfGeoTransform[3] = 0;
-   adfGeoTransform[4] = 0;
-   adfGeoTransform[5] = 1;
-
-   poDstDS->SetGeoTransform( adfGeoTransform );
-    
-   oSRS.SetUTM( 11, TRUE );
-   poDstDS->SetProjection( pszSRS_WKT );
-   CPLFree( pszSRS_WKT );
-
-   poBand = poDstDS->GetRasterBand(1);
-     
-   if (pData.adfX.size() == 0)
-    {
-        // FIXME: Shoulda' set to nodata value instead
-      //poBand->Fill(0.0,0.0);
-      CPLFree(abyRaster);
-      CSLDestroy( papszCreateOptions );
-      GDALClose(poDstDS);
-      return;
-    }
-   // generate GDAL Dataset
-   const double    dfDeltaX = (pData.dfXMax - pData.dfXMin ) / nXSize;
-   const double    dfDeltaY = (pData.dfYMax - pData.dfYMin ) / nYSize;
-
-
-   GDALGridAlgorithm algo = GGA_NearestNeighbor;
-   GDALGridNearestNeighborOptions oOptions;
-   
-   oOptions.dfRadius1 = 0.0;
-   oOptions.dfRadius2 = 0.0;
-   oOptions.dfAngle = 0.0;
-
-  
-   GDALGridCreate( algo, (void*)&oOptions,
-                            pData.adfX.size(), &(pData.adfX[0]), &(pData.adfY[0]), &(pData.adfElevation[0]),
-                            pData.dfXMin,
-                            pData.dfXMax,
-                            pData.dfYMin,
-                            pData.dfYMax,
-                            nXSize, nYSize, GDALDataType::GDT_Float64, abyRaster,
-                            GDALTermProgress, NULL);
-   
-   
-    poBand->GetBlockSize(&nBlockXSize, &nBlockYSize);
-
-    GUInt32 nBlock = 0;
-    GUInt32 nBlockCount = ((nXSize + nBlockXSize - 1) / nBlockXSize)
-        * ((nYSize + nBlockYSize - 1) / nBlockYSize);
-
-    poBand->RasterIO( GF_Write, 0, 0, nXSize, nYSize, 
-                     abyRaster, nXSize, nYSize, GDALDataType::GDT_Float64, 1, 0 ); 
-    GUInt32 nXOffset, nYOffset;
-    int     nBlockXSize, nBlockYSize;
-    poBand->GetBlockSize(&nBlockXSize, &nBlockYSize);
-    void    *ayRaster =
-       CPLMalloc( nBlockXSize * nBlockYSize * GDALGetDataTypeSize(GDALDataType::GDT_Float64) );
-
-    GUInt32 nBlock = 0;
-    GUInt32 nBlockCount = ((nXSize + nBlockXSize - 1) / nBlockXSize)
-        * ((nYSize + nBlockYSize - 1) / nBlockYSize);
-
-    for ( nYOffset = 0; nYOffset < nYSize; nYOffset += nBlockYSize )
-    {
-        for ( nXOffset = 0; nXOffset < nXSize; nXOffset += nBlockXSize )
-        {
-            int nXRequest = nBlockXSize;
-            if (nXOffset + nXRequest > nXSize)
-                nXRequest = nXSize - nXOffset;
-
-            int nYRequest = nBlockYSize;
-            if (nYOffset + nYRequest > nYSize)
-                nYRequest = nYSize - nYOffset;
-
-            GDALGridCreate( algo, (void*)&oOptions,
-                            pData.adfX.size(), &(pData.adfX[0]), &(pData.adfY[0]), &(pData.adfElevation[0]),
-                            pData.dfXMin + dfDeltaX * nXOffset,
-                            pData.dfXMin + dfDeltaX * (nXOffset + nXRequest),
-                            pData.dfYMin + dfDeltaY * nYOffset,
-                            pData.dfYMin + dfDeltaY * (nYOffset + nYRequest),
-                            nXRequest, nYRequest, GDALDataType::GDT_Float64, ayRaster,
-                            GDALTermProgress, NULL );
-
-            GDALRasterIO( poBand, GF_Write, nXOffset, nYOffset,
-                          nXRequest, nYRequest, ayRaster,
-                          nXRequest, nYRequest, GDALDataType::GDT_Float64, 0, 0 );
-
-        }
-    }
-
-   CPLFree( ayRaster );
-   CPLFree(abyRaster);
-  // CSLDestroy( papszCreateOptions );
-   GDALClose( (GDALDatasetH) poDstDS );*/
 }
 
 

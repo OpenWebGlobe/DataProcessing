@@ -208,7 +208,7 @@ namespace GreyImageData
                // create new tile memory and clear to fully transparent
                vTile = boost::shared_array<float>(new float[tilesize*tilesize]);
                //vTile = boost::shared_array<unsigned char>(new unsigned char[tilesize*tilesize*4]);
-               //memset(vTile.get(),0,tilesize*tilesize*4);
+               memset(vTile.get(),0,tilesize*tilesize*sizeof(float));
             }
 
             float* pTile = vTile.get();
@@ -267,7 +267,7 @@ namespace GreyImageData
                   if (dPixelX<0 || dPixelX>oInfo.nSizeX ||
                      dPixelY<0 || dPixelY>oInfo.nSizeY)
                   {
-                     value = -9999;
+                     value = -9999.0f;
                   }
                   else
                   {
@@ -284,7 +284,11 @@ namespace GreyImageData
                   size_t adr=1*ty*tilesize+1*tx;
                      if (bFill)
                      {
-                        if (pTile[adr] == -9999)
+                        if (pTile[adr] < -5000.0f)
+                        {
+                           pTile[adr] = value;  
+                        }
+                        else if(bCreateNew)
                         {
                            pTile[adr] = value;  
                         }
@@ -303,6 +307,25 @@ namespace GreyImageData
             }
 
             ImageWriter::WriteRaw32(sTilefile, tilesize, tilesize, pTile);
+            // TEMP PNG OUT -----
+            /*boost::shared_array<char> pngTile = boost::shared_array<char>(new char[tilesize*tilesize*4]);
+            memset(pngTile.get(),0,tilesize*tilesize*4*sizeof(char));
+            for(size_t xi = 0; xi < tilesize*tilesize; xi++)
+            {
+               size_t adr=4*xi;
+               unsigned char scaledValue = unsigned char((pTile[xi]/1000.0f)*255.0f); //(pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value);
+               pngTile[adr+0] = scaledValue;  
+               pngTile[adr+1] = scaledValue;  
+               pngTile[adr+2] = scaledValue;
+               if (pTile[xi] < -5000.0f)
+                  pngTile[adr+3] = 0;
+               else
+                  pngTile[adr+3] = 255;
+            }
+            std::string fil = ProcessingUtils::GetTilePath(sTileDir, ".png" , lod, xx, yy);
+            ImageWriter::WritePNG(fil,(unsigned char*)pngTile.get(), 256,256);*/
+            // ---------------->
+               
 
             // unlock file. Other computers/processes/threads can access it again.
             FileSystem::Unlock(sTilefile, lockhandle);

@@ -57,6 +57,10 @@ int main(int argc, char *argv[])
    std::string sAlgorithm;
    int iNumThreads = 8;
    bool bVerbose = false;
+   int inputX = 768;
+   int inputY = 768;
+   int outputX = 256;
+   int outputY = 256;
    
 
    try
@@ -177,9 +181,9 @@ int main(int argc, char *argv[])
       return 1;
    }   
 
-//#ifndef _DEBUG
-//#     pragma omp parallel for
-//#endif
+#ifndef _DEBUG
+#     pragma omp parallel for
+#endif
    for (int64 xx = layerTileX0+1; xx < layerTileX1; ++xx)
    {
       for (int64 yy = layerTileY0+1; yy < layerTileY1; ++yy)
@@ -192,8 +196,7 @@ int main(int argc, char *argv[])
          pData.dfYMax = -1e20;
          pData.dfXMin = 1e20;
          pData.dfYMin = 1e20;
-         pData.data.AllocateImage(768, 768);
-
+         pData.data.AllocateImage(inputX, inputY);
          for (int ty=-1;ty<=1;ty++)
          {
             for (int tx=-1;tx<=1;tx++)
@@ -216,25 +219,35 @@ int main(int argc, char *argv[])
 
                std::ifstream fin;
                fin.open(sTilefile.c_str(), std::ios::binary);
-               int offset = 0;
+               int posX = (tx+1)*(inputX/3);
+               int posY = (ty+1)*(inputY/3);
+               int offX = 0;
+               int offY = 0;
                if (fin.good())
                {
                   while (!fin.eof())
                   {
+                     
                      float value;
                      fin.read((char*)&(value), sizeof(float));
                      if (!fin.eof())
                      {
-                        pData.data.SetValue(offset, value);
+                        pData.data.SetValue(posX+offX, posY+offY, value);
                      }
-                     offset++;
+                     offX++;
+                     if(offX % 256 == 0)
+                     {
+                        offX = 0;
+                        offY++;
+                     }
+
                   }
                }
                fin.close();
             }
          }
          // Generate tile
-         process_hillshading(sTileDir, pData, xx, yy, lod, 5, 256, 256);
+         process_hillshading(sTileDir, pData, xx, yy, lod, 2, outputX, outputY);
       }
    }
    GDALDestroyDriverManager();
