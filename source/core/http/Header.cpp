@@ -16,25 +16,13 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _HTTP_HEADER_
-#define _HTTP_HEADER_
+#include "Header.h"
 
-#include "og.h"
-#include <string>
-#include <vector>
-
-class OPENGLOBE_API Header
+Header::Header()
 {
-public:
-   Header();
-   virtual ~Header();
+}
 
-   std::vector<std::pair<std::string,std::string> >& GetHeader() { return vHeaderFieldDefinition;}
+Header::~Header()
+{
+}
 
-protected:
-   std::vector<std::pair<std::string,std::string> > vHeaderFieldDefinition;
-
-};
-
-
-#endif

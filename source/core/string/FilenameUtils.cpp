@@ -580,3 +580,18 @@ std::string FilenameUtils::MakeAbsolutePath(const std::string& pPathRoot, const 
 }
 
 //-----------------------------------------------------------------------------
+
+void FilenameUtils::ParseUrl(const std::string& in_url, std::string& out_host, std::string& out_fileName)
+{
+	int n = in_url.find("http://");
+   std::string url;
+	if(n != std::string::npos)
+	{
+		url = in_url.substr(n + std::string("http://").length(), -1);
+	}
+	n = url.find( "/" );
+	out_host = url.substr(0, n);
+	out_fileName = url.substr(n, -1);
+}
+
+//-----------------------------------------------------------------------------

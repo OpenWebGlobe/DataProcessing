@@ -190,6 +190,10 @@
     <ClCompile Include="..\..\source\core\http\Get.cpp">
       <Filter>http</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\app\QueueManager.cpp" />
+    <ClCompile Include="..\..\source\core\http\Header.cpp">
+      <Filter>http</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
@@ -422,6 +426,7 @@
     <ClInclude Include="..\..\source\core\http\Header.h">
       <Filter>http</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\core\app\QueueManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\source\core\image\ImageHandler.inl">

@@ -22,15 +22,20 @@
 #include "og.h"
 #include "Header.h"
 #include <string>
-#include <boost/shared_array.hpp>
+#include <vector>
 
 class OPENGLOBE_API HttpGet
 {
 public:
-   HttpGet();
-   virtual ~HttpGet();
+   HttpGet(){}
+   virtual ~HttpGet(){}
 
-   int Request(const std::string& url, b)
+   //! \description Request Data from URL. 
+   //   Please note that the data is downloaded to memory. For downloading large files, use the downloader class.
+   //! \param vData the retrieved data as std::vector
+   //! \param pHeader optional header
+   //! \return HTTP status code
+   static unsigned int Request(const std::string& url, std::vector<unsigned char>& vData, Header* pHeader=0);
 
 
 };

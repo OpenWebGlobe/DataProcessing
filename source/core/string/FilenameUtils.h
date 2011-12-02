@@ -115,6 +115,12 @@ public:
    //! \param bDelimit true if result should be delimited
    //! \return the absolute path (e.g. 'c:/data/bla/test.tif')
    static std::string MakeAbsolutePath(const std::string& pPathRoot, const std::string& pPathRel, bool bDelimit = false);
+
+   //! \brief Parse an url
+   //! for example: http://www.openwebglobe.org/bla/bla/myFile.png would be converted to
+   //!   host=www.openwebglobe.org
+   //!   file=/bla/bla/myFile.png
+   static void ParseUrl(const std::string& in_url, std::string& out_host, std::string& out_fileName);
 };
 
 
