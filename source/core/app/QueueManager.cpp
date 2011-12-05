@@ -24,11 +24,11 @@
 
 //------------------------------------------------------------------------------
 
-void QueueManager::AddToJobQueue(std::string filename, QJob job)
+void QueueManager::AddToJobQueue(std::string filename, QJob job, bool append)
 {
    int lockhandle = FileSystem::Lock(filename);
 
-   if(!FileSystem::FileExists(filename))
+   if(!FileSystem::FileExists(filename) || !append)
    {
       // create new
       std::fstream off(filename.c_str(), std::ios::out | std::ios::binary);
@@ -60,12 +60,30 @@ std::vector<QJob> QueueManager::FetchJobList(std::string filename, int bytes_per
    int lockhandle = FileSystem::Lock(filename);
    boost::filesystem3::path filepath(filename);
    std::vector<QJob> jobs;
-   int currentSize = boost::filesystem3::file_size(filepath);
+   int64 currentSize = boost::filesystem3::file_size(filepath);
+
+   // read seekpointer
+   std::string sSeekPointerFile = filename + ".seek";
+   int64 seekPointer = currentSize;
+   if(FileSystem::FileExists(sSeekPointerFile))
+   {
+      std::ifstream sfs;
+      sfs.open(sSeekPointerFile.c_str(), std::ios::in | std::ios::binary);
+      char tmp[sizeof(int64)];
+      sfs.read(tmp, (std::streamsize)sizeof(int64));
+      memcpy(&seekPointer,tmp,sizeof(int64));
+      sfs.close();
+      if(seekPointer <= 0)
+      {
+         FileSystem::Unlock(filename, lockhandle);
+         return jobs;
+      }
+   }
+   // --
+
    std::ifstream ifs;
    ifs.open(filename.c_str(), std::ios::in | std::ios::binary);
    int chunkSize = currentSize >= amount*bytes_per_job ? amount : ((int)currentSize/bytes_per_job);
-   int newSize = currentSize;
-   std::cout << "Reading " << chunkSize << " jobs!\n";
    for(size_t i = 0; i < chunkSize; i++)
    {
       QJob newJob;
@@ -73,18 +91,23 @@ std::vector<QJob> QueueManager::FetchJobList(std::string filename, int bytes_per
       newJob.size = bytes_per_job;
       memset(newJob.data.get(),0,bytes_per_job*sizeof(char));
       char* data = newJob.data.get();
-      ifs.seekg(newSize-bytes_per_job);
+      ifs.seekg(seekPointer-bytes_per_job);
       ifs.read(data, bytes_per_job);
       jobs.push_back(newJob);
-      newSize -= bytes_per_job;
+      seekPointer -= bytes_per_job;
    }
-   // truncate file
    ifs.close();
-   truncate(filename.c_str(), newSize);
+   // update seekpointer
+   std::fstream off(sSeekPointerFile.c_str(), std::ios::out | std::ios::binary);
+   if (off.good())
+   {
+      off.write((char*)&seekPointer, (std::streamsize)sizeof(int64));
+      off.close();
+   }
    FileSystem::Unlock(filename, lockhandle);
    return jobs;
 }
-
+/*
 #ifdef OS_WINDOWS
 #define WIN32_MEAN_AND_LEAN
 #include <windows.h>
@@ -121,3 +144,4 @@ int truncate(const char *path, int64 size)
 }
 
 #endif
+*/

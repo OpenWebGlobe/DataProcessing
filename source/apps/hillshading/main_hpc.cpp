@@ -18,6 +18,7 @@
 
 #include "ogprocess.h"
 #include "errors.h"
+#include <boost/asio.hpp>
 #include "app/ProcessingSettings.h"
 #include "geo/MercatorQuadtree.h"
 #include "geo/CoordinateTransformation.h"
@@ -48,13 +49,17 @@ struct SJob
    int lod;
 };
 
+// -- Global variables
 bool bError = false;
 std::string sLayerPath;
+std::string sJobQueueFile;
 int iLayerMaxZoom;
 std::string sAlgorithm;
-int iNumThreads = 8;
+std::string sProcessHostName;
 bool bVerbose = false;
-int queueSize = 4096;
+bool bGenerateJobs = false;
+bool bOverrideQueue = false;
+int iAmount = 1024;
 int inputX = 768;
 int inputY = 768;
 int outputX = 256;
@@ -67,8 +72,8 @@ boost::shared_ptr<MercatorQuadtree> qQuadtree;
 int64 layerTileX0, layerTileY0, layerTileX1, layerTileY1;
 
 //------------------------------------------------------------------------------
-// MPI Job callback function (called every thread/compute node)
-void jobCallback(const SJob& job, int rank)
+//  Job function (called every thread/compute node)
+void ProcessJob(const SJob& job)
 {
    std::string sCurrentQuadcode = qQuadtree->TileCoordToQuadkey(job.xx,job.yy,job.lod);
 
@@ -131,34 +136,15 @@ void jobCallback(const SJob& job, int rank)
    // Generate tile
    process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, 2, outputX, outputY);
 }
-//---
 
 //------------------------------------------------------------------------------------
+
 void GenerateRenderJobs(int count, int lod, std::vector<SJob> &vJobs)
 {
-   int idx = 0;
-   if(bVerbose)
-     std::cout << " Generating " << count << " jobs starting from (z, x, y) " << "(" << lod << ", " << iX << ", " << iY << ")\n";
-   for (int64 xx = iX; xx < layerTileX1; ++xx)
-   {
-      for (int64 yy = iY; yy < layerTileY1; ++yy)
-      {
-         SJob work;
-         work.xx = xx; 
-         work.yy = yy;
-         work.lod = lod;
-         vJobs.push_back(work);
-         iY = (yy < layerTileY1-1)? yy+1 : -1;
-         iX = (yy < layerTileY1-1) ? xx: xx+1;
-         if(idx >= (count-1))
-         {
-            return;
-         }
-         idx++;
-      }
-      iY = layerTileY0+1;
-   }
+   
 }
+
+//------------------------------------------------------------------------------------
 
 void ConvertJobs(std::vector<QJob>& input, std::vector<SJob>& output)
 {
@@ -171,86 +157,79 @@ void ConvertJobs(std::vector<QJob>& input, std::vector<SJob>& output)
    }
 }
 
+//------------------------------------------------------------------------------------
+
 int main(int argc, char *argv[])
 {
-   for(int i = 0; i < 100; i++)
+   sProcessHostName = boost::asio::ip::host_name();
+   po::options_description desc("Program-Options");
+   desc.add_options()
+      ("layerpath", po::value<std::string>(), "path of layer to generate data")
+      ("layerzoom", po::value<int>(), "maximum zoom which has to be generated previously using ogAddData")
+      ("generatejobs","[optional] create a jobqueue which can be used in every process")
+      ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
+      ("numthreads", po::value<int>(), "[optional] force number of threads")
+      ("amount", po::value<int>(), "[opional] define amount of jobs to be read for one process at the time")
+      ("verbose", "[optional] verbose output")
+      ;
+
+   po::variables_map vm;
+   try
    {
-      QJob job;
-      SJob sJob;
-      sJob.lod = 0;
-      sJob.xx = 0;
-      sJob.yy = i;
-      job.data = boost::shared_array<char>(new char[sizeof(SJob)]);
-      memcpy(job.data.get(), &sJob, sizeof(SJob));
-      job.size = sizeof(SJob);
-      QueueManager::AddToJobQueue("myjobs.hbx", job);
+      po::store(po::parse_command_line(argc, argv, desc), vm);
+      po::notify(vm);
    }
-   int amount = 15;
-   std::vector<SJob> vecConverted;
-   std::vector<QJob> jobs;
-   do
+   catch (std::exception&)
    {
-      
-      jobs = QueueManager::FetchJobList("myjobs.hbx", sizeof(SJob), amount);
-      ConvertJobs(jobs, vecConverted);
-   }while(jobs.size() >= amount);
+      bError = true;
+   }
 
-      po::options_description desc("Program-Options");
-      desc.add_options()
-         ("layer_path", po::value<std::string>(), "path of layer to generate data")
-         ("layer_zoom", po::value<int>(), "maximum zoom which has to be generated previously using ogAddData")
-         ("numthreads", po::value<int>(), "[optional] force number of threads")
-         ("mpi_queue_size", po::value<int>(), "[optional] mpi queue size (Default: 10000)")
-         ("verbose", "[optional] verbose output")
-         ;
-
-      po::variables_map vm;
-
-
-      try
+   if(vm.count("layerpath"))
+   {
+      sLayerPath = vm["layerpath"].as<std::string>();
+      if(!(sLayerPath.at(sLayerPath.length()-1) == '\\' || sLayerPath.at(sLayerPath.length()-1) == '/'))
+         sLayerPath = sLayerPath + "/";
+   }
+   else
+      bError = true;
+   if(vm.count("layerzoom"))
+      iLayerMaxZoom = vm["layerzoom"].as<int>();
+   else
+      bError = true;
+   if(vm.count("numthreads"))
+   {
+      int n = vm["numthreads"].as<int>();
+      if (n>0 && n<65)
       {
-         po::store(po::parse_command_line(argc, argv, desc), vm);
-         po::notify(vm);
+         std::cout << "[" << sProcessHostName<< "] " << "Forcing number of threads to " << n << "\n";
+         omp_set_num_threads(n);
       }
-      catch (std::exception&)
-      {
-         bError = true;
-      }
+   }
+   if(vm.count("amount"))
+      iAmount = vm["amount"].as<int>();
+   if(vm.count("verbose"))
+      bVerbose = true;
+   if(vm.count("generatejobs"))
+      bGenerateJobs = true;
+   if(vm.count("overridejobqueue"))
+      bOverrideQueue = true;
 
-      if(vm.count("layer_path"))
-      {
-        sLayerPath = vm["layer_path"].as<std::string>();
-        if(!(sLayerPath.at(sLayerPath.length()-1) == '\\' || sLayerPath.at(sLayerPath.length()-1) == '/'))
-           sLayerPath = sLayerPath + "/";
-      }
-      else
-         bError = true;
-      if(vm.count("layer_zoom"))
-         iLayerMaxZoom = vm["layer_zoom"].as<int>();
-      else
-         bError = true;
-      if(vm.count("num_threads"))
-         iNumThreads = vm["num_threads"].as<int>();
-      if(vm.count("mpi_queue_size"))
-         queueSize = vm["mpi_queue_size"].as<int>();
-      if(vm.count("verbose"))
-         bVerbose = true;
+   //---------------------------------------------------------------------------
+   // init options:
 
-      //---------------------------------------------------------------------------
-      // init options:
+   boost::shared_ptr<ProcessingSettings> qSettings =  ProcessingUtils::LoadAppSettings();
 
-      boost::shared_ptr<ProcessingSettings> qSettings =  ProcessingUtils::LoadAppSettings();
-
-      if (!qSettings)
-      {
-         std::cout << "Error in configuration! Check setup.xml\n";
-         return ERROR_CONFIG;
-      }
-      if(bError)
-      {
-         std::cout << "Wrong parameters!\n";
-         std::cout << desc << "\n";
-      }
+   if (!qSettings)
+   {
+      std::cout << "[" << sProcessHostName<< "] " << "Error in configuration! Check setup.xml\n";
+      return ERROR_CONFIG;
+   }
+   if(bError)
+   {
+      std::cout << "[" << sProcessHostName<< "] " << "Wrong parameters!\n";
+      std::cout << desc << "\n";
+      return ERROR_PARAMS;
+   }
 
    //---------------------------------------------------------------------------
    // -- Beginn process
@@ -260,7 +239,7 @@ int main(int argc, char *argv[])
    boost::shared_ptr<ImageLayerSettings> qImageLayerSettings = ImageLayerSettings::Load(sLayerPath);
    if (!qImageLayerSettings)
    {
-      std::cout << "Failed retrieving image layer settings! Make sure to create it using 'createlayer'.\n";
+      std::cout << "[" << sProcessHostName<< "] " << "Failed retrieving image layer settings! Make sure to create it using 'createlayer'.\n"<< std::flush;
       return ERROR_IMAGELAYERSETTINGS;
    }
    int lod = qImageLayerSettings->GetMaxLod();
@@ -268,10 +247,10 @@ int main(int argc, char *argv[])
    qImageLayerSettings->GetTileExtent(layerTileX0, layerTileY0, layerTileX1, layerTileY1);
    if (bVerbose)
    {
-      std::cout << "\nRaw Image Layer:\n";
+      std::cout << "\n" << "[" << sProcessHostName<< "] " << "Raw Image Layer:\n";
       std::cout << "   name = " << qImageLayerSettings->GetLayerName() << "\n";
       std::cout << "   maxlod = " << lod << "\n";
-      std::cout << "   extent = " << layerTileX0 << ", " << layerTileY0 << ", " << layerTileX1 << ", " << layerTileY1 << "\n";
+      std::cout << "   extent = " << layerTileX0 << ", " << layerTileY0 << ", " << layerTileX1 << ", " << layerTileY1 << "\n" << std::flush;
    }
    int64 width = layerTileX1-layerTileX0+1;
    int64 height = layerTileY1-layerTileY0+1;
@@ -298,64 +277,94 @@ int main(int argc, char *argv[])
    ymax = y00;
    if (bVerbose)
    {
-      std::cout << "\nExtent mercator:";
-      std::cout << "   extent = " << xmin << ", " << ymin << ", " << xmax << ", " << ymax << "\n";
+      std::cout << "\n[" << sProcessHostName<< "] " << "Extent mercator:";
+      std::cout << "   extent = " << xmin << ", " << ymin << ", " << xmax << ", " << ymax << "\n"<< std::flush;
    }
 
    if (!ProcessingUtils::init_gdal())
    {
-      std::cout << "Warning: gdal-data directory not found. Ouput may be wrong!\n";
+      std::cout << "[" << sProcessHostName<< "] " << "Warning: gdal-data directory not found. Ouput may be wrong!\n"<< std::flush;
       return 1;
    }   
-
-   
-
 
    bool bDone = false;
    //---------------------------------------------------------------------------
    // -- performance measurement
    int tileCount = 0;
-   int currentJobQueueSize = 0;
    clock_t t_0, t_1;
    t_0 = clock();
-   /*while (!bDone)
+
+
+   //---------------------------------------------------------------------------
+   // -- Generate job queue
+   sJobQueueFile = sLayerPath + "jobqueue.jobs";
+   if(bGenerateJobs)
    {
-      if (rank == 0)
+      int idx = 0;
+      std::cout << "[" << sProcessHostName<< "] " << " Generating jobs starting from (z, x, y) " << "(" << lod << ", " << layerTileX0+1 << ", " << layerTileY0+1 << ")\n"<< std::flush;
+      for (int64 xx = layerTileX0+1; xx < layerTileX1; ++xx)
       {
-         std::vector<SJob> vJobs;
-         if(iX <= 0) { iX = layerTileX0+1; }
-         if(iY <= 0) { iY = layerTileY0+1; } 
-         GenerateRenderJobs(totalnodes*queueSize, lod, vJobs);
-         currentJobQueueSize = vJobs.size();
-         tileCount += currentJobQueueSize;
-         if (vJobs.size() == 0) // no more jobs
+         for (int64 yy = layerTileY0+1; yy < layerTileY1; ++yy)
          {
-            bDone = true;
-            t_1 = clock();
-            double time=(double(t_1-t_0)/double(CLOCKS_PER_SEC));
-            double tps = tileCount/time;
-            std::cout << ">>> Finished processing " << tileCount << " tiles at " << tps << " tiles per second! TOTAL TIME: " << time << "<<<\n" << std::flush;
-         }
-         else
-         {
-            jobmgr.AddJobs(vJobs);
+            QJob job;
+            SJob sJob;
+            sJob.lod = lod;
+            sJob.xx = xx;
+            sJob.yy = yy;
+            job.data = boost::shared_array<char>(new char[sizeof(SJob)]);
+            memcpy(job.data.get(), &sJob, sizeof(SJob));
+            job.size = sizeof(SJob);
+            QueueManager::AddToJobQueue(sJobQueueFile, job, (bOverrideQueue && idx == 0)? false : true);
+            idx++;
+            iX = xx;
+            iY = yy;
          }
       }
- 
-      if (!bDone)
-      {  
-         clock_t t0,t1;
-         t0 = clock();
-         jobmgr.Process(jobCallback, bVerbose);
-         t1 = clock();
-         double tilesPerSecond = currentJobQueueSize/(double(t1-t0)/double(CLOCKS_PER_SEC));
-      }
-      else
+      std::cout << "[" << sProcessHostName<< "] " << " Finished generating " << idx << " jobs ending with (z, x, y) " << "(" << lod << ", " << iX << ", " << iY << ")!\n"<< std::flush;
+   }
+   //---------------------------------------------------------------------------
+   // -- Process Jobs Queue
+   else
+   {
+      if(!FileSystem::FileExists(sJobQueueFile))
       {
-         MPI_Finalize();
-      } 
-     
-   }*/
+         std::cout << "[" << sProcessHostName<< "] " << "ERROR: Jobqueue file not found: " << sJobQueueFile << " use --generatejobs first...\n"<< std::flush;
+         return ERROR_PARAMS;
+      }
+      std::vector<SJob> vecConverted;
+      std::vector<QJob> jobs;
+      std::cout << "[" << sProcessHostName<< "] >>>" << "start processing...\n"<< std::flush;
+      do
+      {
+         jobs = QueueManager::FetchJobList(sJobQueueFile, sizeof(SJob), iAmount);
+         if(jobs.size() > 0)
+         {
+         ConvertJobs(jobs, vecConverted);
+         SJob first, last;
+         first = vecConverted[0];
+         last = vecConverted[vecConverted.size()-1];
+         std::cout << "--[" << sProcessHostName<< "] " << "  processing " << vecConverted.size() << " jobs\n       starting from (z, x, y) " << "(" << first.lod << ", " << first.xx << ", " << first.yy << ")\n"<< std::flush;
+#ifndef _DEBUG
+               #pragma omp parallel shared(vecConverted, sTempTileDir, sTileDir, inputX, inputY, outputX, outputY)
+               {
+                  #pragma omp for 
+#endif
+                  for(int index = 0; index < vecConverted.size(); index++)
+                  {
+                     ProcessJob(vecConverted[index]);
+                     tileCount++;
+                  }
+#ifndef _DEBUG
+               }
+#endif
+            std::cout << "--[" << sProcessHostName<< "] " << "  processed " << vecConverted.size() << " jobs\n       terminating with (z, x, y) " << "(" << last.lod << ", " << last.xx << ", " << last.yy << ")\n"<< std::flush;
+         }
+      }while(jobs.size() >= iAmount);
+      t_1 = clock();
+      double time=(double(t_1-t_0)/double(CLOCKS_PER_SEC));
+      double tps = tileCount/time;
+      std::cout << "[" << sProcessHostName<< "] <<<" << "finished processing "<< tileCount << " jobs at " << tps << " tiles pers second working for " << time << " seconds.\n"<< std::flush;
+   }
    return 0;
 }
 

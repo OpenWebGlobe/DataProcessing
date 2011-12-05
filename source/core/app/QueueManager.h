@@ -43,7 +43,7 @@ public:
 class OPENGLOBE_API QueueManager
 {
 public:
-   static void AddToJobQueue(std::string filename, QJob job);
+   static void AddToJobQueue(std::string filename, QJob job, bool append = true);
    static std::vector<QJob> FetchJobList(std::string filename, int bytes_per_job, int amount); 
 };
 
