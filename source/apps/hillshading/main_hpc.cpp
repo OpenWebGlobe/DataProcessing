@@ -59,7 +59,7 @@ std::string sProcessHostName;
 bool bVerbose = false;
 bool bGenerateJobs = false;
 bool bOverrideQueue = false;
-int iAmount = 1024;
+int iAmount = 256;
 int inputX = 768;
 int inputY = 768;
 int outputX = 256;
@@ -70,6 +70,7 @@ std::string sTempTileDir;
 std::string sTileDir;
 boost::shared_ptr<MercatorQuadtree> qQuadtree;
 int64 layerTileX0, layerTileY0, layerTileX1, layerTileY1;
+QueueManager _QueueManager = QueueManager();
 
 //------------------------------------------------------------------------------
 //  Job function (called every thread/compute node)
@@ -139,13 +140,6 @@ void ProcessJob(const SJob& job)
 
 //------------------------------------------------------------------------------------
 
-void GenerateRenderJobs(int count, int lod, std::vector<SJob> &vJobs)
-{
-   
-}
-
-//------------------------------------------------------------------------------------
-
 void ConvertJobs(std::vector<QJob>& input, std::vector<SJob>& output)
 {
    output.clear();
@@ -196,6 +190,7 @@ int main(int argc, char *argv[])
       iLayerMaxZoom = vm["layerzoom"].as<int>();
    else
       bError = true;
+   int numThreads = 1;
    if(vm.count("numthreads"))
    {
       int n = vm["numthreads"].as<int>();
@@ -203,6 +198,7 @@ int main(int argc, char *argv[])
       {
          std::cout << "[" << sProcessHostName<< "] " << "Forcing number of threads to " << n << "\n";
          omp_set_num_threads(n);
+         numThreads = n;
       }
    }
    if(vm.count("amount"))
@@ -314,12 +310,13 @@ int main(int argc, char *argv[])
             job.data = boost::shared_array<char>(new char[sizeof(SJob)]);
             memcpy(job.data.get(), &sJob, sizeof(SJob));
             job.size = sizeof(SJob);
-            QueueManager::AddToJobQueue(sJobQueueFile, job, (bOverrideQueue && idx == 0)? false : true);
+            _QueueManager.AddToJobQueue(sJobQueueFile, job, (bOverrideQueue && idx == 0)? false : true);
             idx++;
             iX = xx;
             iY = yy;
          }
       }
+      _QueueManager.CommitJobQueue(sJobQueueFile);
       std::cout << "[" << sProcessHostName<< "] " << " Finished generating " << idx << " jobs ending with (z, x, y) " << "(" << lod << ", " << iX << ", " << iY << ")!\n"<< std::flush;
    }
    //---------------------------------------------------------------------------
@@ -336,7 +333,9 @@ int main(int argc, char *argv[])
       std::cout << "[" << sProcessHostName<< "] >>>" << "start processing...\n"<< std::flush;
       do
       {
-         jobs = QueueManager::FetchJobList(sJobQueueFile, sizeof(SJob), iAmount);
+         jobs.clear();
+         vecConverted.clear();
+         jobs = _QueueManager.FetchJobList(sJobQueueFile, sizeof(SJob), iAmount,bVerbose);
          if(jobs.size() > 0)
          {
          ConvertJobs(jobs, vecConverted);
@@ -345,6 +344,7 @@ int main(int argc, char *argv[])
          last = vecConverted[vecConverted.size()-1];
          std::cout << "--[" << sProcessHostName<< "] " << "  processing " << vecConverted.size() << " jobs\n       starting from (z, x, y) " << "(" << first.lod << ", " << first.xx << ", " << first.yy << ")\n"<< std::flush;
 #ifndef _DEBUG
+         std::cout << "..Processing parallel using " << numThreads << "\n";
                #pragma omp parallel shared(vecConverted, sTempTileDir, sTileDir, inputX, inputY, outputX, outputY)
                {
                   #pragma omp for 

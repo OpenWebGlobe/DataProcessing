@@ -22,21 +22,25 @@
 #include <io/FileSystem.h>
 #include <boost/filesystem.hpp>
 
-//------------------------------------------------------------------------------
-
-void QueueManager::AddToJobQueue(std::string filename, QJob job, bool append)
+void QueueManager::CommitJobQueue(std::string filename, bool append)
 {
    int lockhandle = FileSystem::Lock(filename);
-
    if(!FileSystem::FileExists(filename) || !append)
    {
       // create new
       std::fstream off(filename.c_str(), std::ios::out | std::ios::binary);
       if (off.good())
       {
-         int len = job.size;
-         off.write((char*)job.data.get(), (std::streamsize)len);
+         for(size_t i = 0; i < _vJobs.size(); i++)
+         {
+            int len = _vJobs[i].size;
+            off.write((char*)_vJobs[i].data.get(), (std::streamsize)len);
+         }
          off.close();
+      }
+      else 
+      {
+         std::cout << "###Queuemanager: Error Committing queue file!\n";
       }
    }
    else
@@ -45,17 +49,44 @@ void QueueManager::AddToJobQueue(std::string filename, QJob job, bool append)
       std::fstream off(filename.c_str(),std::ios::out | std::ios::app | std::ios::binary);
       if (off.good())
       {
-         int len = job.size;
-         off.write((char*)job.data.get(), (std::streamsize)len);
+         for(size_t i = 0; i < _vJobs.size(); i++)
+         {
+            int len = _vJobs[i].size;
+            off.write((char*)_vJobs[i].data.get(), (std::streamsize)len);
+         }
          off.close();
       }
+      else 
+      {
+         std::cout << "###Queuemanager: Error Committing queue file!\n";
+      }
    }
+   _vJobs.clear();
+   _iCount = 0;
    FileSystem::Unlock(filename, lockhandle);
+   return;
 }
 
 //------------------------------------------------------------------------------
 
-std::vector<QJob> QueueManager::FetchJobList(std::string filename, int bytes_per_job, int amount)
+void QueueManager::AddToJobQueue(std::string filename, QJob job, bool append, int autocommit)
+{
+   if(!append)
+   {
+      _vJobs.clear();
+      _iCount = 0;
+   }
+   _vJobs.push_back(job);
+   _iCount++;
+   if(_iCount >= autocommit)
+   {
+      CommitJobQueue(filename, append);
+   }
+}
+
+//------------------------------------------------------------------------------
+
+std::vector<QJob> QueueManager::FetchJobList(std::string filename, int bytes_per_job, int amount, bool verbose)
 {
    int lockhandle = FileSystem::Lock(filename);
    boost::filesystem3::path filepath(filename);
@@ -67,12 +98,14 @@ std::vector<QJob> QueueManager::FetchJobList(std::string filename, int bytes_per
    int64 seekPointer = currentSize;
    if(FileSystem::FileExists(sSeekPointerFile))
    {
+      if(verbose) std::cout << "Seekpointerfile: " << sSeekPointerFile << "\n" << std::flush;
       std::ifstream sfs;
       sfs.open(sSeekPointerFile.c_str(), std::ios::in | std::ios::binary);
       char tmp[sizeof(int64)];
       sfs.read(tmp, (std::streamsize)sizeof(int64));
       memcpy(&seekPointer,tmp,sizeof(int64));
       sfs.close();
+      if(verbose) std::cout << "-->Seekpoint @ " << seekPointer << " bytes.\n" << std::flush;
       if(seekPointer <= 0)
       {
          FileSystem::Unlock(filename, lockhandle);
@@ -97,12 +130,14 @@ std::vector<QJob> QueueManager::FetchJobList(std::string filename, int bytes_per
       seekPointer -= bytes_per_job;
    }
    ifs.close();
+   if(verbose) std::cout << "-->Read " << chunkSize << " jobs ("<< (bytes_per_job*chunkSize) <<" bytes).\n" << std::flush;
    // update seekpointer
    std::fstream off(sSeekPointerFile.c_str(), std::ios::out | std::ios::binary);
    if (off.good())
    {
       off.write((char*)&seekPointer, (std::streamsize)sizeof(int64));
       off.close();
+      if(verbose) std::cout << "-->Updating seek pointer to " << seekPointer << " bytes).\n" << std::flush;
    }
    FileSystem::Unlock(filename, lockhandle);
    return jobs;
