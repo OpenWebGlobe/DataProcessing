@@ -79,7 +79,7 @@ std::string expire_list;
 bool bUpdateMode;
 bool bVerbose = false;
 bool bGenerateJobs = false;
-bool bOverrideQueue = false;
+bool bOverrideQueue;
 int iAmount = 256;
 double bounds[4];
 int minZoom;
@@ -318,7 +318,12 @@ int main ( int argc , char** argv)
       bGenerateJobs = true;
 
    if(vm.count("overridejobqueue"))
+   {
       bOverrideQueue = true;
+      std::cout << "overriding job queue\n";
+   }else
+      bOverrideQueue = false;
+
      
    // CH Bounds  double bounds[4] = {5.955870,46.818020,10.492030,47.808380}; 
    if(vm.count("bounds"))

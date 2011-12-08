@@ -19,14 +19,22 @@
 #include "QueueManager.h"
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <io/FileSystem.h>
 #include <boost/filesystem.hpp>
 
-void QueueManager::CommitJobQueue(std::string filename, bool append)
+void QueueManager::CommitJobQueue(std::string filename)
 {
    int lockhandle = FileSystem::Lock(filename);
-   if(!FileSystem::FileExists(filename) || !append)
+   /*if(!FileSystem::FileExists(filename) || !append)
    {
+      std::stringstream ss;
+      ss << filename << ".seek";
+      if(FileSystem::FileExists(ss.str()))
+      {
+         std::cout << "removing expired seek file\n";
+         FileSystem::rm(ss.str());
+      }
       // create new
       std::fstream off(filename.c_str(), std::ios::out | std::ios::binary);
       if (off.good())
@@ -43,9 +51,7 @@ void QueueManager::CommitJobQueue(std::string filename, bool append)
          std::cout << "###Queuemanager: Error Committing queue file!\n";
       }
    }
-   else
-   {
-      // append
+   else*/
       std::fstream off(filename.c_str(),std::ios::out | std::ios::app | std::ios::binary);
       if (off.good())
       {
@@ -60,7 +66,6 @@ void QueueManager::CommitJobQueue(std::string filename, bool append)
       {
          std::cout << "###Queuemanager: Error Committing queue file!\n";
       }
-   }
    _vJobs.clear();
    _iCount = 0;
    FileSystem::Unlock(filename, lockhandle);
@@ -73,6 +78,19 @@ void QueueManager::AddToJobQueue(std::string filename, QJob job, bool append, in
 {
    if(!append)
    {
+      std::stringstream ss;
+      ss << filename << ".seek";
+      if(FileSystem::FileExists(filename))
+      {
+         std::cout << "removing existing job file\n";
+         FileSystem::rm(filename);
+      }
+      if(FileSystem::FileExists(ss.str()))
+      {
+         std::cout << "removing expired seek file\n";
+         FileSystem::rm(ss.str());
+         
+      }
       _vJobs.clear();
       _iCount = 0;
    }
@@ -80,7 +98,7 @@ void QueueManager::AddToJobQueue(std::string filename, QJob job, bool append, in
    _iCount++;
    if(_iCount >= autocommit)
    {
-      CommitJobQueue(filename, append);
+      CommitJobQueue(filename);
    }
 }
 
@@ -117,6 +135,8 @@ std::vector<QJob> QueueManager::FetchJobList(std::string filename, int bytes_per
    std::ifstream ifs;
    ifs.open(filename.c_str(), std::ios::in | std::ios::binary);
    int chunkSize = currentSize >= amount*bytes_per_job ? amount : ((int)currentSize/bytes_per_job);
+   if(seekPointer <  chunkSize*bytes_per_job)
+      chunkSize = (0.0+seekPointer)/bytes_per_job;
    for(size_t i = 0; i < chunkSize; i++)
    {
       QJob newJob;
