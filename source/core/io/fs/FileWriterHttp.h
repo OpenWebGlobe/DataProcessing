@@ -16,22 +16,39 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _FILEWRITERFACTORY_H
-#define _FILEWRITERFACTORY_H
+#ifndef _FILEWRITERHTTP_H
+#define _FILEWRITERHTTP_H
 
 #include "og.h"
-#include "fs/IFileWriter.h"
-#include <boost/shared_ptr.hpp>
+#include <vector>
+#include <fstream>
+#include "IFileWriter.h"
 
-class OPENGLOBE_API FileWriterFactory
+//------------------------------------------------------------------------------
+
+class OPENGLOBE_API FileWriterHttp : public IFileWriter
 {
 public:
-   // Create a file reader
-   
-   // file://   write to file
-   // http://   write to http (POST)
+   FileWriterHttp();
+   virtual ~FileWriterHttp();
 
-   static boost::shared_ptr<IFileWriter> Create(std::string& file);
+   bool Open(const std::string& sFilename);
+
+   // Write single byte. This may be slow.
+   virtual bool WriteByte(unsigned char byte);
+
+   // Write entire file
+   virtual bool Write(unsigned char* data, size_t len);
+
+   virtual bool Close();
+
+protected:
+   std::string _sFilename;
+   std::vector<unsigned char> _out;
 };
 
+//------------------------------------------------------------------------------
+
 #endif
+
+

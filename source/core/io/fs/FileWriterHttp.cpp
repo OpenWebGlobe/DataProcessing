@@ -16,57 +16,66 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#include "FileReaderDisk.h"
+#include "FileWriterHttp.h"
+#include "http/Post.h"
+#include "string/FilenameUtils.h"
 
 //------------------------------------------------------------------------------
 
-FileReaderDisk::FileReaderDisk()
+FileWriterHttp::FileWriterHttp()
 {
-   
+
 }
 
 //------------------------------------------------------------------------------
 
-FileReaderDisk::~FileReaderDisk()
+FileWriterHttp::~FileWriterHttp()
 {
-   this->Close();
+   Close();
 }
 
 //------------------------------------------------------------------------------
 
-bool FileReaderDisk::Open(const std::string& sFilename)
+bool FileWriterHttp::Open(const std::string& sFilename)
 {
-   _in.open(sFilename.c_str(), std::ios::binary | std::ios::in);
-   return _in.good();
+   _sFilename = sFilename;
+   _out.clear();
+   return true;
 }
 
 //------------------------------------------------------------------------------
 
-bool FileReaderDisk::Close()
+bool FileWriterHttp::WriteByte(unsigned char byte)
 {
-   try
+   _out.push_back(byte);
+   return true;
+}
+
+//------------------------------------------------------------------------------
+
+bool FileWriterHttp::Write(unsigned char* data, size_t len)
+{
+   _out.clear();
+
+   for (size_t i=0;i<len;i++)
    {
-      if (_in.is_open())
-      {
-         _in.close();
-      }
-      return true;
+      _out.push_back(data[i]);
    }
-   catch (std::exception)
-   {
-      return false;
-   }
+
+   return true;
 }
 
 //------------------------------------------------------------------------------
 
-bool FileReaderDisk::ReadByte(unsigned char& byte)
+bool FileWriterHttp::Close()
 {
-   if (!_in.eof())
+   if (_out.size()>0)
    {
-      char c;
-      _in.read(&c, 1);
-      byte = (unsigned char)c;
+      std::string form_name("pic");
+      std::string form_filename = FilenameUtils::ExtractFileName("filename"); // todo: "meta-data"
+
+      unsigned int result = HttpPost::SendBinary(_sFilename, form_name, form_filename, &_out[0], _out.size());
+      _out.clear();
       return true;
    }
    else
@@ -76,23 +85,3 @@ bool FileReaderDisk::ReadByte(unsigned char& byte)
 }
 
 //------------------------------------------------------------------------------
-
-bool FileReaderDisk::Read(std::vector<unsigned char>& data)
-{
-   data.clear();
-   std::ios::pos_type curpos = _in.tellg();
-   _in.seekg(std::ios::beg);
-   
-   char c;
-   while (!_in.eof())
-   {
-      _in.read(&c, 1);
-      data.push_back((unsigned char)c);
-   }
-
-   _in.seekg(curpos);
-   return false;
-}
-
-//------------------------------------------------------------------------------
-

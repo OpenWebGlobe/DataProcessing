@@ -209,6 +209,9 @@
     <ClCompile Include="..\..\source\core\io\fs\FileReaderHttp.cpp">
       <Filter>io\fs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\core\io\fs\FileWriterHttp.cpp">
+      <Filter>io\fs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\core\geo\CoordinateTransformation.h">
@@ -458,6 +461,9 @@
       <Filter>io\fs</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\core\io\fs\FileReaderHttp.h">
+      <Filter>io\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\FileWriterHttp.h">
       <Filter>io\fs</Filter>
     </ClInclude>
   </ItemGroup>

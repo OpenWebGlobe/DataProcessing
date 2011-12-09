@@ -21,6 +21,7 @@
 #include "http/Get.h"
 #include "http/Post.h"
 #include "io/FileReaderFactory.h"
+#include "io/FileWriterFactory.h"
 
 int main(void)
 {
@@ -55,27 +56,29 @@ int main(void)
    HttpPost::SendBinary(url, form_name, form_filename, data, 1024);*/
 
 
-   boost::shared_ptr<IFileReader> qFileReader = FileReaderFactory::Create(std::string("file://c:/data/test.txt"));
-   //boost::shared_ptr<IFileReader> qFileReader = FileReaderFactory::Create(std::string("http://www.openwebglobe.org/downloads/text.txt"));
+   //boost::shared_ptr<IFileReader> qFileReader = FileReaderFactory::Create(std::string("file://c:/data/test.txt"));
+   /*boost::shared_ptr<IFileReader> qFileReader = FileReaderFactory::Create(std::string("http://www.openwebglobe.org/downloads/text.txt"));
    if (qFileReader)
    {
-      std::vector<unsigned char> vData;
-
       unsigned char c;
       while(qFileReader->ReadByte(c))
       {
          std::cout << c;
       }
+   }*/
 
 
-      /*qFileReader->Read(vData);
+   //boost::shared_ptr<IFileWriter> qFileWriter = FileWriterFactory::Create(std::string("file://c:/data/myfile.txt"));
+   boost::shared_ptr<IFileWriter> qFileWriter = FileWriterFactory::Create(std::string("http://localhost/post.php"));
 
-      for (size_t i=0;i<vData.size();i++)
-      {
-         std::cout << vData[i];
-      }*/
+   std::string s("Hello World,\n this is a text. Sent to WebServer!!\n");
+
+   for (size_t i=0;i<s.size();i++)
+   {
+      qFileWriter->WriteByte(s[i]);
    }
 
+   qFileWriter->Close();
 
    return 0;
 }

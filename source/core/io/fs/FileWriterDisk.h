@@ -17,19 +17,22 @@
 *******************************************************************************/
 
 #ifndef _FILEWRITERDISK_H
-#define _FILEWRITER_H
+#define _FILEWRITERDISK_H
 
 #include "og.h"
 #include <vector>
-
+#include <fstream>
+#include "IFileWriter.h"
 
 //------------------------------------------------------------------------------
 
-class OPENGLOBE_API FileWriterDisk
+class OPENGLOBE_API FileWriterDisk : public IFileWriter
 {
 public:
    FileWriterDisk();
    virtual ~FileWriterDisk();
+
+   bool Open(const std::string& sFilename);
 
    // Write single byte. This may be slow.
    virtual bool WriteByte(unsigned char byte);
@@ -39,6 +42,8 @@ public:
 
    virtual bool Close();
 
+protected:
+   std::fstream _out;
 };
 
 //------------------------------------------------------------------------------

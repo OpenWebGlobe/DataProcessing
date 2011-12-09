@@ -18,24 +18,53 @@
 
 #include "FileWriterDisk.h"
 
+//------------------------------------------------------------------------------
+
 FileWriterDisk::FileWriterDisk()
 {
 }
 
-FileWriterDisk::~FileWriterDisk(){}
+//------------------------------------------------------------------------------
+
+FileWriterDisk::~FileWriterDisk()
+{
+   Close();
+}
+
+//------------------------------------------------------------------------------
+
+bool FileWriterDisk::Open(const std::string& sFilename)
+{
+   _out.open(sFilename.c_str(), std::ios::binary | std::ios::out);
+   return _out.good();
+}
+
+//------------------------------------------------------------------------------
 
 bool FileWriterDisk::WriteByte(unsigned char byte)
 {
-   return false;
+   char c = (char)byte;
+   _out.write(&c,1);
+   return true;
 }
+
+//------------------------------------------------------------------------------
 
 bool FileWriterDisk::Write(unsigned char* data, size_t len)
 {
-   return false;
+   _out.write((char*)data, len);
+   return true;
 }
+
+//------------------------------------------------------------------------------
 
 bool FileWriterDisk::Close()
 {
-   return false;
+   if (_out.is_open())
+   {
+      _out.close();
+   }
+   return true;
 }
 
+//------------------------------------------------------------------------------

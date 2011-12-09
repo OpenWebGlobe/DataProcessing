@@ -41,6 +41,7 @@
     <ClCompile Include="..\..\source\core\io\fs\FileReaderDisk.cpp" />
     <ClCompile Include="..\..\source\core\io\fs\FileReaderHttp.cpp" />
     <ClCompile Include="..\..\source\core\io\fs\FileWriterDisk.cpp" />
+    <ClCompile Include="..\..\source\core\io\fs\FileWriterHttp.cpp" />
     <ClCompile Include="..\..\source\core\io\TarWriter.cpp" />
     <ClCompile Include="..\..\source\core\math\CloudPoint.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.cpp" />
@@ -118,6 +119,7 @@
     <ClInclude Include="..\..\source\core\io\fs\FileReaderDisk.h" />
     <ClInclude Include="..\..\source\core\io\fs\FileReaderHttp.h" />
     <ClInclude Include="..\..\source\core\io\fs\FileWriterDisk.h" />
+    <ClInclude Include="..\..\source\core\io\fs\FileWriterHttp.h" />
     <ClInclude Include="..\..\source\core\io\fs\IFileReader.h" />
     <ClInclude Include="..\..\source\core\io\fs\IFileWriter.h" />
     <ClInclude Include="..\..\source\core\io\TarWriter.h" />
