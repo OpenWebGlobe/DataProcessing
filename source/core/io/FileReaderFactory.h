@@ -16,23 +16,24 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _HTTP_POST_
-#define _HTTP_POST_
+#ifndef _FILEREADERFACTORY_H
+#define _FILEREADERFACTORY_H
 
 #include "og.h"
-#include <string>
+#include "fs/IFileReader.h"
+#include <boost/shared_ptr.hpp>
 
-class OPENGLOBE_API HttpPost
+class OPENGLOBE_API FileReaderFactory
 {
 public:
-   HttpPost(){}
-   virtual ~HttpPost(){}
+   // Create a file reader
+   
+   // file://   read from file
+   // http://   read from http
 
-   //! \description Send Data using multipart/formdata
-   //! todo: server answer in an array.
-   static unsigned int SendBinary(const std::string& url, std::string& form_name, std::string& form_filename, unsigned char* pData, size_t size);
-
+   static boost::shared_ptr<IFileReader> Create(std::string& file);
 };
+
 
 
 #endif

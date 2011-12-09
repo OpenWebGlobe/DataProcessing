@@ -16,23 +16,41 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _HTTP_POST_
-#define _HTTP_POST_
+#ifndef _FILEREADERHTTP_H
+#define _FILEREADERHTTP_H
 
 #include "og.h"
-#include <string>
+#include "IFileReader.h"
+#include <vector>
+#include <fstream>
 
-class OPENGLOBE_API HttpPost
+//------------------------------------------------------------------------------
+
+class OPENGLOBE_API FileReaderHttp : public IFileReader
 {
 public:
-   HttpPost(){}
-   virtual ~HttpPost(){}
+   FileReaderHttp();
+   virtual ~FileReaderHttp();
 
-   //! \description Send Data using multipart/formdata
-   //! todo: server answer in an array.
-   static unsigned int SendBinary(const std::string& url, std::string& form_name, std::string& form_filename, unsigned char* pData, size_t size);
+   bool Open(const std::string& sUrl);
+
+   // Read one byte
+   virtual bool ReadByte(unsigned char& byte);
+ 
+   // Reads entire file and store in vector.
+   virtual bool Read(std::vector<unsigned char>& data);
+
+   // Close file
+   virtual bool Close();
+
+private:
+   std::vector<unsigned char> _storage;
+   size_t _curpos;
 
 };
 
+//------------------------------------------------------------------------------
 
 #endif
+
+

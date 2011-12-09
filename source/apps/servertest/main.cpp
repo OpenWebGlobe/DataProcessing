@@ -20,6 +20,7 @@
 
 #include "http/Get.h"
 #include "http/Post.h"
+#include "io/FileReaderFactory.h"
 
 int main(void)
 {
@@ -44,14 +45,37 @@ int main(void)
 
 
    // Example for POST:
-   std::string url("http://localhost/post.php");
+   /*std::string url("http://localhost/post.php");
    std::string form_name("pic");
    std::string form_filename("myfile.bla");
 
    unsigned char* data = (unsigned char*)malloc(1024);
    memset(data,66,1024);
 
-   HttpPost::SendBinary(url, form_name, form_filename, data, 1024);
+   HttpPost::SendBinary(url, form_name, form_filename, data, 1024);*/
+
+
+   boost::shared_ptr<IFileReader> qFileReader = FileReaderFactory::Create(std::string("file://c:/data/test.txt"));
+   //boost::shared_ptr<IFileReader> qFileReader = FileReaderFactory::Create(std::string("http://www.openwebglobe.org/downloads/text.txt"));
+   if (qFileReader)
+   {
+      std::vector<unsigned char> vData;
+
+      unsigned char c;
+      while(qFileReader->ReadByte(c))
+      {
+         std::cout << c;
+      }
+
+
+      /*qFileReader->Read(vData);
+
+      for (size_t i=0;i<vData.size();i++)
+      {
+         std::cout << vData[i];
+      }*/
+   }
+
 
    return 0;
 }

@@ -35,7 +35,12 @@
     <ClCompile Include="..\..\source\core\image\ImageWriter.cpp" />
     <ClCompile Include="..\..\source\core\image\JPEGHandler.cpp" />
     <ClCompile Include="..\..\source\core\io\CommonPath.cpp" />
+    <ClCompile Include="..\..\source\core\io\FileReaderFactory.cpp" />
     <ClCompile Include="..\..\source\core\io\FileSystem.cpp" />
+    <ClCompile Include="..\..\source\core\io\FileWriterFactory.cpp" />
+    <ClCompile Include="..\..\source\core\io\fs\FileReaderDisk.cpp" />
+    <ClCompile Include="..\..\source\core\io\fs\FileReaderHttp.cpp" />
+    <ClCompile Include="..\..\source\core\io\fs\FileWriterDisk.cpp" />
     <ClCompile Include="..\..\source\core\io\TarWriter.cpp" />
     <ClCompile Include="..\..\source\core\math\CloudPoint.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.cpp" />
@@ -107,7 +112,14 @@
     <ClInclude Include="..\..\source\core\image\lodepng\lodepng.h" />
     <ClInclude Include="..\..\source\core\image\stb_image_write.h" />
     <ClInclude Include="..\..\source\core\io\CommonPath.h" />
+    <ClInclude Include="..\..\source\core\io\FileReaderFactory.h" />
     <ClInclude Include="..\..\source\core\io\FileSystem.h" />
+    <ClInclude Include="..\..\source\core\io\FileWriterFactory.h" />
+    <ClInclude Include="..\..\source\core\io\fs\FileReaderDisk.h" />
+    <ClInclude Include="..\..\source\core\io\fs\FileReaderHttp.h" />
+    <ClInclude Include="..\..\source\core\io\fs\FileWriterDisk.h" />
+    <ClInclude Include="..\..\source\core\io\fs\IFileReader.h" />
+    <ClInclude Include="..\..\source\core\io\fs\IFileWriter.h" />
     <ClInclude Include="..\..\source\core\io\TarWriter.h" />
     <ClInclude Include="..\..\source\core\math\CloudPoint.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.h" />

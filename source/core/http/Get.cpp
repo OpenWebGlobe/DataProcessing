@@ -21,6 +21,7 @@
 #include "string/FilenameUtils.h"
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
+#include <iostream>
 
 using boost::asio::ip::tcp;
 

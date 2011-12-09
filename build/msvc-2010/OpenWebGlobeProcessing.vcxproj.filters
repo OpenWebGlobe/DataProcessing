@@ -55,6 +55,9 @@
     <Filter Include="http">
       <UniqueIdentifier>{608ffaa9-e060-407b-8e4d-e9fd8cab5f27}</UniqueIdentifier>
     </Filter>
+    <Filter Include="io\fs">
+      <UniqueIdentifier>{e913b1ad-8265-4c19-be0a-a314d5d3b482}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
@@ -190,6 +193,21 @@
     <ClCompile Include="..\..\source\core\app\QueueManager.cpp" />
     <ClCompile Include="..\..\source\core\http\Header.cpp">
       <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\fs\FileReaderDisk.cpp">
+      <Filter>io\fs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\fs\FileWriterDisk.cpp">
+      <Filter>io\fs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\FileReaderFactory.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\FileWriterFactory.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\fs\FileReaderHttp.cpp">
+      <Filter>io\fs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -420,6 +438,27 @@
     <ClInclude Include="..\..\source\core\app\QueueManager.h" />
     <ClInclude Include="..\..\source\core\http\Post.h">
       <Filter>http</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\FileReaderFactory.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\FileWriterFactory.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\FileReaderDisk.h">
+      <Filter>io\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\FileWriterDisk.h">
+      <Filter>io\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\IFileReader.h">
+      <Filter>io\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\IFileWriter.h">
+      <Filter>io\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\FileReaderHttp.h">
+      <Filter>io\fs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

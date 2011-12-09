@@ -16,23 +16,26 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _HTTP_POST_
-#define _HTTP_POST_
+#include "FileWriterDisk.h"
 
-#include "og.h"
-#include <string>
-
-class OPENGLOBE_API HttpPost
+FileWriterDisk::FileWriterDisk()
 {
-public:
-   HttpPost(){}
-   virtual ~HttpPost(){}
+}
 
-   //! \description Send Data using multipart/formdata
-   //! todo: server answer in an array.
-   static unsigned int SendBinary(const std::string& url, std::string& form_name, std::string& form_filename, unsigned char* pData, size_t size);
+FileWriterDisk::~FileWriterDisk(){}
 
-};
+bool FileWriterDisk::WriteByte(unsigned char byte)
+{
+   return false;
+}
 
+bool FileWriterDisk::Write(unsigned char* data, size_t len)
+{
+   return false;
+}
 
-#endif
+bool FileWriterDisk::Close()
+{
+   return false;
+}
+

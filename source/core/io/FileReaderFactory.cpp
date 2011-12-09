@@ -16,23 +16,45 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#ifndef _HTTP_POST_
-#define _HTTP_POST_
 
-#include "og.h"
+#include "FileReaderFactory.h"
+#include "fs/FileReaderDisk.h"
+#include "fs/FileReaderHttp.h"
 #include <string>
 
-class OPENGLOBE_API HttpPost
+boost::shared_ptr<IFileReader>  FileReaderFactory::Create(std::string& file)
 {
-public:
-   HttpPost(){}
-   virtual ~HttpPost(){}
+   boost::shared_ptr<IFileReader> qFile;
 
-   //! \description Send Data using multipart/formdata
-   //! todo: server answer in an array.
-   static unsigned int SendBinary(const std::string& url, std::string& form_name, std::string& form_filename, unsigned char* pData, size_t size);
+   if (file.size() >= 7)
+   {
+      std::string substr = file.substr(0,7);
 
-};
+      if (substr == "http://")
+      {
+         FileReaderHttp* pHttpReader = new FileReaderHttp();
+         qFile = boost::shared_ptr<IFileReader>(pHttpReader);
 
+         if (!pHttpReader->Open(file))
+         {
+            boost::shared_ptr<IFileReader> qNull;
+            return qNull;
+         }
 
-#endif
+      }
+      else if (substr == "file://")
+      {
+         std::string sFilename = file.substr(7,sFilename.length()-8);
+         FileReaderDisk* pDiskReader = new FileReaderDisk();
+         qFile = boost::shared_ptr<IFileReader>(pDiskReader);
+
+         if (!pDiskReader->Open(sFilename))
+         {
+            boost::shared_ptr<IFileReader> qNull;
+            return qNull;
+         }
+      }
+   }
+ 
+   return qFile;
+}

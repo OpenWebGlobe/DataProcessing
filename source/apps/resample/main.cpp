@@ -309,6 +309,8 @@ int main(int argc, char *argv[])
       std::string sTempTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "temp/tiles");
       std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir) + "tiles");
       std::string sPointFileXYZ = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sPointLayerDir)) + "allpoints.xyz";
+
+      bPointfile = true;
       
       boost::shared_ptr<PointLayerSettings> qPointLayerSettings = PointLayerSettings::Load(sPointLayerDir);
       if (!qPointLayerSettings)
@@ -403,8 +405,10 @@ int main(int argc, char *argv[])
             {
                pointfile.precision(17);
                pointfile << (median.x-0.5)*OCTREE_CUBE_SIZE << "," << (median.y-0.5)*OCTREE_CUBE_SIZE << "," << (median.elevation-0.5)*OCTREE_CUBE_SIZE << ",";
-               pointfile.precision(3);
-               pointfile          << int(mr*255.0) << "," << int(mg*255.0) << "," << int(mb*255.0) << "\n";
+                pointfile.precision(3);
+               //pointfile          << int(mr*255.0) << "," << int(mg*255.0) << "," << int(mb*255.0) << "\n";
+               pointfile          << mr << "," << mg << "," << mb << ",1," << "\n";
+
             }
          }
 
