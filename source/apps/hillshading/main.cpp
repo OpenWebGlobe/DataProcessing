@@ -61,6 +61,10 @@ int main(int argc, char *argv[])
    int inputY = 768;
    int outputX = 256;
    int outputY = 256;
+   double z_depth = 2.0;
+   double azimut = 315;
+   double altitude = 45;
+   double sscale = 1;
    
 
    try
@@ -247,7 +251,7 @@ int main(int argc, char *argv[])
             }
          }
          // Generate tile
-         process_hillshading(sTileDir, pData, xx, yy, lod, 2, outputX, outputY);
+         process_hillshading(sTileDir, pData, xx, yy, lod, z_depth, azimut, altitude, sscale, outputX, outputY);
       }
    }
    GDALDestroyDriverManager();

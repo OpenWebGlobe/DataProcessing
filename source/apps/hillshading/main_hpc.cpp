@@ -59,11 +59,16 @@ std::string sProcessHostName;
 bool bVerbose = false;
 bool bGenerateJobs = false;
 bool bOverrideQueue = false;
+bool bOverrideTiles = true;
 int iAmount = 256;
 int inputX = 768;
 int inputY = 768;
 int outputX = 256;
 int outputY = 256;
+double z_depth = 2.0;
+double azimut = 315;
+double altitude = 45;
+double sscale = 1;
 int iX = 0;
 int iY = 0;
 std::string sTempTileDir;
@@ -135,7 +140,7 @@ void ProcessJob(const SJob& job)
       }
    }
    // Generate tile
-   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, 2, outputX, outputY);
+   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale, outputX, outputY, bOverrideTiles);
 }
 
 //------------------------------------------------------------------------------------
@@ -164,6 +169,11 @@ int main(int argc, char *argv[])
       ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
       ("numthreads", po::value<int>(), "[optional] force number of threads")
       ("amount", po::value<int>(), "[opional] define amount of jobs to be read for one process at the time")
+      ("z_depth", po::value<double>(), "[opional] hillshading z factor")
+      ("azimut", po::value<double>(), "[opional] hillshading azimut")
+      ("altitude", po::value<double>(), "[opional] hillshading altitude")
+      ("scale", po::value<double>(), "[opional] hillshading scale")
+      ("no_override", "[opional] overriding existing tiles disabled")
       ("verbose", "[optional] verbose output")
       ;
 
@@ -203,12 +213,22 @@ int main(int argc, char *argv[])
    }
    if(vm.count("amount"))
       iAmount = vm["amount"].as<int>();
+   if(vm.count("z_depth"))
+      z_depth = vm["z_depth"].as<double>();
+   if(vm.count("azimut"))
+      azimut = vm["azimut"].as<double>();
+   if(vm.count("altitude"))
+      altitude = vm["altitude"].as<double>();
+   if(vm.count("scale"))
+      sscale = vm["scale"].as<double>();
    if(vm.count("verbose"))
       bVerbose = true;
    if(vm.count("generatejobs"))
       bGenerateJobs = true;
    if(vm.count("overridejobqueue"))
       bOverrideQueue = true;
+   if(vm.count("no_override"))
+      bOverrideTiles = false;
 
    //---------------------------------------------------------------------------
    // init options:

@@ -80,6 +80,7 @@ bool bUpdateMode;
 bool bVerbose = false;
 bool bGenerateJobs = false;
 bool bOverrideQueue;
+bool bOverrideTiles = true;
 int iAmount = 256;
 double bounds[4];
 int minZoom;
@@ -96,7 +97,7 @@ void ProcessJob(const SJob& job)
    std::stringstream ss;
    ss << output_path << job.zoom << "/" << job.x << "/" << job.y << ".png";
    //std::cout << "..Render tile " << ss.str() << "on rank: " << rank << "   Tilesize: "<< g_map.getWidth() << " Projection: " << g_mapnikProj.params() << "\n";
-   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose);
+   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose, bOverrideTiles);
 }
 
 //------------------------------------------------------------------------------------
@@ -239,6 +240,7 @@ int main ( int argc , char** argv)
       ("generatejobs","[optional] create a jobqueue which can be used in every process")
       ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
       ("amount", po::value<int>(), "[opional] define amount of jobs to be read for one process at the time")
+      ("no_override", "[opional] overriding existing tiles disabled")
       ("expired_list", po::value<std::string>(), "[optional] list of expired tiles for update rendering (global rendering will be disabled)")
       ;
    
@@ -304,6 +306,9 @@ int main ( int argc , char** argv)
 
    if(vm.count("verbose"))
       bVerbose = true;
+
+   if(vm.count("no_override"))
+      bOverrideTiles = false;
 
    if(vm.count("expire_list"))
    {

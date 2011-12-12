@@ -413,6 +413,18 @@ void Raw32ImageObject::AllocateImage(unsigned int w, unsigned int h)
 
 //------------------------------------------------------------------------------
 
+void Raw32ImageObject::AllocateImage(unsigned int w, unsigned int h, float defaultValue)
+{
+   _width = w;
+   _height = h;
+   
+   _qData = boost::shared_array<float>(new float[w*h]);
+   memset(_qData.get(),defaultValue,w*h*sizeof(float));
+}
+
+
+//------------------------------------------------------------------------------
+
 void Raw32ImageObject::SetValue(int x, int y,float input)
 {
    _qData[x+(y*_width)] = input;

@@ -155,7 +155,7 @@ struct HSProcessChunk
    double dfXMin, dfXMax, dfYMin, dfYMax;
 };
 
-inline void process_hillshading(std::string filepath, HSProcessChunk pData, int x, int y, int zoom, double z_depth, int width = 256, int height = 256)
+inline void process_hillshading(std::string filepath, HSProcessChunk pData, int x, int y, int zoom, double z_depth, double azimut, double altitude, double scale, int width = 256, int height = 256, bool overrideTile = true)
 {
    int nXSize = pData.data.GetWidth();
    int nYSize = pData.data.GetHeight();
@@ -163,9 +163,9 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, int 
    int offsetY = (nYSize - height)/2;
 
    double dem_z  = z_depth;
-   double dem_azimut = 315;
-   double dem_altitude = 45;
-   double dem_scale = 1;
+   double dem_azimut = azimut; //315;
+   double dem_altitude = altitude; //45;
+   double dem_scale = scale;//1;
 
    boost::shared_array<unsigned char> vTile;
 
@@ -191,59 +191,67 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, int 
    }
    */
    // create new tile memory and clear to fully transparent
-   
-   vTile = boost::shared_array<unsigned char>(new unsigned char[width*height*4]);
-   memset(vTile.get(),0,width*height*4);
-
-   unsigned char* pTile = vTile.get();
-   
-   for(size_t dx = offsetX; dx < (2*offsetX); dx++)
-   {
-      for(size_t dy = offsetY; dy < (2*offsetY);dy++)
-      {
-         float afWin[9];
-         //      0 1 2
-         //      3 4 5
-         //      6 7 8
-         afWin[0] = pData.data.GetValue(dx-1,dy-1)*SCALE;
-         afWin[1] = pData.data.GetValue(dx,dy-1)*SCALE;
-         afWin[2] = pData.data.GetValue(dx+1,dy-1)*SCALE;
-         afWin[3] = pData.data.GetValue(dx-1,dy)*SCALE;
-         // Hotspot
-         afWin[4] = pData.data.GetValue(dx,dy)*SCALE;
-         // -->
-         afWin[5] = pData.data.GetValue(dx+1,dy)*SCALE;
-         afWin[6] = pData.data.GetValue(dx-1,dy+1)*SCALE;
-         afWin[7] = pData.data.GetValue(dx,dy+1)*SCALE;
-         afWin[8] = pData.data.GetValue(dx+1,dy+1)*SCALE;
-
-         double  adfGeoTransform[6];
-         adfGeoTransform[0] = pData.dfXMin;                                              // top left x 
-         adfGeoTransform[1] = fabs(pData.dfXMax -pData.dfXMin) / pData.data.GetWidth();  //w-e pixel resolution 
-         adfGeoTransform[2] = 0;                                                        // rotation, 0 if image is "north up" 
-         adfGeoTransform[3] = pData.dfYMax;                                              // top left y 
-         adfGeoTransform[4] = 0;                                                         // rotation, 0 if image is "north up" 
-         adfGeoTransform[5] = -fabs(pData.dfYMax -pData.dfYMin) / pData.data.GetHeight();// n-s pixel resolution 
-
-         GDALHillshadeAlgData* pCalcObj = (GDALHillshadeAlgData*)GDALCreateHillshadeData(adfGeoTransform, dem_z,dem_scale,dem_altitude, dem_azimut,0);
-         float value = GDALHillshadeAlg(afWin,0,pCalcObj);
-
-         // Write PNG
-         size_t adr=4*(dy-offsetY)*width+4*(dx-offsetX);
-         unsigned char scaledValue = unsigned char(value); //(pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value); 
-         if (pTile[adr+3] == 0)
-         {
-            pTile[adr+0] = scaledValue;  
-            pTile[adr+1] = scaledValue;  
-            pTile[adr+2] = scaledValue; 
-            pTile[adr+3] = 255;
-         }
-         CPLFree(pCalcObj);
-      }
-   }
    std::stringstream tilepath;
    tilepath << filepath << "/" << zoom << "/" << x << "/" << y << ".png";
-   ImageWriter::WritePNG(tilepath.str(), pTile, width, height);
+   if(!overrideTile && FileSystem::FileExists(tilepath.str()))
+   {
+      return;
+   }
+   else
+   {
+      vTile = boost::shared_array<unsigned char>(new unsigned char[width*height*4]);
+      memset(vTile.get(),0,width*height*4);
+
+      unsigned char* pTile = vTile.get();
+   
+      for(size_t dx = offsetX; dx < (2*offsetX); dx++)
+      {
+         for(size_t dy = offsetY; dy < (2*offsetY);dy++)
+         {
+            float afWin[9];
+                  //      0 1 2
+         //      3 4 5
+         //      6 7 8
+            afWin[0] = pData.data.GetValue(dx-1,dy-1)*SCALE;
+            afWin[1] = pData.data.GetValue(dx,dy-1)*SCALE;
+            afWin[2] = pData.data.GetValue(dx+1,dy-1)*SCALE;
+            afWin[3] = pData.data.GetValue(dx-1,dy)*SCALE;
+            // Hotspot
+            afWin[4] = pData.data.GetValue(dx,dy)*SCALE;
+            // -->
+            afWin[5] = pData.data.GetValue(dx+1,dy)*SCALE;
+            afWin[6] = pData.data.GetValue(dx-1,dy+1)*SCALE;
+            afWin[7] = pData.data.GetValue(dx,dy+1)*SCALE;
+            afWin[8] = pData.data.GetValue(dx+1,dy+1)*SCALE;
+
+            double  adfGeoTransform[6];
+            adfGeoTransform[0] = pData.dfXMin;                                              // top left x 
+            adfGeoTransform[1] = fabs(pData.dfXMax -pData.dfXMin) / pData.data.GetWidth();  //w-e pixel resolution 
+            adfGeoTransform[2] = 0;                                                        // rotation, 0 if image is "north up" 
+            adfGeoTransform[3] = pData.dfYMax;                                              // top left y 
+            adfGeoTransform[4] = 0;                                                         // rotation, 0 if image is "north up" 
+            adfGeoTransform[5] = -fabs(pData.dfYMax -pData.dfYMin) / pData.data.GetHeight();// n-s pixel resolution 
+
+            GDALHillshadeAlgData* pCalcObj = (GDALHillshadeAlgData*)GDALCreateHillshadeData(adfGeoTransform, dem_z,dem_scale,dem_altitude, dem_azimut,0);
+            float value = GDALHillshadeAlg(afWin,0,pCalcObj);
+
+            // Write PNG
+            size_t adr=4*(dy-offsetY)*width+4*(dx-offsetX);
+            unsigned char scaledValue = unsigned char(value); //(pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value); 
+            if (pTile[adr+3] == 0)
+            {
+               pTile[adr+0] = scaledValue;  
+               pTile[adr+1] = scaledValue;  
+               pTile[adr+2] = scaledValue; 
+               pTile[adr+3] = 255;
+            }
+            CPLFree(pCalcObj);
+         }
+      }
+      int lockhandle = FileSystem::Lock(tilepath.str());
+      ImageWriter::WritePNG(tilepath.str(), pTile, width, height);
+      FileSystem::Unlock(tilepath.str(), lockhandle);
+   }
 }
 
 

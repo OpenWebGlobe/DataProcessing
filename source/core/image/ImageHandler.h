@@ -103,7 +103,8 @@ public:
    virtual ~Raw32ImageObject();
    
    //! \brief Allocate Image Data
-   void AllocateImage(unsigned int w, unsigned int h);   
+   void AllocateImage(unsigned int w, unsigned int h);
+   void AllocateImage(unsigned int w, unsigned int h, float defaultValue);
    void Fill(float*  input);
    unsigned int   GetWidth(){return _width;}
    unsigned int   GetHeight(){return _height;}

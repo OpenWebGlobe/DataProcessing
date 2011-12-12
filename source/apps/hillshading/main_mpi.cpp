@@ -58,6 +58,10 @@ int inputX = 768;
 int inputY = 768;
 int outputX = 256;
 int outputY = 256;
+double z_depth = 2.0;
+double azimut = 315;
+double altitude = 45;
+double sscale = 1;
 int iX = 0;
 int iY = 0;
 std::string sTempTileDir;
@@ -128,7 +132,7 @@ void jobCallback(const SJob& job, int rank)
       }
    }
    // Generate tile
-   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, 2, outputX, outputY);
+   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude, sscale, outputX, outputY);
 }
 //---
 
