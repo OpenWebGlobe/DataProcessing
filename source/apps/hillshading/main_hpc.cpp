@@ -60,6 +60,7 @@ bool bVerbose = false;
 bool bGenerateJobs = false;
 bool bOverrideQueue = false;
 bool bOverrideTiles = true;
+bool bLockEnabled = false;
 int iAmount = 256;
 int inputX = 768;
 int inputY = 768;
@@ -140,7 +141,7 @@ void ProcessJob(const SJob& job)
       }
    }
    // Generate tile
-   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale, outputX, outputY, bOverrideTiles);
+   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale, outputX, outputY, bOverrideTiles, bLockEnabled);
 }
 
 //------------------------------------------------------------------------------------
@@ -174,6 +175,7 @@ int main(int argc, char *argv[])
       ("altitude", po::value<double>(), "[opional] hillshading altitude")
       ("scale", po::value<double>(), "[opional] hillshading scale")
       ("no_override", "[opional] overriding existing tiles disabled")
+      ("enable_locking", "[opional] lock files to prevent concurrency on parallel processes")
       ("verbose", "[optional] verbose output")
       ;
 
@@ -229,6 +231,8 @@ int main(int argc, char *argv[])
       bOverrideQueue = true;
    if(vm.count("no_override"))
       bOverrideTiles = false;
+    if(vm.count("enable_locking"))
+      bLockEnabled = true;
 
    //---------------------------------------------------------------------------
    // init options:
@@ -362,6 +366,8 @@ int main(int argc, char *argv[])
          SJob first, last;
          first = vecConverted[0];
          last = vecConverted[vecConverted.size()-1];
+         clock_t subT0 = clock();
+         clock_t subT1;
          std::cout << "--[" << sProcessHostName<< "] " << "  processing " << vecConverted.size() << " jobs\n       starting from (z, x, y) " << "(" << first.lod << ", " << first.xx << ", " << first.yy << ")\n"<< std::flush;
 #ifndef _DEBUG
          std::cout << "..Processing parallel using " << numThreads << "\n";
@@ -377,6 +383,10 @@ int main(int argc, char *argv[])
 #ifndef _DEBUG
                }
 #endif
+            subT1 = clock();
+            double subTime=(double(subT1-subT0)/double(CLOCKS_PER_SEC));
+            double subTps = vecConverted.size()/subTime;
+            std::cout << "--[" << sProcessHostName<< "] " << "  processing average " << subTps << " tiles per second.\n";
             std::cout << "--[" << sProcessHostName<< "] " << "  processed " << vecConverted.size() << " jobs\n       terminating with (z, x, y) " << "(" << last.lod << ", " << last.xx << ", " << last.yy << ")\n"<< std::flush;
          }
       }while(jobs.size() >= iAmount);

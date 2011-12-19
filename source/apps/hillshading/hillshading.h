@@ -155,7 +155,7 @@ struct HSProcessChunk
    double dfXMin, dfXMax, dfYMin, dfYMax;
 };
 
-inline void process_hillshading(std::string filepath, HSProcessChunk pData, int x, int y, int zoom, double z_depth, double azimut, double altitude, double scale, int width = 256, int height = 256, bool overrideTile = true)
+inline void process_hillshading(std::string filepath, HSProcessChunk pData, int x, int y, int zoom, double z_depth, double azimut, double altitude, double scale, int width = 256, int height = 256, bool overrideTile = true, bool lockEnabled = false)
 {
    int nXSize = pData.data.GetWidth();
    int nYSize = pData.data.GetHeight();
@@ -248,9 +248,16 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, int 
             CPLFree(pCalcObj);
          }
       }
-      int lockhandle = FileSystem::Lock(tilepath.str());
-      ImageWriter::WritePNG(tilepath.str(), pTile, width, height);
-      FileSystem::Unlock(tilepath.str(), lockhandle);
+      if(lockEnabled)
+      {
+         int lockhandle = FileSystem::Lock(tilepath.str());
+         ImageWriter::WritePNG(tilepath.str(), pTile, width, height);
+         FileSystem::Unlock(tilepath.str(), lockhandle);
+      }
+      else
+      {
+          ImageWriter::WritePNG(tilepath.str(), pTile, width, height);
+      }
    }
 }
 

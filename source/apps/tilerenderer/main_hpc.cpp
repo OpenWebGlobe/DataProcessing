@@ -82,6 +82,7 @@ bool bGenerateJobs = false;
 bool bOverrideQueue;
 bool bOverrideTiles = true;
 int iAmount = 256;
+bool bLockEnabled = false;
 double bounds[4];
 int minZoom;
 int maxZoom;
@@ -97,7 +98,7 @@ void ProcessJob(const SJob& job)
    std::stringstream ss;
    ss << output_path << job.zoom << "/" << job.x << "/" << job.y << ".png";
    //std::cout << "..Render tile " << ss.str() << "on rank: " << rank << "   Tilesize: "<< g_map.getWidth() << " Projection: " << g_mapnikProj.params() << "\n";
-   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose, bOverrideTiles);
+   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose, bOverrideTiles, bLockEnabled);
 }
 
 //------------------------------------------------------------------------------------
@@ -241,6 +242,7 @@ int main ( int argc , char** argv)
       ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
       ("amount", po::value<int>(), "[opional] define amount of jobs to be read for one process at the time")
       ("no_override", "[opional] overriding existing tiles disabled")
+      ("enable_locking", "[opional] lock files to prevent concurrency on parallel processes")
       ("expired_list", po::value<std::string>(), "[optional] list of expired tiles for update rendering (global rendering will be disabled)")
       ;
    
@@ -321,6 +323,9 @@ int main ( int argc , char** argv)
 
    if(vm.count("generatejobs"))
       bGenerateJobs = true;
+
+   if(vm.count("enable_locking"))
+      bLockEnabled = true;
 
    if(vm.count("overridejobqueue"))
    {
@@ -446,6 +451,8 @@ int main ( int argc , char** argv)
                SJob first, last;
                first = vecConverted[0];
                last = vecConverted[vecConverted.size()-1];
+               clock_t subT0 = clock();
+               clock_t subT1;
                std::cout << "--[" << sProcessHostName<< "] " << "  processing " << vecConverted.size() << " jobs\n       starting from (z, x, y) " << "(" << first.zoom << ", " << first.x << ", " << first.y << ")\n"<< std::flush;
 #ifndef _DEBUG
                std::cout << "..Processing parallel using " << numThreads << "\n";
@@ -461,6 +468,10 @@ int main ( int argc , char** argv)
 #ifndef _DEBUG
                }
 #endif
+               subT1 = clock();
+               double subTime=(double(subT1-subT0)/double(CLOCKS_PER_SEC));
+               double subTps = vecConverted.size()/subTime;
+               std::cout << "--[" << sProcessHostName<< "] " << "  processing average " << subTps << " tiles per second.\n";
                std::cout << "--[" << sProcessHostName<< "] " << "  processed " << vecConverted.size() << " jobs\n       terminating with (z, x, y) " << "(" << last.zoom << ", " << last.x << ", " << last.y << ")\n"<< std::flush;
             }
          }while(jobs.size() >= iAmount);

@@ -34,7 +34,7 @@
 #include <io/FileSystem.h>
  
 //------------------------------------------------------------------------------
-inline void _renderTile(std::string tile_uri, mapnik::Map m, int x, int y, int zoom, GoogleProjection tileproj, mapnik::projection prj, bool verbose = false, bool overrideTile = true)
+inline void _renderTile(std::string tile_uri, mapnik::Map m, int x, int y, int zoom, GoogleProjection tileproj, mapnik::projection prj, bool verbose = false, bool overrideTile = true, bool lockEnabled = false)
 {
    if(!overrideTile && FileSystem::FileExists(tile_uri))
    {
@@ -69,9 +69,16 @@ inline void _renderTile(std::string tile_uri, mapnik::Map m, int x, int y, int z
       mapnik::Image32 buf(m.getWidth(),m.getHeight());
       mapnik::agg_renderer<mapnik::Image32> ren(m,buf);
       ren.apply();
-      int lockhandle = FileSystem::Lock(tile_uri);
-      mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
-      FileSystem::Unlock(tile_uri, lockhandle);
+      if(lockEnabled)
+      {
+         int lockhandle = FileSystem::Lock(tile_uri);
+         mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
+         FileSystem::Unlock(tile_uri, lockhandle);
+      }
+      else
+      {
+         mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
+      }
    }
 }
 
