@@ -98,7 +98,14 @@ void ProcessJob(const SJob& job)
    std::stringstream ss;
    ss << output_path << job.zoom << "/" << job.x << "/" << job.y << ".png";
    //std::cout << "..Render tile " << ss.str() << "on rank: " << rank << "   Tilesize: "<< g_map.getWidth() << " Projection: " << g_mapnikProj.params() << "\n";
+   try
+   {
    _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose, bOverrideTiles, bLockEnabled);
+   }catch(std::exception ex)
+   {
+      std::cout << std::cout << "[" << sProcessHostName<< "] ### RENDER ERROR @ z: "<< job.zoom<< "x: "<< job.x<< "y: "<< job.y << "\n";
+      std::cout << std::cout << "[" << sProcessHostName<< "] ### -- Details " << ex.what() << "\n";
+   }
 }
 
 //------------------------------------------------------------------------------------
