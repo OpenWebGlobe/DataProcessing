@@ -37,6 +37,7 @@
 #include <omp.h>
 #include <app/QueueManager.h>
 #include  "hillshading.h"
+#include <math/vec3.h>
 
 namespace po = boost::program_options;
 
@@ -61,12 +62,13 @@ bool bGenerateJobs = false;
 bool bOverrideQueue = false;
 bool bOverrideTiles = true;
 bool bLockEnabled = false;
+bool bNormalMaps = false;
 int iAmount = 256;
 int inputX = 768;
 int inputY = 768;
 int outputX = 256;
 int outputY = 256;
-double z_depth = 2.0;
+double z_depth = 1.0;
 double azimut = 315;
 double altitude = 45;
 double sscale = 1;
@@ -102,9 +104,9 @@ void ProcessJob(const SJob& job)
          qQuadtree->QuadKeyToMercatorCoord(sQuadcode, sx0, sy1, sx1, sy0);
                
          pData.dfXMax = math::Max<double>(pData.dfXMax, sx1);
-         pData.dfYMax = math::Max<double>(pData.dfXMax, sy1);
+         pData.dfYMax = math::Max<double>(pData.dfYMax, sy1);
          pData.dfXMin = math::Min<double>(pData.dfXMin, sx0);
-         pData.dfYMin = math::Min<double>(pData.dfXMin, sy0);
+         pData.dfYMin = math::Min<double>(pData.dfYMin, sy0);
 
          assert(sx0 < sx1);
          assert(sy0 < sy1);
@@ -141,7 +143,7 @@ void ProcessJob(const SJob& job)
       }
    }
    // Generate tile
-   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale, outputX, outputY, bOverrideTiles, bLockEnabled);
+   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale,bNormalMaps, outputX, outputY, bOverrideTiles, bLockEnabled);
 }
 
 //------------------------------------------------------------------------------------
@@ -168,6 +170,7 @@ int main(int argc, char *argv[])
       ("layerzoom", po::value<int>(), "maximum zoom which has to be generated previously using ogAddData")
       ("generatejobs","[optional] create a jobqueue which can be used in every process")
       ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
+      ("normalmaps", "[optional] generate normal maps")
       ("numthreads", po::value<int>(), "[optional] force number of threads")
       ("amount", po::value<int>(), "[opional] define amount of jobs to be read for one process at the time")
       ("z_depth", po::value<double>(), "[opional] hillshading z factor")
@@ -227,6 +230,8 @@ int main(int argc, char *argv[])
       bVerbose = true;
    if(vm.count("generatejobs"))
       bGenerateJobs = true;
+    if(vm.count("normalmaps"))
+      bNormalMaps = true;
    if(vm.count("overridejobqueue"))
       bOverrideQueue = true;
    if(vm.count("no_override"))

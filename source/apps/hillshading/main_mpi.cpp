@@ -132,7 +132,7 @@ void jobCallback(const SJob& job, int rank)
       }
    }
    // Generate tile
-   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude, sscale, outputX, outputY);
+   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude, sscale,false, outputX, outputY);
 }
 //---
 
