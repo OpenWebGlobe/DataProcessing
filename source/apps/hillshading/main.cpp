@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
             }
          }
          // Generate tile
-         process_hillshading(sTileDir, pData, xx, yy, lod, z_depth, azimut, altitude, sscale, false, outputX, outputY);
+         process_hillshading(sTileDir, pData, xx, yy, lod, z_depth, azimut, altitude, sscale,1,false, false, outputX, outputY);
       }
    }
    GDALDestroyDriverManager();

@@ -62,6 +62,7 @@ typedef struct
     double cos_altRadians_mul_z_scale_factor;
     double azRadians;
     double square_z_scale_factor;
+    double slopeScale;
     int tileSize;
 } GDALHillshadeAlgData;
 
@@ -115,6 +116,25 @@ inline float GDALHillshadeAlg (float* afWin, float fDstNoDataValue, void* pData)
     return (float)cang;
 }
 
+inline float GDALSlopeHornAlg (float* afWin, float fDstNoDataValue, void* pData, bool degreeMode = false)
+{
+    const double radiansToDegrees = 180.0 / AGEPI;
+    GDALHillshadeAlgData* psData = (GDALHillshadeAlgData*)pData;
+    double dx, dy, key;
+    
+    dx = ((afWin[0] + afWin[3] + afWin[3] + afWin[6]) - 
+          (afWin[2] + afWin[5] + afWin[5] + afWin[8]))/psData->ewres;
+
+    dy = ((afWin[6] + afWin[7] + afWin[7] + afWin[8]) - 
+          (afWin[0] + afWin[1] + afWin[1] + afWin[2]))/psData->nsres;
+
+    key = (dx * dx + dy * dy);
+
+    if (degreeMode) 
+        return (float) (atan(sqrt(key) / (8*psData->slopeScale)) * radiansToDegrees);
+    else
+        return (float) (100*(sqrt(key) / (8*psData->slopeScale)));
+}
 
 inline vec3<float> SobleOperator (float* afWin, double z_factor = 1.0)
 {
@@ -172,6 +192,7 @@ inline void*  GDALCreateHillshadeData(double* adfGeoTransform,
                                double scale,
                                double alt,
                                double az,
+                               double slopeScale,
                                int bZevenbergenThorne, int tileSize)
 {
     GDALHillshadeAlgData* pData =
@@ -188,6 +209,7 @@ inline void*  GDALCreateHillshadeData(double* adfGeoTransform,
     pData->cos_altRadians_mul_z_scale_factor =
         cos(alt * degreesToRadians) * z_scale_factor;
     pData->square_z_scale_factor = z_scale_factor * z_scale_factor;
+    pData->slopeScale = slopeScale;
     return pData;
 }
 
@@ -200,7 +222,7 @@ struct HSProcessChunk
    double dfXMin, dfXMax, dfYMin, dfYMax;
 };
 
-inline void process_hillshading(std::string filepath, HSProcessChunk pData, int x, int y, int zoom, double z_depth, double azimut, double altitude, double scale, bool generateNormalMap = false, int width = 256, int height = 256, bool overrideTile = true, bool lockEnabled = false)
+inline void process_hillshading(std::string filepath, HSProcessChunk pData, int x, int y, int zoom, double z_depth, double azimut, double altitude, double scale, double slopeScale = 1,bool generateSlope = false, bool generateNormalMap = false, int width = 256, int height = 256, bool overrideTile = true, bool lockEnabled = false)
 {
    int nXSize = pData.data.GetWidth();
    int nYSize = pData.data.GetHeight();
@@ -305,8 +327,27 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, int 
                adfGeoTransform[4] = 0;                                                         // rotation, 0 if image is "north up" 
                adfGeoTransform[5] = -fabs((pData.dfYMax*MERC) -(pData.dfYMin*MERC)) / pData.data.GetHeight();// n-s pixel resolution 
 
-               GDALHillshadeAlgData* pCalcObj = (GDALHillshadeAlgData*)GDALCreateHillshadeData(adfGeoTransform, dem_z,dem_scale,dem_altitude, dem_azimut,0,width);
-               float value = GDALHillshadeAlg(afWin,0,pCalcObj);
+               GDALHillshadeAlgData* pCalcObj = (GDALHillshadeAlgData*)GDALCreateHillshadeData(adfGeoTransform, dem_z,dem_scale,dem_altitude, dem_azimut, slopeScale,0,width);
+               float value= 0;
+               if(generateSlope)
+               {
+                  value = GDALSlopeHornAlg(afWin,0,pCalcObj);
+                  float hValue = GDALHillshadeAlg(afWin,0,pCalcObj);
+
+                  value = (255-value);
+                  if(hValue < 180)
+                  {
+                     value -= (180-hValue)*0.8;
+                     if(value < 0) 
+                     {
+                        value = 0.0;
+                     }
+                  }
+               }
+               else
+               {
+                  value = GDALHillshadeAlg(afWin,0,pCalcObj);
+               }
                // Write PNG
                size_t adr=4*(dy-offsetY)*width+4*(dx-offsetX);
                unsigned char scaledValue = unsigned char(value); //(pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value); 

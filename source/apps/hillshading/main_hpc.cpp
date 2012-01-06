@@ -63,6 +63,7 @@ bool bOverrideQueue = false;
 bool bOverrideTiles = true;
 bool bLockEnabled = false;
 bool bNormalMaps = false;
+bool bSlope = false;
 int iAmount = 256;
 int inputX = 768;
 int inputY = 768;
@@ -72,6 +73,7 @@ double z_depth = 1.0;
 double azimut = 315;
 double altitude = 45;
 double sscale = 1;
+double slopeScale = 1;
 int iX = 0;
 int iY = 0;
 std::string sTempTileDir;
@@ -143,7 +145,7 @@ void ProcessJob(const SJob& job)
       }
    }
    // Generate tile
-   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale,bNormalMaps, outputX, outputY, bOverrideTiles, bLockEnabled);
+   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale,slopeScale, bSlope, bNormalMaps, outputX, outputY, bOverrideTiles, bLockEnabled);
 }
 
 //------------------------------------------------------------------------------------
@@ -171,6 +173,8 @@ int main(int argc, char *argv[])
       ("generatejobs","[optional] create a jobqueue which can be used in every process")
       ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
       ("normalmaps", "[optional] generate normal maps")
+      ("slope", "[optional] integrate slope to map")
+      ("slopescale", po::value<double>(),"[optional] define slope scale default 1")
       ("numthreads", po::value<int>(), "[optional] force number of threads")
       ("amount", po::value<int>(), "[opional] define amount of jobs to be read for one process at the time")
       ("z_depth", po::value<double>(), "[opional] hillshading z factor")
@@ -232,6 +236,10 @@ int main(int argc, char *argv[])
       bGenerateJobs = true;
     if(vm.count("normalmaps"))
       bNormalMaps = true;
+    if(vm.count("slopescale"))
+      slopeScale = vm["slopescale"].as<double>();
+    if(vm.count("slope"))
+      bSlope = true;
    if(vm.count("overridejobqueue"))
       bOverrideQueue = true;
    if(vm.count("no_override"))
