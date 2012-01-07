@@ -334,13 +334,21 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, int 
                   value = GDALSlopeHornAlg(afWin,0,pCalcObj);
                   float hValue = GDALHillshadeAlg(afWin,0,pCalcObj);
 
-                  value = (255-value);
+                  value = (255-value)*0.8;
                   if(hValue < 180)
                   {
-                     value -= (180-hValue)*0.8;
+                     value -= (180-hValue)*0.5;
                      if(value < 0) 
                      {
                         value = 0.0;
+                     }
+                  }
+                  else
+                  {
+                     value += (hValue-180);
+                     if(value > 255) 
+                     {
+                        value = 255.0;
                      }
                   }
                }
