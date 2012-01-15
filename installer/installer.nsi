@@ -1,8 +1,7 @@
-!include "EnvVarUpdate.nsh"
 
 ;defines
 !define PRODUCT_NAME "OWG-Processing"
-!define PRODUCT_VERSION "0.3.0"
+!define PRODUCT_VERSION "1.0.0"
 !define PRODUCT_PUBLISHER "Martin Christen"
 !define PRODUCT_WEB_SITE "http://www.openwebglobe.org"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -56,8 +55,6 @@ Section "Main" SEC01
      ExecWait '"$INSTDIR\uninst.exe" _?=$INSTDIR'
      BringToFront
     continue:
-  ${EnvVarUpdate} $0 "PATH" "A" "HKLM" "$INSTDIR" 
-  ${EnvVarUpdate} $0 "PATH" "A" "HKCU" "$INSTDIR"
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
   SetOverwrite try
@@ -144,10 +141,6 @@ Function un.onUninstSuccess
 FunctionEnd
 
 Section "un.DataProcessing"  
-  
-  ${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR" 
-  ${un.EnvVarUpdate} $0 "PATH" "R" "HKCU" "$INSTDIR"
-
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\setup.xml"
   Delete "$INSTDIR\proj.dll"

@@ -595,3 +595,27 @@ void FilenameUtils::ParseUrl(const std::string& in_url, std::string& out_host, s
 }
 
 //-----------------------------------------------------------------------------
+
+
+bool FilenameUtils::IsRelative(const std::string& path)
+{
+#ifdef OS_WINDOWS
+   if (path.length()>3)
+   {
+      if (path[1] == ':')
+      {
+         return false;
+      }
+   }
+   return true;
+#else
+   if (path.length()>1)
+   {
+      if (path[0] == '/')
+      {
+         return false;
+      }
+   }
+   return true;
+#endif
+}

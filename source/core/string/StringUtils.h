@@ -40,7 +40,6 @@ public:
       return s.substr(0,l);
    }
 
-
    //! \brief Retrieve left part of an ascii string.
    //! \param s The input string
    //! \param l Number of characters from the left.
@@ -103,7 +102,6 @@ public:
    
    //! \brief Convert a string to an integer using specified base 2 to 36
    static unsigned int StringToInteger(const std::string& input, unsigned int base);
-
 };
 
 

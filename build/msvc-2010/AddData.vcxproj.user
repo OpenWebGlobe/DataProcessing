@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>--layer PointCloudTest  --point C:\data\points\Punktwolke.xyz --srs EPSG:21781 --fill --verbose</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--numthreads 1 --layer bugaboos --image data\bugaboos\bugaboo_img.jpg --srs EPSG:26711 --fill</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--numthreads 4 --layer bjtest --elevation C:\data\ASTRTEST\ASTGTM_N39E115C_DEM_UTM_3_1.tif --srs EPSG:32650 --fill</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--numthreads 4 --layer bugaboos --image data\bugaboos\bugaboo_img.jpg --srs EPSG:26711 --fill</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

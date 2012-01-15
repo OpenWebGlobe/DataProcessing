@@ -135,7 +135,8 @@ public:
    */
    static   void Unlock(const std::string& file, int handle);
    //---------------------------------------------------------------------------
-
+   //! \brief Retrieve current working directory
+   static std::string GetCWD();
 };
 
 

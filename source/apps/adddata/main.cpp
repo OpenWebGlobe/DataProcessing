@@ -40,7 +40,6 @@
 #include <sstream>
 #include <omp.h>
 
-
 enum ELayerType
 {
    IMAGE_LAYER,
@@ -127,22 +126,42 @@ int main(int argc, char *argv[])
    {
       eLayer = IMAGE_LAYER;
       sFile = vm["image"].as<std::string>();
+
+      if (FilenameUtils::IsRelative(sFile))
+      {
+         sFile = FileSystem::GetCWD() + "/" + sFile;
+      }
    }
    else if  (vm.count("elevation"))
    {
       eLayer = ELEVATION_LAYER;
       sFile = vm["elevation"].as<std::string>();
+
+      if (FilenameUtils::IsRelative(sFile))
+      {
+         sFile = FileSystem::GetCWD() + "/" + sFile;
+      }
    }
    else if  (vm.count("greyimage"))
    {
       eLayer = GREYIMAGE_LAYER;
       sFile = vm["greyimage"].as<std::string>();
+
+      if (FilenameUtils::IsRelative(sFile))
+      {
+         sFile = FileSystem::GetCWD() + "/" + sFile;
+      }
    }
    else if  (vm.count("point"))
    {
       eLayer = POINT_LAYER;
       sFile = vm["point"].as<std::string>();
       bUseProcessStatus = false;
+
+      if (FilenameUtils::IsRelative(sFile))
+      {
+         sFile = FileSystem::GetCWD() + "/" + sFile;
+      }
    }
 
    if (!vm.count("srs") || !vm.count("layer"))
@@ -223,6 +242,8 @@ int main(int argc, char *argv[])
    }
 
    int epsg = atoi(sSRS.c_str()+5);
+
+
 
    //---------------------------------------------------------------------------
    // CREATE / UPDATE PROCESS STATUS

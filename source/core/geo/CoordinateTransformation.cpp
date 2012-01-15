@@ -149,7 +149,6 @@ bool CoordinateTransformation::Transform(double* dX, double* dY)
 }
 
 //-----------------------------------------------------------------------------
-
 bool CoordinateTransformation::TransformBackwards(double* dX, double* dY)
 {
    if (_bIdentity)   // no transformation required, source is dest
@@ -181,11 +180,8 @@ bool CoordinateTransformation::TransformBackwards(double* dX, double* dY)
    }
 
 
-   if(!((OGRCoordinateTransformation*)_pCTBack)->Transform(1, dX, dY))
-      return false;
-
+   ((OGRCoordinateTransformation*)_pCTBack)->Transform(1, dX, dY);
    
-
    return true;
 }
 

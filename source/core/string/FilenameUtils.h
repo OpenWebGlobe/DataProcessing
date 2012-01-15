@@ -121,6 +121,10 @@ public:
    //!   host=www.openwebglobe.org
    //!   file=/bla/bla/myFile.png
    static void ParseUrl(const std::string& in_url, std::string& out_host, std::string& out_fileName);
+
+   //! \brief test if path is relative
+   //! returns true if path is relative, otherwise return false
+   static bool IsRelative(const std::string& path);
 };
 
 
