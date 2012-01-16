@@ -31,44 +31,54 @@
 #include <mapnik/envelope.hpp>
 #include <mapnik/image_util.hpp>
 #include <mapnik/map.hpp>
+#include <io/FileSystem.h>
  
 //------------------------------------------------------------------------------
-inline void _renderTile(std::string tile_uri, mapnik::Map m, int x, int y, int zoom, GoogleProjection tileproj, mapnik::projection prj, bool verbose = false)
+inline void _renderTile(std::string tile_uri, mapnik::Map m, int x, int y, int zoom, GoogleProjection tileproj, mapnik::projection prj, bool verbose = false, bool overrideTile = true, bool lockEnabled = false)
 {
-   if(verbose)
+   if(!overrideTile && FileSystem::FileExists(tile_uri))
    {
-#define MAPNIK_DEBUG
+      return;
    }
-   // Calculate pixel positions of bottom-left & top-right
-   ituple p0(x * 256, (y + 1) * 256);
-   ituple p1((x + 1) * 256, y * 256);
-
-   // Convert to LatLong (EPSG:4326)
-   dtuple l0 = tileproj.pixel2GeoCoord(p0, zoom);
-   dtuple l1 = tileproj.pixel2GeoCoord(p1, zoom);
-
-   // Convert to map projection (e.g. mercator co-ords EPSG:900913)
-   dtuple c0(l0.a,l0.b);
-   dtuple c1(l1.a,l1.b);
-   prj.forward(c0.a, c0.b);
-   prj.forward(c1.a, c1.b);
-
-   // Bounding box for the tile
-
-   mapnik::Envelope<double> bbox = mapnik::Envelope<double>(c0.a,c0.b,c1.a,c1.b);
-
-   m.resize(256, 256);
-   m.zoomToBox(bbox);
-   m.set_buffer_size(128);
-
-   // Render image with default Agg renderer
-   mapnik::Image32 buf(m.getWidth(),m.getHeight());
-   mapnik::agg_renderer<mapnik::Image32> ren(m,buf);
-   ren.apply();
-   mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
-      if(verbose)
+   else
    {
-#undef MAPNIK_DEBUG
+      // Calculate pixel positions of bottom-left & top-right
+      ituple p0(x * 256, (y + 1) * 256);
+      ituple p1((x + 1) * 256, y * 256);
+
+      // Convert to LatLong (EPSG:4326)
+      dtuple l0 = tileproj.pixel2GeoCoord(p0, zoom);
+      dtuple l1 = tileproj.pixel2GeoCoord(p1, zoom);
+
+      // Convert to map projection (e.g. mercator co-ords EPSG:900913)
+      dtuple c0(l0.a,l0.b);
+      dtuple c1(l1.a,l1.b);
+      prj.forward(c0.a, c0.b);
+      prj.forward(c1.a, c1.b);
+
+      // Bounding box for the tile
+
+      mapnik::Envelope<double> bbox = mapnik::Envelope<double>(c0.a,c0.b,c1.a,c1.b);
+
+      m.resize(256, 256);
+      m.zoomToBox(bbox);
+      m.set_buffer_size(128);
+
+      // Render image with default Agg renderer
+   
+      mapnik::Image32 buf(m.getWidth(),m.getHeight());
+      mapnik::agg_renderer<mapnik::Image32> ren(m,buf);
+      ren.apply();
+      if(lockEnabled)
+      {
+         int lockhandle = FileSystem::Lock(tile_uri);
+         mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
+         FileSystem::Unlock(tile_uri, lockhandle);
+      }
+      else
+      {
+         mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
+      }
    }
 }
 

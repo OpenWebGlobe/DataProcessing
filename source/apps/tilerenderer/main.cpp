@@ -63,6 +63,8 @@ int main ( int argc , char** argv)
       ("expired_list", po::value<std::string>(), "[optional] list of expired tiles for update rendering (global rendering will be disabled)")
       ("bounds", po::value<std::vector<double>>(), "[optional] boundaries (default: -180.0 -90.0 180.0 90.0)")
       ("verbose", "[optional] Verbose mode")
+      ("no_override", "[opional] overriding existing tiles disabled")
+      ("enable_locking", "[opional] lock files to prevent concurrency on parallel processes")
       ;
    
    po::positional_options_description p;
@@ -94,6 +96,8 @@ int main ( int argc , char** argv)
 
    bool bError = false;
    bool bVerbose = false;
+   bool bOverrideTiles = true;
+   bool bLockEnabled = false;
    //----------------------------------------
    // Read commandline
    try
@@ -141,6 +145,11 @@ int main ( int argc , char** argv)
 
    if(vm.count("verbose"))
          bVerbose = true;
+
+   if(vm.count("no_override"))
+      bOverrideTiles = false;
+   if(vm.count("enable_locking"))
+      bLockEnabled = true;
 
    bool bUpdateMode = false;
    std::string expire_list;
@@ -306,7 +315,7 @@ int main ( int argc , char** argv)
 
                      std::string tile_uri = output_path + szoom + '/' + str_x + '/' + str_y + ".png";
                      // Submit tile to be rendered
-                     _renderTile(tile_uri,m,x,y,z,gProj,mapnikProj,bVerbose);
+                     _renderTile(tile_uri,m,x,y,z,gProj,mapnikProj,bVerbose, bOverrideTiles, bLockEnabled);
                      tileCount++;
                   }
 #ifndef _DEBUG

@@ -44,7 +44,7 @@
 GoogleProjection::GoogleProjection()
 {
     int c = 256;
-    for (int d = 0; d <= 12; d++)
+    for (int d = 0; d <= 19; d++)
    {
       double e = c/2;
       _Bc.push_back(c/360.0);
