@@ -788,7 +788,7 @@ namespace math
          // GetNeighbourVertices and save in list
          if (_oVertexMinError.pTri->GetVertex(_oVertexMinError.idx0)->weight() == -3)
          {
-            std::cout << "**** FATAL ERROR ****: Removing corner vertex!!\n";
+            //std::cout << "**** FATAL ERROR ****: Removing corner vertex!!\n";
          }
 
          _RemoveVertex(_oVertexMinError.pTri, _oVertexMinError.idx0);
@@ -1090,7 +1090,7 @@ namespace math
             // unless you try to remove supersimplex corner.
             // however this can happen in a triangulation with holes. This
             // case is currently not supported!
-            std::cout<< "*Error* Can't remove specified vertex! (Triangulation would be broken.)\n";
+            //std::cout<< "*Error* Can't remove specified vertex! (Triangulation would be broken.)\n";
             return;
          }
          else
@@ -1129,8 +1129,8 @@ namespace math
 
                      double ccwpredicate = math::ccw(s0,s1,s2);
 
-                     if (DebugOutput)
-                        std::cout << "ccwpredicate0 = " << ccwpredicate << "\n";
+                     /*if (DebugOutput)
+                        std::cout << "ccwpredicate0 = " << ccwpredicate << "\n";*/
 
                      if (ccwpredicate<=0)
                      {
@@ -1139,8 +1139,8 @@ namespace math
                      else
                      {
                         ccwpredicate = math::ccw(s0,s2,pVertex);
-                        if (DebugOutput)
-                           std::cout << "ccwpredicate1 = " << ccwpredicate << "\n";
+                        /*if (DebugOutput)
+                           std::cout << "ccwpredicate1 = " << ccwpredicate << "\n";*/
                         if (ccwpredicate<0) // P encloses Triangle ?
                         {
                            
@@ -1169,15 +1169,15 @@ namespace math
                                      p1 != s0 && p1 != s1 && p1 != s2)
                                  {
                                     double circ = math::InCircleValue(s0,s1,s2,p0);
-                                    if (DebugOutput)
-                                       std::cout << "circ0 = " << circ << "\n";
+                                    /*if (DebugOutput)
+                                       std::cout << "circ0 = " << circ << "\n";*/
                                     if (circ >= DBL_EPSILON)
                                     {
                                        bCircleTest = false;
                                     }
                                     circ = math::InCircleValue(s0,s1,s2,p1);
-                                    if (DebugOutput)
-                                       std::cout << "circ1 = " << circ << "\n";
+                                    /*if (DebugOutput)
+                                       std::cout << "circ1 = " << circ << "\n";*/
                                     if (circ >= DBL_EPSILON)
                                     {
                                        bCircleTest = false;
@@ -1254,7 +1254,7 @@ namespace math
 
                if (outputTriangles.size()>3 && num_changes == 0)
                {
-                  std::cout << "<b>*WARNING* Detected infinite loop!</b>\n";
+                  //std::cout << "<b>*WARNING* Detected infinite loop!</b>\n";
                   pVertex->GetElevationPoint().error = -0.5;
 
                   if (DebugOutput)
