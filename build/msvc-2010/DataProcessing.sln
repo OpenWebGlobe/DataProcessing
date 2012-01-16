@@ -28,11 +28,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogResample", "Resample.vcxp
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogResample_mpi", "Resample _mpi.vcxproj", "{41C1D781-2285-47BF-8116-CA756D8C2458}"
-	ProjectSection(ProjectDependencies) = postProject
-		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogDeploy", "deploy.vcxproj", "{DFC47E3A-9D7F-4002-A5E7-F29A4F47FD26}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
@@ -43,48 +38,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogTriangulate", "Triangulat
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogDeploy_mpi", "deploy_mpi.vcxproj", "{048834F9-8EEE-4053-8655-C6C276889689}"
-	ProjectSection(ProjectDependencies) = postProject
-		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogHillshading", "Hillshading.vcxproj", "{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}"
-	ProjectSection(ProjectDependencies) = postProject
-		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogTileRenderer", "TileRenderer.vcxproj", "{53BD189F-1BD8-4654-89E8-53B30BFE9D02}"
-	ProjectSection(ProjectDependencies) = postProject
-		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogTileRenderer_mpi", "TileRenderer_mpi.vcxproj", "{53BD189F-1BD8-4654-89E8-53990BFE9D02}"
-	ProjectSection(ProjectDependencies) = postProject
-		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
-	EndProjectSection
-EndProject
-<<<<<<< HEAD
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogCreateDisks", "CreateDisks.vcxproj", "{51BD119F-1BD8-4454-81E8-53B11BFE9D02}"
-=======
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogHillshading_mpi", "Hillshading_mpi.vcxproj", "{53BD189F-1BF8-4C54-89E8-53B30BFE9D02}"
->>>>>>> 6b4bcc4398f9acf8402b9e7168fb9f8e6ee42c33
-	ProjectSection(ProjectDependencies) = postProject
-		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
-	EndProjectSection
-EndProject
-<<<<<<< HEAD
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServerTest", "ServerTest.vcxproj", "{53BD189F-1BD8-4654-1111-64C00BFE9D00}"
-	ProjectSection(ProjectDependencies) = postProject
-		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
-	EndProjectSection
-=======
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogHillshading_hpc", "Hillshading_hpc.vcxproj", "{53BD189F-1BF8-4A54-89E8-53B30BFE9D02}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7720B169-3379-4765-9216-6DBB2722588E} = {7720B169-3379-4765-9216-6DBB2722588E}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ogTileRenderer_hpc", "TileRenderer_hpc.vcxproj", "{53BD189F-1BD8-1154-89E8-53990BFE9D02}"
->>>>>>> 6b4bcc4398f9acf8402b9e7168fb9f8e6ee42c33
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -116,10 +75,6 @@ Global
 		{FF28D228-021E-4713-B3F4-50AE204EAD01}.Debug|Win32.Build.0 = Debug|Win32
 		{FF28D228-021E-4713-B3F4-50AE204EAD01}.Release|Win32.ActiveCfg = Release|Win32
 		{FF28D228-021E-4713-B3F4-50AE204EAD01}.Release|Win32.Build.0 = Release|Win32
-		{41C1D781-2285-47BF-8116-CA756D8C2458}.Debug|Win32.ActiveCfg = Debug|Win32
-		{41C1D781-2285-47BF-8116-CA756D8C2458}.Debug|Win32.Build.0 = Debug|Win32
-		{41C1D781-2285-47BF-8116-CA756D8C2458}.Release|Win32.ActiveCfg = Release|Win32
-		{41C1D781-2285-47BF-8116-CA756D8C2458}.Release|Win32.Build.0 = Release|Win32
 		{DFC47E3A-9D7F-4002-A5E7-F29A4F47FD26}.Debug|Win32.ActiveCfg = Debug|Win32
 		{DFC47E3A-9D7F-4002-A5E7-F29A4F47FD26}.Debug|Win32.Build.0 = Debug|Win32
 		{DFC47E3A-9D7F-4002-A5E7-F29A4F47FD26}.Release|Win32.ActiveCfg = Release|Win32
@@ -128,36 +83,6 @@ Global
 		{1E9DB029-1FF3-40DF-AD84-5D78D4B7B6E9}.Debug|Win32.Build.0 = Debug|Win32
 		{1E9DB029-1FF3-40DF-AD84-5D78D4B7B6E9}.Release|Win32.ActiveCfg = Release|Win32
 		{1E9DB029-1FF3-40DF-AD84-5D78D4B7B6E9}.Release|Win32.Build.0 = Release|Win32
-		{048834F9-8EEE-4053-8655-C6C276889689}.Debug|Win32.ActiveCfg = Debug|Win32
-		{048834F9-8EEE-4053-8655-C6C276889689}.Debug|Win32.Build.0 = Debug|Win32
-		{048834F9-8EEE-4053-8655-C6C276889689}.Release|Win32.ActiveCfg = Release|Win32
-		{048834F9-8EEE-4053-8655-C6C276889689}.Release|Win32.Build.0 = Release|Win32
-		{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}.Debug|Win32.ActiveCfg = Debug|Win32
-		{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
-		{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
-		{53BD189F-1BD8-4C54-89E8-53B30BFE9D02}.Release|Win32.Build.0 = Release|Win32
-		{53BD189F-1BD8-4654-89E8-53B30BFE9D02}.Debug|Win32.ActiveCfg = Debug|Win32
-		{53BD189F-1BD8-4654-89E8-53B30BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
-		{53BD189F-1BD8-4654-89E8-53B30BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
-		{53BD189F-1BD8-4654-89E8-53B30BFE9D02}.Release|Win32.Build.0 = Release|Win32
-		{53BD189F-1BD8-4654-89E8-53990BFE9D02}.Debug|Win32.ActiveCfg = Debug|Win32
-		{53BD189F-1BD8-4654-89E8-53990BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
-		{53BD189F-1BD8-4654-89E8-53990BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
-		{53BD189F-1BD8-4654-89E8-53990BFE9D02}.Release|Win32.Build.0 = Release|Win32
-<<<<<<< HEAD
-		{51BD119F-1BD8-4454-81E8-53B11BFE9D02}.Debug|Win32.ActiveCfg = Debug|Win32
-		{51BD119F-1BD8-4454-81E8-53B11BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
-		{51BD119F-1BD8-4454-81E8-53B11BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
-		{51BD119F-1BD8-4454-81E8-53B11BFE9D02}.Release|Win32.Build.0 = Release|Win32
-		{53BD189F-1BD8-4654-1111-64C00BFE9D00}.Debug|Win32.ActiveCfg = Debug|Win32
-		{53BD189F-1BD8-4654-1111-64C00BFE9D00}.Debug|Win32.Build.0 = Debug|Win32
-		{53BD189F-1BD8-4654-1111-64C00BFE9D00}.Release|Win32.ActiveCfg = Release|Win32
-		{53BD189F-1BD8-4654-1111-64C00BFE9D00}.Release|Win32.Build.0 = Release|Win32
-=======
-		{53BD189F-1BF8-4C54-89E8-53B30BFE9D02}.Debug|Win32.ActiveCfg = Debug|Win32
-		{53BD189F-1BF8-4C54-89E8-53B30BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
-		{53BD189F-1BF8-4C54-89E8-53B30BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
-		{53BD189F-1BF8-4C54-89E8-53B30BFE9D02}.Release|Win32.Build.0 = Release|Win32
 		{53BD189F-1BF8-4A54-89E8-53B30BFE9D02}.Debug|Win32.ActiveCfg = Debug|Win32
 		{53BD189F-1BF8-4A54-89E8-53B30BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
 		{53BD189F-1BF8-4A54-89E8-53B30BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
@@ -166,7 +91,6 @@ Global
 		{53BD189F-1BD8-1154-89E8-53990BFE9D02}.Debug|Win32.Build.0 = Debug|Win32
 		{53BD189F-1BD8-1154-89E8-53990BFE9D02}.Release|Win32.ActiveCfg = Release|Win32
 		{53BD189F-1BD8-1154-89E8-53990BFE9D02}.Release|Win32.Build.0 = Release|Win32
->>>>>>> 6b4bcc4398f9acf8402b9e7168fb9f8e6ee42c33
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -36,7 +36,7 @@
 #include <sstream>
 #include <omp.h>
 #include <app/QueueManager.h>
-#include  "hillshading.h"
+#include "hillshading.h"
 #include <math/vec3.h>
 
 namespace po = boost::program_options;
