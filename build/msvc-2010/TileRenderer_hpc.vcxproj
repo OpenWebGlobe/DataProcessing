@@ -14,7 +14,7 @@
     <ProjectGuid>{53BD189F-1BD8-1154-89E8-53990BFE9D02}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>DataProcessing</RootNamespace>
-    <ProjectName>ogTileRenderer_hpc</ProjectName>
+    <ProjectName>ogTileRenderer</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
