@@ -299,6 +299,8 @@ namespace ElevationData
       out << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
       qLogger->Info(out.str());
 
+      oElevationReader.Close();
+
       ProcessingUtils::exit_gdal();
       return 0;   
    }
