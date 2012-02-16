@@ -565,6 +565,12 @@ bool ElevationReader::_ImportRaster(std::vector<ElevationPoint>& result, double&
                   assert(false);
                }
 
+               // further NODATA value check:
+               if (fz > _maxElvValue || fz < _minElvValue)
+               {
+                   bNoData = true;
+               }
+
                // Transform Point:
 
                if (!bNoData)
