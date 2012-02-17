@@ -328,6 +328,7 @@ bool ElevationReader::_ImportRaster(std::vector<ElevationPoint>& result, double&
    unsigned short us_value;
    short s_value;
 
+   fz = 0;
    CoordinateTransformation* pCT = 0;
 
    if (_nSourceEPSG != 0)
@@ -459,7 +460,11 @@ bool ElevationReader::_ImportRaster(std::vector<ElevationPoint>& result, double&
 
  bool ElevationReader::Import(const std::string& sFilename, size_t& size, double& inout_xmin, double& inout_ymin, double& inout_xmax, double& inout_ymax)
  {
-    int valid_width; int valid_height;
+   _tmpFile = sFilename;
+   _numPts = 0;
+   _curPts = 0;
+
+   int valid_width; int valid_height;
    double fx,fy,fz;
    unsigned int ui_value;
    int i_value;
@@ -476,6 +481,7 @@ bool ElevationReader::_ImportRaster(std::vector<ElevationPoint>& result, double&
    }
 
    size = 0;
+   fz = 0;
 
    CoordinateTransformation* pCT = 0;
 
@@ -607,8 +613,42 @@ bool ElevationReader::_ImportRaster(std::vector<ElevationPoint>& result, double&
 
    ofs.close();
 
+   _numPts = size;
+
    return true;
  }
 
  //------------------------------------------------------------------------------
 
+  bool ElevationReader::GetNextPoint(ElevationPoint& pt)
+  {
+     std::ifstream* _pFile;
+      if (_curPts == 0)
+      {
+         _tmpFilePtr = new std::ifstream(_tmpFile.c_str(), std::ios::binary);
+         _pFile = (std::ifstream*)_tmpFilePtr;
+
+         if (!_pFile->good())
+         {
+            return false;
+         }
+      }
+
+      _pFile = (std::ifstream*)_tmpFilePtr;
+
+      if (_curPts >= _numPts)
+      {
+         _pFile->close();
+         return false;
+      }
+
+
+      _pFile->read((char*)&pt.x, sizeof(double));
+      _pFile->read((char*)&pt.y, sizeof(double));
+      _pFile->read((char*)&pt.elevation, sizeof(double));
+
+      _curPts++;
+
+
+      return true;
+  }

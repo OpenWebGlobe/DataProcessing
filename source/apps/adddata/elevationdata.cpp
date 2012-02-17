@@ -29,7 +29,10 @@
 #include <sstream>
 #include <fstream>
 #include <ctime>
+#include <map>
 #include <omp.h>
+
+#define MAX_POINTS_IN_MEMORY 20000
 
 namespace ElevationData
 {
@@ -37,6 +40,91 @@ namespace ElevationData
    {
       std::vector<ElevationPoint*> vecPts;
    };
+
+   int64 points_in_map = 0;
+
+   //---------------------------------------------------------------------------
+   // Elevation Map Utils:
+   void AddPoint(std::map< int64, std::list<ElevationPoint> >& streamMap, int64 idx, ElevationPoint& pt)
+   {
+      std::map< int64, std::list<ElevationPoint> >::iterator it;
+      it = streamMap.find(idx);
+      if (it == streamMap.end()) // not found, create new entry!
+      {
+         std::list<ElevationPoint> lst;
+         lst.push_back(pt);
+         streamMap.insert(std::pair< int64, std::list<ElevationPoint> >(idx, lst));
+      }
+      else // key found, add elevation point to existing list
+      {
+         it->second.push_back(pt);
+      }
+
+      points_in_map++;
+
+   }
+
+   void WriteMap(boost::shared_ptr<MercatorQuadtree> qQuadtree, std::map< int64, std::list<ElevationPoint> >& streamMap, const std::string& sTileDir, int tilewidth_i, int lod, int64 elvTileX0, int64 elvTileY1)
+   {
+      std::map< int64, std::list<ElevationPoint> >::iterator it = streamMap.begin();
+
+      while (it!=streamMap.end())
+      {
+         int64 idx = it->first;
+
+         // convert idx to tile coord:
+         int tx = idx % tilewidth_i;
+         int ty = idx / tilewidth_i;
+         int64 tileX = tx + elvTileX0;
+         int64 tileY = elvTileY1 - ty;
+
+         std::string sQuadcode = qQuadtree->TileCoordToQuadkey(tileX,tileY,lod);
+         std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, tileX, tileY);
+
+         /*double px0,py0,px1,py1;
+         qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0, py1, px1, py0);*/
+
+         // LOCK this tile. If this tile is currently locked then wait until the lock is removed.
+         int lockhandle = FileSystem::Lock(sTilefile);
+
+         std::ofstream fout;
+
+         if (FileSystem::FileExists(sTilefile))
+         {
+            fout.open(sTilefile.c_str(), std::ios::binary | std::ios::app); // open in append mode
+         }
+         else
+         {
+               fout.open(sTilefile.c_str(), std::ios::binary); // open in append mode
+         }
+
+         if (fout.good())
+         {
+            std::list<ElevationPoint> lst = it->second;
+            std::list<ElevationPoint>::iterator jt = lst.begin();
+
+            while (jt != lst.end())
+            {        
+               fout.write((const char*)&(jt->x), sizeof(double));
+               fout.write((const char*)&(jt->y), sizeof(double));
+               fout.write((const char*)&(jt->elevation), sizeof(double));
+               fout.write((const char*)&(jt->weight), sizeof(double));
+
+               jt++;
+            }
+         }
+         // unlock file. Other computers/processes/threads can access it again.
+         FileSystem::Unlock(sTilefile, lockhandle);
+
+         it++;
+      }
+
+      streamMap.clear();
+      points_in_map = 0;
+
+      //std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, xx, yy);
+   }
+
 
    //---------------------------------------------------------------------------
 
@@ -59,7 +147,7 @@ namespace ElevationData
 
       std::string sElevationLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
       std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sElevationLayerDir) + "temp/tiles");
-      std::string sTempfile = FilenameUtils::DelimitPath(sTileDir) + sElevationFile + ".dat";
+      std::string sTempfile = FilenameUtils::DelimitPath(sTileDir) + FilenameUtils::ExtractBaseFileName(sElevationFile) + ".dat";
 
       boost::shared_ptr<ElevationLayerSettings> qElevationLayerSettings = ElevationLayerSettings::Load(sElevationLayerDir);
       if (!qElevationLayerSettings)
@@ -87,7 +175,6 @@ namespace ElevationData
       //---------------------------------------------------------------------------
 
       ElevationReader oElevationReader;
-      std::vector<ElevationPoint> vPoints;
 
       if (!oElevationReader.Open(sElevationFile, epsg))
       {
@@ -100,8 +187,16 @@ namespace ElevationData
       double ymin=1e20;
       double xmax=-1e20;
       double ymax=-1e20;
+      size_t numpts;
 
-      if (!oElevationReader.Import(vPoints, xmin, ymin, xmax, ymax))
+      if (bVerbose)
+      {
+         oss << "Please wait... Transforming all points to WGS84/Mercator...\n";
+         qLogger->Info(oss.str());
+         oss.str("");
+      }
+
+      if (!oElevationReader.Import(sTempfile, numpts, xmin, ymin, xmax, ymax))
       {
          qLogger->Error("Failed importing elevation.");
          ProcessingUtils::exit_gdal();
@@ -110,7 +205,7 @@ namespace ElevationData
      
       if (bVerbose)
       {
-         oss << "Number of Points: " << vPoints.size() << "\n";
+         oss << "Number of Points: " << numpts << "\n";
          oss << "Elevation Boundary:" << "(" << xmin << ", " << ymin << ")-(" << xmax << ", " << ymax << ")\n";
          qLogger->Info(oss.str());
          oss.str("");
@@ -195,103 +290,53 @@ namespace ElevationData
 
       int max_threads = omp_get_max_threads();
 
-      if (bVerbose)
-      {
-         oss << "\nMemory required for matrix:";
-         oss << "  " << max_threads*tilewidth_i*tileheight_i*sizeof(SElevationCell) << " Bytes\n";
-         qLogger->Info(oss.str());
-         oss.str("");
-      }
+      std::map< int64, std::list<ElevationPoint> >   streamMap;
 
-      SElevationCell* matrix = new SElevationCell[max_threads*tilewidth_i*tileheight_i]; 
-
-      if (!matrix)
+      ElevationPoint pt;
+      int n = 0;
+      while (oElevationReader.GetNextPoint(pt))
       {
-         oss << "\nOut of memory!";
-         qLogger->Error(oss.str());
-         oss.str("");
-         return ERROR_NOMEMORY;
-      }
+         n++;
 
-      // parallel sorting points:
-#ifndef _DEBUG
-#     pragma omp parallel for
-#endif
-      for (int i=0;i<(int)vPoints.size();i++)
-      {
-         // calculate tile coordinate of current point:         
-         int64 ttx = int64((vPoints[i].x - x0) / tilewidth);
-         int64 tty = int64((vPoints[i].y - y0) / tileheight);
+          // calculate tile coordinate of current point:         
+         int64 ttx = int64((pt.x - x0) / tilewidth);
+         int64 tty = int64((pt.y - y0) / tileheight);
          int64 tileX = ttx+elvTileX0;
          int64 tileY = tty+elvTileY0;
 
-         if (tileX >= elvTileX0 && tileX<=elvTileX1 &&
-             tileY >= elvTileY0 &&  tileY<=elvTileY1)
+         int64 idx = tty*tilewidth_i+ttx;
+
+         AddPoint(streamMap, idx, pt);
+
+         if (points_in_map>=MAX_POINTS_IN_MEMORY) // flush
          {
-            int arraynum = omp_get_thread_num();
-            SElevationCell& s = matrix[arraynum*total + tty*tilewidth_i+ttx];
-            s.vecPts.push_back(&vPoints[i]);
+            if (bVerbose)
+            {
+               oss << "\nWriting (" << points_in_map << " points to disk. (";
+               oss << n << " of " << numpts << " points stored)";
+               qLogger->Info(oss.str());
+               oss.str("");
+            }
+
+            WriteMap(qQuadtree, streamMap, sTileDir, tilewidth_i, lod, elvTileX0, elvTileY1);
          }
       }
 
-      // write tiles
-#ifndef _DEBUG
-#      pragma omp parallel for
-#endif
-      for (int64 xx = elvTileX0; xx <= elvTileX1; ++xx)
+      //Write remaining points:
+
+      if (bVerbose  && points_in_map>0)
       {
-         for (int64 yy = elvTileY0; yy <= elvTileY1; ++yy)
-         {
-            int64 ttx = xx - elvTileX0;
-            int64 tty = elvTileY1 - yy;
-
-            std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
-            std::string sTilefile = ProcessingUtils::GetTilePath(sTileDir, ".pts" , lod, xx, yy);
-
-            double px0,py0,px1,py1;
-            qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0, py1, px1, py0);
-
-            // LOCK this tile. If this tile is currently locked then wait until the lock is removed.
-            int lockhandle = bLock ? FileSystem::Lock(sTilefile) : -1;
-
-            std::ofstream fout;
-
-            if (FileSystem::FileExists(sTilefile))
+         if (bVerbose)
             {
-               fout.open(sTilefile.c_str(), std::ios::binary | std::ios::app); // open in append mode
+               oss << "\nWriting (" << streamMap.size() << " points to disk\n";
+               oss << "status: " << n << " of " << numpts << " points stored.";
+               qLogger->Info(oss.str());
+               oss.str("");
             }
-            else
-            {
-               fout.open(sTilefile.c_str(), std::ios::binary); // open in append mode
-            }
-
-            if (fout.good())
-            {
-               for (int i=0;i<max_threads;i++)
-               {
-                   SElevationCell& s = matrix[i*total + tty*tilewidth_i+ttx];
-
-                   for (size_t k=0;k<s.vecPts.size();k++)
-                   {
-                        ElevationPoint* pt = s.vecPts[k];
-                        fout.write((const char*)&(pt->x), sizeof(double));
-                        fout.write((const char*)&(pt->y), sizeof(double));
-                        fout.write((const char*)&(pt->elevation), sizeof(double));
-                        fout.write((const char*)&(pt->weight), sizeof(double));
-                   }
-               }
-
-               fout.close();
-            }
-            else
-            {
-               std::cout << "FILE ERROR!\n";
-            }
-
-            // unlock file. Other computers/processes/threads can access it again.
-            FileSystem::Unlock(sTilefile, lockhandle);
-         }
       }
+
+      WriteMap(qQuadtree, streamMap, sTileDir, tilewidth_i, lod, elvTileX0, elvTileY1);
+
       // finished, print stats:
       t1=clock();
 
@@ -302,7 +347,7 @@ namespace ElevationData
       oElevationReader.Close();
 
       ProcessingUtils::exit_gdal();
-      return 0;   
+      return 0; 
    }
    
 

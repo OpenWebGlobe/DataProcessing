@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "verbose output")
        ("nolock", "disable file locking (also forcing 1 thread)")
-       ("virtual", "enable temporary disk storage (instead of RAM) for large datasets")
+       ("force", "force adding data")
        ;
 
    po::variables_map vm;
@@ -177,6 +177,11 @@ int main(int argc, char *argv[])
    if (vm.count("verbose"))
    {
       bVerbose = true;
+   }
+
+   if (vm.count("force"))
+   {
+      bUseProcessStatus = false;
    }
 
    if (vm.count("overwrite") && vm.count("fill"))
