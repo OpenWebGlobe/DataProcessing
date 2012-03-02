@@ -64,6 +64,7 @@ bool bOverrideTiles = true;
 bool bLockEnabled = false;
 bool bNormalMaps = false;
 bool bSlope = false;
+bool bTransparentNoData = false;
 int iAmount = 256;
 int inputX = 768;
 int inputY = 768;
@@ -145,7 +146,7 @@ void ProcessJob(const SJob& job)
       }
    }
    // Generate tile
-   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale,slopeScale, bSlope, bNormalMaps, outputX, outputY, bOverrideTiles, bLockEnabled);
+   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale,slopeScale, bSlope, bNormalMaps, outputX, outputY, bOverrideTiles, bLockEnabled, bTransparentNoData);
 }
 
 //------------------------------------------------------------------------------------
@@ -184,6 +185,7 @@ int main(int argc, char *argv[])
       ("no_override", "[opional] overriding existing tiles disabled")
       ("enable_locking", "[opional] lock files to prevent concurrency on parallel processes")
       ("verbose", "[optional] verbose output")
+      ("transparent_nodata", "[optional] set no data values to transparent")
       ;
 
    po::variables_map vm;
@@ -240,6 +242,8 @@ int main(int argc, char *argv[])
       slopeScale = vm["slopescale"].as<double>();
     if(vm.count("slope"))
       bSlope = true;
+    if(vm.count("transparent_nodata"))
+      bTransparentNoData = true;
    if(vm.count("overridejobqueue"))
       bOverrideQueue = true;
    if(vm.count("no_override"))
