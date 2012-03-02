@@ -22,6 +22,7 @@
 #include "geo/PointLayerSettings.h"
 #include "geo/MercatorQuadtree.h"
 #include "geo/PointCloudReader.h"
+#include "geo/PointMap.h"
 #include "image/ImageLoader.h"
 #include "image/ImageWriter.h"
 #include "math/ElevationPoint.h"
@@ -38,170 +39,10 @@
 #include <set>
 #include <omp.h>
 
-
-
 namespace PointData
 {
-   //------------------------------------------------------------------------
    const size_t membuffer = 100000; // number of points to keep in memory
-   //------------------------------------------------------------------------
 
-   class PointMap
-   {
-   public:
-      //------------------------------------------------------------------------
-      PointMap(int levelofdetail)
-      {
-         _numpts = 0;
-         _numkeys = 0;
-         _lod = levelofdetail;
-         _pow = int64(1) << _lod; 
-         _dpow = _pow * _pow;
-      }
-      //------------------------------------------------------------------------
-      virtual ~PointMap()
-      {
-      }
-      //------------------------------------------------------------------------
-      void Clear()
-      {
-         _map.clear();
-         _numpts = 0;
-         _numkeys = 0;
-      }
-      //------------------------------------------------------------------------
-      void AddPoint(int64 i, int64 j, int64 k, const CloudPoint& pt)
-      {
-         int64 key = _dpow*k + _pow*j + i;
- 
-         _numpts++;
-         
-         std::map<int64, std::list<CloudPoint> >::iterator it;
-         it = _map.find(key);
-         if (it != _map.end())
-         {
-            // this key already exists, append point
-            it->second.push_back(pt);
-         }
-         else
-         {
-            // this key doesn't exist yet. create new entry
-            std::list<CloudPoint> newList;
-            newList.push_back(pt);
-            _map.insert(std::pair<int64, std::list<CloudPoint> >(key, newList));
-            _numkeys++;
-         }
-      }
-      //------------------------------------------------------------------------
-      size_t GetNumPoints()
-      {
-         return _numpts;
-      }
-      //------------------------------------------------------------------------
-      size_t GetNumKeys()
-      {
-          return _index.size();
-      }
-      //------------------------------------------------------------------------
-
-      void ExportData(const std::string& path)
-      {
-         std::map<int64, std::list<CloudPoint> >::iterator it = _map.begin();
-
-         while (it != _map.end())
-         {
-            int64 key = it->first;
-            _index.insert(key);
-            int64 i,j,k;
-
-            k = key / _dpow;
-            j = (key - _dpow*k) / _pow;
-            i = key - _dpow*k - j*_pow;
-
-            //std::string sOctocode = Octocode::IndexToOctocode(i,j,k,_lod);
-            //create or open existing file: path/lod/x/y-z.json
-
-            std::ostringstream oss;
-            oss << path << _lod << "/" << i << "/" << j << "-" << k << ".dat";
-            std::string sFilename = oss.str();
-
- 
-            std::ofstream of;
-
-
-            if (FileSystem::FileExists(sFilename))
-            {
-               of.open(sFilename.c_str(), std::ios::app|std::ios::binary);
-            }
-            else
-            {
-               FileSystem::makeallsubdirs(sFilename);
-               of.open(sFilename.c_str(), std::ios::binary);
-            }
-
-            of.precision(17);
-
-            std::list<CloudPoint>& lstCloudPoints = it->second;
-
-            std::list<CloudPoint>::iterator jt = lstCloudPoints.begin();
-            while (jt != lstCloudPoints.end())
-            {
-               of.write((char*)&jt->x, sizeof(double));
-               of.write((char*)&jt->y, sizeof(double));
-               of.write((char*)&jt->elevation, sizeof(double));
-               of.write((char*)&jt->r, sizeof(double));
-               of.write((char*)&jt->g, sizeof(double));
-               of.write((char*)&jt->b, sizeof(double));
-               of.write((char*)&jt->intensity, sizeof(int));
-   
-               jt++;
-            }
-
-            of.close();
-
-            ++it;
-         }
-      }
-
-      //------------------------------------------------------------------------
-
-      void ExportIndex(const std::string& sFilename)
-      {
-         std::set<int64>::iterator it = _index.begin();
-
-         std::ofstream of(sFilename.c_str(), std::ios::binary);
-        
-         if (of.good())
-         {
-            while (it != _index.end())
-            {
-               int64 elm = *it;
-               of.write((char*)&elm, sizeof(int64));
-            
-               it++;
-            }
-         }
-
-         of.close();
-      }
-
-      //------------------------------------------------------------------------
-
-      std::set<int64>& GetIndex(){return _index;}
-
-
-   private:
-      PointMap(){}
-      std::map<int64, std::list<CloudPoint> > _map;
-      std::set<int64> _index;
-      size_t _numpts;
-      size_t _numkeys;
-      int _lod;
-      int64 _pow;
-      int64 _dpow;
-   };
-
-  
    int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sPointFile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_z0, int64& out_x1, int64& out_y1, int64& out_z1)
    {
       clock_t t0,t1;
@@ -253,11 +94,11 @@ namespace PointData
       // Calculate matrix for octree voxel data transformation
       
       double xcenter, ycenter, zcenter;
-      xcenter = x0 + fabs(x1-x0);
-      ycenter = y0 + fabs(y1-y0);
-      zcenter = z0 + fabs(z1-z0); // elevation is currently ignored and set to 0
+      xcenter = x0 + fabs(x1-x0)*0.5;
+      ycenter = y0 + fabs(y1-y0)*0.5;
+      zcenter = z0 + fabs(z1-z0)*0.5; // elevation is currently ignored and set to 0
 
-      double len = 5000; // octree cube size
+      double len = OCTREE_CUBE_SIZE; // octree cube size
    
       mat4<double> L, Linv;
    
@@ -267,7 +108,7 @@ namespace PointData
 
       // center to cartesian coord
       vec3<double> vCenter;
-      GeoCoord geoCenter(xcenter, ycenter, 0);
+      GeoCoord geoCenter(xcenter, ycenter, zcenter);
       geoCenter.GetCartesian(vCenter);
 
       // create orthonormal basis
@@ -371,6 +212,12 @@ namespace PointData
       totalpoints+=pointmap.GetNumPoints();
     
       // export list of all written tiles (for future processing)
+       if (bVerbose)
+      {
+         oss << "Exporting index...\n";
+         qLogger->Info(oss.str());
+         oss.str("");
+      }
       pointmap.ExportIndex(sIndexFile);
 
 
@@ -380,7 +227,6 @@ namespace PointData
 
 
       std::cout << "Pointmap Stats:\n";
-      std::cout << " numkeys:   " << pointmap.GetNumKeys() << "\n";
       std::cout << " numpoints: " << totalpoints << "\n";
 
       t1 = clock();

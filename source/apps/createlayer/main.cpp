@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 enum ELayerType
 {
    IMAGE_LAYER,
-   IMAGE_LAYER_TEMP,
+   IMAGE_LAYER_TEMP,  // this will be renamed to something "postprocessing layer".
    ELEVATION_LAYER,
    POI_LAYER,
    POINT_LAYER,

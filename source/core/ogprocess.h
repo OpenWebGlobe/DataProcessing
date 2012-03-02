@@ -32,6 +32,8 @@
 #include <sstream>
 #include <vector>
 
+#define OWGPROCESS_VERSION "0.9.0"
+
 struct DataSetInfo
 {
    double      dest_ulx;

@@ -25,13 +25,23 @@
     <ClCompile Include="..\..\source\core\geo\MercatorQuadtree.cpp" />
     <ClCompile Include="..\..\source\core\geo\PointCloudReader.cpp" />
     <ClCompile Include="..\..\source\core\geo\PointLayerSettings.cpp" />
+    <ClCompile Include="..\..\source\core\geo\PointMap.cpp" />
     <ClCompile Include="..\..\source\core\geo\ProcessStatus.cpp" />
+    <ClCompile Include="..\..\source\core\http\Get.cpp" />
+    <ClCompile Include="..\..\source\core\http\Header.cpp" />
+    <ClCompile Include="..\..\source\core\http\Post.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageHandler.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageLoader.cpp" />
     <ClCompile Include="..\..\source\core\image\ImageWriter.cpp" />
     <ClCompile Include="..\..\source\core\image\JPEGHandler.cpp" />
     <ClCompile Include="..\..\source\core\io\CommonPath.cpp" />
+    <ClCompile Include="..\..\source\core\io\FileReaderFactory.cpp" />
     <ClCompile Include="..\..\source\core\io\FileSystem.cpp" />
+    <ClCompile Include="..\..\source\core\io\FileWriterFactory.cpp" />
+    <ClCompile Include="..\..\source\core\io\fs\FileReaderDisk.cpp" />
+    <ClCompile Include="..\..\source\core\io\fs\FileReaderHttp.cpp" />
+    <ClCompile Include="..\..\source\core\io\fs\FileWriterDisk.cpp" />
+    <ClCompile Include="..\..\source\core\io\fs\FileWriterHttp.cpp" />
     <ClCompile Include="..\..\source\core\io\TarWriter.cpp" />
     <ClCompile Include="..\..\source\core\math\CloudPoint.cpp" />
     <ClCompile Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.cpp" />
@@ -91,7 +101,11 @@
     <ClInclude Include="..\..\source\core\geo\MercatorQuadtree.h" />
     <ClInclude Include="..\..\source\core\geo\PointCloudReader.h" />
     <ClInclude Include="..\..\source\core\geo\PointLayerSettings.h" />
+    <ClInclude Include="..\..\source\core\geo\PointMap.h" />
     <ClInclude Include="..\..\source\core\geo\ProcessStatus.h" />
+    <ClInclude Include="..\..\source\core\http\Get.h" />
+    <ClInclude Include="..\..\source\core\http\Header.h" />
+    <ClInclude Include="..\..\source\core\http\Post.h" />
     <ClInclude Include="..\..\source\core\image\ImageHandler.h" />
     <ClInclude Include="..\..\source\core\image\ImageLoader.h" />
     <ClInclude Include="..\..\source\core\image\ImageWriter.h" />
@@ -99,7 +113,15 @@
     <ClInclude Include="..\..\source\core\image\lodepng\lodepng.h" />
     <ClInclude Include="..\..\source\core\image\stb_image_write.h" />
     <ClInclude Include="..\..\source\core\io\CommonPath.h" />
+    <ClInclude Include="..\..\source\core\io\FileReaderFactory.h" />
     <ClInclude Include="..\..\source\core\io\FileSystem.h" />
+    <ClInclude Include="..\..\source\core\io\FileWriterFactory.h" />
+    <ClInclude Include="..\..\source\core\io\fs\FileReaderDisk.h" />
+    <ClInclude Include="..\..\source\core\io\fs\FileReaderHttp.h" />
+    <ClInclude Include="..\..\source\core\io\fs\FileWriterDisk.h" />
+    <ClInclude Include="..\..\source\core\io\fs\FileWriterHttp.h" />
+    <ClInclude Include="..\..\source\core\io\fs\IFileReader.h" />
+    <ClInclude Include="..\..\source\core\io\fs\IFileWriter.h" />
     <ClInclude Include="..\..\source\core\io\TarWriter.h" />
     <ClInclude Include="..\..\source\core\math\CloudPoint.h" />
     <ClInclude Include="..\..\source\core\math\delaunay\DelaunayLocationStructure.h" />
@@ -181,13 +203,14 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>BUILD_OPENGLOBELIB;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;$(SolutionDir)..\..\external\jpeg-8c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0501;BUILD_OPENGLOBELIB;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;$(SolutionDir)..\..\external\jpeg-8c;$(SolutionDir)..\..\external\stxxl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4290;4250;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libstxxld.lib;jpeg-8c.lib;gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies>jpeg-8c.lib;gdal_id.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\boost\lib\win32-icc12;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
@@ -211,9 +234,9 @@ copy $(SolutionDir)\..\..\external\win32\*.dll $(SolutionDir)\..\..\bin</Command
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>BUILD_OPENGLOBELIB;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;$(SolutionDir)..\..\external\jpeg-8c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0501;BUILD_OPENGLOBELIB;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\external;$(SolutionDir)..\..\external\boost\include;$(SolutionDir)..\..\source\core;$(SolutionDir)..\..\external\gdal;$(SolutionDir)..\..\external\jpeg-8c;$(SolutionDir)..\..\external\stxxl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4290;4250;4244</DisableSpecificWarnings>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <GlobalOptimizations>false</GlobalOptimizations>
       <Parallelization>true</Parallelization>
@@ -228,7 +251,7 @@ copy $(SolutionDir)\..\..\external\win32\*.dll $(SolutionDir)\..\..\bin</Command
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>jpeg-8c.lib;gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libstxxl.lib;jpeg-8c.lib;gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\boost\lib\win32-icc12;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>

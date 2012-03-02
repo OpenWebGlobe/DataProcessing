@@ -16,13 +16,7 @@
 ********************************************************************************
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
-/*                                                                            */
-/*                  MPI Version of resample (for cluster/cloud)               */
-/*                      asynchronous workload distribution                    */
-/*          this is the recommended version for all clusters / clouds         */
-/*                for multicore single computers use resample.cpp             */
-/*                                                                            */
-/******************************************************************************/
+
 //------------------------------------------------------------------------------
 // HPC Version of the tile rendering mechanism
 // Some code adapted from: generate_tiles.py

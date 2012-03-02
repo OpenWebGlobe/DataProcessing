@@ -16,6 +16,10 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
+//-------------------------------------------------------
+// NOTE: this tool will be renamed to ogPostprocess soon
+//-------------------------------------------------------
+
 #include "ogprocess.h"
 #include "errors.h"
 #include <boost/asio.hpp>
@@ -36,7 +40,7 @@
 #include <sstream>
 #include <omp.h>
 #include <app/QueueManager.h>
-#include  "hillshading.h"
+#include "hillshading.h"
 #include <math/vec3.h>
 
 namespace po = boost::program_options;
@@ -274,6 +278,7 @@ int main(int argc, char *argv[])
    sTileDir = sLayerPath + "tiles/";
 
    boost::shared_ptr<ImageLayerSettings> qImageLayerSettings = ImageLayerSettings::Load(sLayerPath);
+
    if (!qImageLayerSettings)
    {
       std::cout << "[" << sProcessHostName<< "] " << "Failed retrieving image layer settings! Make sure to create it using 'createlayer'.\n"<< std::flush;

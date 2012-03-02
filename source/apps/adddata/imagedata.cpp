@@ -25,10 +25,26 @@
 #include "image/ImageWriter.h"
 #include <sstream>
 #include <ctime>
+#ifdef _OPENMP
+# include <omp.h>
+#endif
+
 
 //------------------------------------------------------------------------------
 namespace ImageData
 {
+   struct Anchor
+   {
+      double anchor_Ax; 
+      double anchor_Ay;
+      double anchor_Bx; 
+      double anchor_By;
+      double anchor_Cx; 
+      double anchor_Cy;
+      double anchor_Dx; 
+      double anchor_Dy;
+   };
+
    //------------------------------------------------------------------------------
    const int tilesize = 256;
    const double dHanc = 1.0/(double(tilesize)-1.0);
@@ -43,7 +59,7 @@ namespace ImageData
       {
          qLogger->Error("gdal-data directory not found!");
          return ERROR_GDAL;
-      }
+      }      
 
       //---------------------------------------------------------------------------
       // Retrieve ImageLayerSettings:
@@ -75,10 +91,9 @@ namespace ImageData
 
 
       //---------------------------------------------------------------------------
-
       boost::shared_ptr<CoordinateTransformation> qCT;
       qCT = boost::shared_ptr<CoordinateTransformation>(new CoordinateTransformation(epsg, 3785));
-
+   
       clock_t t0,t1;
       t0 = clock();
 
@@ -144,14 +159,91 @@ namespace ImageData
       if (!vImage)
       {
          qLogger->Error("Can't load image into memory!\n");
-         return ERROR_OUTOFMEMORY;
+         return ERROR_NOMEMORY;
       }
-      // iterate through all tiles and create them
-   #pragma omp parallel for
+
+      //########################################################################
+      // Beacuse proj4 is not thread safe at this time, 
+      // the target extents are precalculate.
+      // unfortunately this can't be fixed by using OpenMP locks / critical sections
+
+      int64 numTiles = (imageTileX1-imageTileX0+1)*(imageTileY1-imageTileY0+1);
+      boost::shared_array<Anchor> vAnchor = boost::shared_array<Anchor>(new Anchor[numTiles]);
+      Anchor* pAnchor = vAnchor.get();
+
+      if (!vAnchor)
+      {
+         qLogger->Error("Not enough memory for target tile structure! (This is a known issue and will be fixed soon!)\n");
+         return ERROR_NOMEMORY;
+      }
+
+
+      if (bVerbose)
+      {
+         oss << "\nCalculating Destination Coordinates (transformation)...";
+         qLogger->Info(oss.str());
+         oss.str("");
+      }
+
+      
       for (int64 xx = imageTileX0; xx <= imageTileX1; ++xx)
       {
          for (int64 yy = imageTileY0; yy <= imageTileY1; ++yy)
          {
+            int64 cnt = (xx-imageTileX0)*(imageTileY1-imageTileY0+1)+yy-imageTileY0;
+
+            std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
+             double px0m, py0m, px1m, py1m;
+            qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0m, py0m, px1m, py1m);
+
+            double ulx = px0m;
+            double uly = py1m;
+            double lrx = px1m;
+            double lry = py0m;
+
+            double anchor_Ax = ulx; 
+            double anchor_Ay = lry;
+            double anchor_Bx = lrx; 
+            double anchor_By = lry;
+            double anchor_Cx = lrx; 
+            double anchor_Cy = uly;
+            double anchor_Dx = ulx; 
+            double anchor_Dy = uly;
+
+            qCT->TransformBackwards(&anchor_Ax, &anchor_Ay);
+            qCT->TransformBackwards(&anchor_Bx, &anchor_By);
+            qCT->TransformBackwards(&anchor_Cx, &anchor_Cy);
+            qCT->TransformBackwards(&anchor_Dx, &anchor_Dy);
+
+            pAnchor[cnt].anchor_Ax = anchor_Ax;
+            pAnchor[cnt].anchor_Ay = anchor_Ay;
+            pAnchor[cnt].anchor_Bx = anchor_Bx;
+            pAnchor[cnt].anchor_By = anchor_By;
+            pAnchor[cnt].anchor_Cx = anchor_Cx;
+            pAnchor[cnt].anchor_Cy = anchor_Cy;
+            pAnchor[cnt].anchor_Dx = anchor_Dx;
+            pAnchor[cnt].anchor_Dy = anchor_Dy;
+
+            cnt++;
+         }
+      }
+      //########################################################################
+
+      if (bVerbose)
+      {
+         oss << "\nCalculating Tiles";
+         qLogger->Info(oss.str());
+         oss.str("");
+      }
+
+      // iterate through all tiles and create them
+      #pragma omp parallel for
+      for (int64 xx = imageTileX0; xx <= imageTileX1; ++xx)
+      {
+         for (int64 yy = imageTileY0; yy <= imageTileY1; ++yy)
+         {
+            int64 cnt = (xx-imageTileX0)*(imageTileY1-imageTileY0+1)+yy-imageTileY0;
+
             boost::shared_array<unsigned char> vTile;
 
             std::string sQuadcode = qQuadtree->TileCoordToQuadkey(xx,yy,lod);
@@ -167,7 +259,16 @@ namespace ImageData
             //---------------------------------------------------------------------
             // LOCK this tile. If this tile is currently locked 
             //     -> wait until lock is removed.
-            int lockhandle = bLock ? FileSystem::Lock(sTilefile) : -1;
+
+            int lockhandle = -1;
+            if (bLock)
+            {
+               lockhandle = FileSystem::Lock(sTilefile);
+            }
+            else
+            {
+               std::cout << "WARNING: locking disabled\n";
+            }
 
             //---------------------------------------------------------------------
             // if mode is --fill: (bFill)
@@ -208,7 +309,7 @@ namespace ImageData
             unsigned char* pTile = vTile.get();
 
             // Copy image to tile:
-            double px0m, py0m, px1m, py1m;
+            /*double px0m, py0m, px1m, py1m;
             qQuadtree->QuadKeyToMercatorCoord(sQuadcode, px0m, py0m, px1m, py1m);
 
             double ulx = px0m;
@@ -225,22 +326,24 @@ namespace ImageData
             double anchor_Dx = ulx; 
             double anchor_Dy = uly;
 
-            // avoid calculating transformation per pixel using anchor point method
+            // avoid calculating transformation per pixel. This is done using anchor point method
+           
             qCT->TransformBackwards(&anchor_Ax, &anchor_Ay);
             qCT->TransformBackwards(&anchor_Bx, &anchor_By);
             qCT->TransformBackwards(&anchor_Cx, &anchor_Cy);
             qCT->TransformBackwards(&anchor_Dx, &anchor_Dy);
+            */
 
-            /*if (bVerbose)
-            {
-            std::stringstream sst;
-            sst << "Anchor points:\nA(" << anchor_Ax << ", " << anchor_Ay << ")" 
-            << "\nB(" << anchor_Bx << ", " << anchor_By << ")" 
-            << "\nC(" << anchor_Cx << ", " << anchor_Cy << ")"
-            << "\nD(" << anchor_Dx << ", " << anchor_Dy << ")\n";
-            qLogger->Info(sst.str());
-            }*/
 
+            double anchor_Ax = pAnchor[cnt].anchor_Ax;
+            double anchor_Ay = pAnchor[cnt].anchor_Ay;
+            double anchor_Bx = pAnchor[cnt].anchor_Bx;
+            double anchor_By = pAnchor[cnt].anchor_By;
+            double anchor_Cx = pAnchor[cnt].anchor_Cx;
+            double anchor_Cy = pAnchor[cnt].anchor_Cy;
+            double anchor_Dx = pAnchor[cnt].anchor_Dx;
+            double anchor_Dy = pAnchor[cnt].anchor_Dy;
+   
             // write current tile
             for (int ty=0;ty<tilesize;++ty)
             {
@@ -307,6 +410,7 @@ namespace ImageData
             FileSystem::Unlock(sTilefile, lockhandle);
          }
       }
+
 
       //---------------------------------------------------------------------------
 

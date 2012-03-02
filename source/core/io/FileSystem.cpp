@@ -397,3 +397,8 @@ void FileSystem::Unlock(const std::string& file, int handle)
    
 }
 //------------------------------------------------------------------------------
+std::string FileSystem::GetCWD()
+{
+   boost::filesystem::path cwd = boost::filesystem::current_path();
+   return cwd.string();
+}

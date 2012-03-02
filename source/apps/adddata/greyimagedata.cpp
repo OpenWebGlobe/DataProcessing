@@ -147,7 +147,7 @@ namespace GreyImageData
       {
          qLogger->Error("Can't load image into memory!\n");
          ProcessingUtils::exit_gdal();
-         return ERROR_OUTOFMEMORY;
+         return ERROR_NOMEMORY;
       }
       // iterate through all tiles and create them
 #ifndef _DEBUG

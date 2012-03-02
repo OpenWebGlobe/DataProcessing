@@ -15,8 +15,6 @@
 ********************************************************************************
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
-// This is the triangulate version without mpi intended for regular 
-// workstations. Multi cores are supported (OpenMP) and highly recommended.
 //------------------------------------------------------------------------------
 // Code adapted from: generate_tiles.py
 // Found at: http://trac.openstreetmap.org/browser/applications/rendering/mapnik

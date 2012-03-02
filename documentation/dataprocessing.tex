@@ -1,0 +1,1316 @@
+
+%\documentclass[twocolumn=false]{scrartcl} 
+%\documentclass[twoside=true]{scrbook}
+
+\documentclass[
+%	draft,			
+%	10pt,
+%	11pt,
+	12pt,
+	a4paper,
+%	twoside,
+	english,	
+	appendixprefix,				     			        
+	openany,		     	
+	abstracton,		    		    
+ 	BCOR8mm,		    
+]{scrartcl} 
+
+
+%\usepackage{a4}
+
+\usepackage[latin1]{inputenc}
+
+\usepackage{amsfonts}
+\usepackage{amssymb,amsmath}
+\usepackage[pdftex]{graphicx}
+\usepackage{makeidx}
+\usepackage{float}
+\usepackage{color}
+\usepackage{alltt}
+\usepackage{listings}
+\usepackage[linkcolor=red,citecolor=black,urlcolor=blue]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{psboxit}
+\usepackage{textcomp}
+\usepackage{longtable}
+\PScommands
+
+\usepackage[avant]{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% HEADER / FOOTER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% first reset the headers and footers
+\fancyhead{}
+\fancyfoot{}
+
+%% page nums on the bottom in a nice box
+\fancyfoot[CE]{\bfseries \thepage}
+\fancyfoot[CO]{\bfseries \thepage}
+
+%% bring the style into effect
+%% (must come after all the fancyhead and fancyfoot stuff)
+\pagestyle{fancy}
+
+
+%% now redefine the plain style pages (chapter pages, contents pages)
+%% to have the same page number stuff on the bottom
+\fancypagestyle{plain}{
+\fancyhf{}
+\fancyfoot[CO]{\bfseries \thepage}
+}
+
+\fancyhead[ER,OL]{
+\vskip 0pt \hskip -1.0cm
+\noindent\hbox{
+\includegraphics[height=1.0cm]{images/fhlogo.png}
+}}
+
+ 
+
+\renewcommand{\headrulewidth}{0mm}
+
+
+%% this next section (till \makeatother) makes sure that blank pages
+%% are actually completely blank, cause they're not usually
+\makeatletter
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+	\hbox{}
+	\vspace*{\fill}
+	\thispagestyle{empty}
+	\newpage
+	\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\title{Processing Geo-Data using the OpenWebGlobe Tools}
+%\titlehead{Computergrafik}
+\author{Martin~Christen\\martin.christen@fhnw.ch}
+\publishers{FHNW \- University of Applied Sciences and Arts Northwestern Switzerland}
+\date{Version 0.9}
+%\date{\today}
+
+%\areaset{180mm}{245mm}
+\areaset{160mm}{235mm}
+
+%Bild:
+\newcommand{\bild}[2]{\begin{figure}[H]
+      \centering
+      \noindent{\includegraphics[width=\columnwidth]{#1}}\caption{#2}
+\end{figure}}
+
+\newcommand{\bildorig}[2]{\begin{figure}[H]
+      \centering
+      \noindent{\includegraphics{#1}}\caption{#2}
+\end{figure}}
+
+%Bild:
+\newcommand{\bildhalf}[2]{\begin{figure}[H]
+      \centering
+      \noindent{\includegraphics[width=.5\textwidth]{#1}}\caption{#2}
+\end{figure}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\titlelogo{%
+{%
+\hrule width0pt height0pt \vskip 0pt \hskip -1.0cm%
+\noindent\hbox{
+\includegraphics[height=1.0cm]{images/fhlogo.png}
+}\hfill %
+%%% INSERT RIGHT TEXT HERE %%
+\vskip \textheight
+\nopagebreak
+\vskip -\textheight
+\vskip -20pt }%
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\definecolor{identifiercolor}{rgb}{0.5,0.0,0.0}
+\definecolor{stringcolor}{rgb}{0.4,0.4,0.4}
+\definecolor{bright}{rgb}{0.4,0.4,1.0}
+%\definecolor{bgcolor}{rgb}{0.95,0.95,1.0}
+\definecolor{bgcolor}{rgb}{0.8,0.8,1.0}
+\definecolor{highlightcolor}{rgb}{0.0,0.0,1.0}
+
+\lstset{language=bash}
+\lstset{basicstyle=\scriptsize\ttfamily}
+\lstset{frameround=tttt}
+\lstset{keywordstyle=\color{blue}\bfseries\ttfamily}
+\lstset{commentstyle=\color{darkgreen}\ttfamily}
+\lstset{identifierstyle=\color{identifiercolor}\ttfamily}
+\lstset{stringstyle=\color{stringcolor}\ttfamily}
+\lstset{showstringspaces=false}
+%\lstset{numbers=left, numberstyle=\tiny\color{bright}, stepnumber=1, numbersep=5pt}
+\lstset{backgroundcolor=\color{bgcolor}}
+\lstset{emph={mkdir,ogCalcExtent,ogAddData,ogCreateLayer,ogTriangulate,ogResample},emphstyle=\color{highlightcolor}\bfseries\ttfamily}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%\twocolumn[{\csname @twocolumnfalse\endcsname
+%\titlelogo
+
+\maketitle
+\tableofcontents
+\pagebreak
+
+\hrulefill
+\begin{abstract}
+\textit{The OpenWebGlobe data processing algorithms have been developed with a focus on
+scalability to very large data volumes for all supported data types, including imagery, map and terrain data.
+We adapted the algorithms to support as many cores as possible and came up with a set of OpenWebGlobe processing commands.}
+
+\textit{ 
+All commands run on normal computers (regular laptops and work stations) and on high performance compute clusters (HPCC), including cloud services.}
+
+\textit{ 
+One important aspect is compatibility to other services, therefore we choose to use the OpenStreetMap tile layout for our tile storage. This makes it very easy to also use our processed image data in 2D-Applications like OpenLayers.
+}
+\end{abstract}
+\hrulefill
+\vspace{10mm}
+
+
+%\renewcommand{\thefootnote}%
+%{\fnsymbol{footnote}}
+%\footnotetext[1]{e-mail: martin.christen@fhnw.ch}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% INTRODUCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+The OpenWebGlobe processing tools are considered beta. The tools are still work in progress and being actively developed.
+In section \ref{planned} you will find planned features for future releases. This is the documentation for the OpenWebGlobe processing tools version 0.9.0.
+
+\textit{This documentation is work in progress. The latest version of this documentation is available at \url{https://raw.github.com/OpenWebGlobe/DataProcessing/master/documentation/dataprocessing.pdf}.}
+
+\subsection{Why Data Processing is Required}
+
+A virtual globe can have several data categories such as image data, elevation data,
+points of interest, vector data, 3D objects, and point clouds. Before streaming over the internet
+this data must be preprocessed. This preprocessing usually comprises a transformation from a local 
+to a global reference system, creation of pyramid layers or level of detail, tiling of the data, and optionally compression and encryption
+of the data.\cite{Christen2010}
+
+Because visualization may consist of terabytes to petabytes of orthophoto and elevation data,
+out-of-core rendering with a level of detail approach must be used. Data can
+be streamed over the internet, a local network or a local hard drive.\cite{Christen2010}
+
+\subsection{Quadtree structure}
+
+OpenWebGlobe tiles are indexed using quadtree keys. 
+Each quadkey number identifies a single tile at a single zoom level.
+
+\bildorig{images/pyramid.png}{Zoom Levels for Level of Detail}
+
+In OpenWebGlobe the Mercator projection\cite{Snyder1987} is used to map image and elevation data to a square area. 
+The Mercator projection is mainly used to minimize distortions in processed images and elevation data. 
+
+The maximum latitude is chosen so that the resulting
+map fits into a square. For the spherical Mercator projection this maximum
+latitude is approximately 85.05 degrees. 
+%The projection is normalized to values in the range (-1,-1) to (1,1) to ensure increased numerical stability during the triangulation and thinning process.
+
+Tiles can be accessed using \textbf{tile coordinates}.
+
+This projection and tile system is also used by other popular web maps like Google Maps\cite{GoogleMaps}, Bing Maps\cite{BingMapsTileSystem} or OpenStreetMap\cite{osmtilenames}.
+
+\bildhalf{images/tiles.png}{Tile Coordinates at different zoom levels}
+
+
+%\begin{equation*}
+%xtile = ((lon_deg + 180) / 360) * n
+%ytile = (1 - (log(tan(lat_rad) + sec(lat_rad)) / p)) / 2 * n
+% UMGEKEHRT:
+%n = 2 ^ zoom
+%lon_deg = xtile / n * 360.0 - 180.0
+%lat_rad = arctan(sinh(p * (1 - 2 * ytile / n)))
+%lat_deg = lat_rad * 180.0 / p
+%\end{equation*}
+
+%Calculating tile coordinates from latitude and longitude can be done this way:\cite{osmtilenames}
+%\noindent\fbox{\parbox{\linewidth\fboxsep\fboxrule}{%
+%\begin{align*}
+%n &= 2^{zoom}\\
+%x_{tile} &= n\frac{lng_{deg} + 180}{360}\\
+%y_{tile} &= \frac{(1 - \frac{ln(tan(lat_{rad} + \frac{1}{cos(lat_{rad})})}{\pi}}{2n}
+%\end{align*}
+%}}
+
+% REFERENCE: http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
+
+
+\subsection{Rendering on Ellipsoid}
+
+An ellipsoidal geodetic reference model is required, in order to minimise geometric
+transformation errors and to enable position accuracies within the Virtual Globe
+at the sub-meter level.\cite{Christen2010} The default spatial reference system in OpenWebGlobe is WGS84, therefore the globe is rendered using the semi major axis $a=6378137.0$ and the semi minor axis $b=6356752.314245$. 
+It is possible to change those parameters in the visualization SDK from version 0.9.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Processing Workflow - General Data Processing}
+
+A general data processing workflow has been created\cite{Christen2011b} to simplify data processing from small to very large datasets.
+
+\begin{enumerate}
+\item The first step in data processing is knowing the extent of your dataset. You can use the tool called "ogCalcExtent" to calculate the extent of your data in WGS84 and tile coordinates. This is described in section \ref{ogCalcExtent}.
+%
+\item Once you know the extent of your data you can create a new layer. This is done using the "ogCreateLayer" tool. You find more information in section \ref{ogCreateLayer}.
+%
+\item After creation of the layer you can start adding data. This is done using the "ogAddData" tool, as shown in section \ref{ogAddData}.
+%
+\item If you create elevation data you have to use the "ogTriangulate" tool at this step to create geometry from the previously added data. You learn more about this tool in section \ref{ogTriangulate}. For image data this step is not required.
+%
+\item When you are finished adding data, level of details must be calculated. This can be done using the "ogResample" tool, as shown in section \ref{ogResample}.
+\end{enumerate}
+
+\bild{images/principle.png}{Workflow for data processing}
+
+\subsection{Calculate Extent - ogCalcExtent}\label{ogCalcExtent}
+
+We assume data is given in fragments. For example an image data may consist of 24 GeoTiff images, each around 200 MB (orthophoto mosaic). The data has an rectangular extent in WGS84 coordinates which can be converted to tile coordinates.
+
+ogCalcExtent is a convenience function. It is not really required for processing but it helps retrieving the tile boundary and zoom level of your dataset.
+
+\bildorig{images/extent.png}{Example of an extent in tile coordinates}
+
+I recommend trying the step by step tutorial in section \ref{tutorial}. This is probably the best way to get started.
+
+
+\subsubsection{Case 1: Calculating Tile Extent from WGS84}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--maxlod & level of detail (zoom level) for tile coordinates\\
+\hline
+--wgs84 & wgs84 coordinates in the form: $lng_0$ $lat_0$ $lng_1$ $lat_1$ (with $lng_1>lng_0$ and $lat_1>lat_0$)\\
+\hline
+\end{tabular}
+\caption{Command Arguments when tile coordinates from WGS84}
+\end{table}
+
+Example:
+\begin{lstlisting}
+ogCalcExtent --maxlod 15 --wgs84 7.6 45.0 8.1 46.1
+\end{lstlisting}
+
+Result:
+\begin{lstlisting}
+Tile Coords: (17075, 11644)-(17121, 11787)
+\end{lstlisting}
+
+\subsubsection{Case 2: Calculating Tile Extent from a List of Files}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--srs   & spatial reference system (in the form EPSG:xxxx)\\
+\hline
+--input & space separated list of files\\
+\hline
+\end{tabular}
+\caption{Command Arguments for Calculating Extent using a List of Files}
+\end{table}
+
+Example:
+\begin{lstlisting}
+ogCalcExtent --srs EPSG:21781 --input C:/data/myData00.tif C:/data/myData01.tif
+\end{lstlisting}
+
+\subsubsection{Case 3: Calculating Tile Extent from Files in a Directory}
+
+This is the most common usage of the ogCalcExtent tool if all input files are in the same directory.
+       
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--srs   & spatial reference system (in the form EPSG:xxxx)\\
+\hline
+--inputdir & space separated list of files\\
+\hline
+--filetype & the file extension of the input files\\
+\hline
+\end{tabular}
+\caption{Command Arguments for Calculating Extent from Files in a Directory}
+\end{table}
+
+\begin{lstlisting}
+ogCalcExtent --srs EPSG:21781 --inputdir C:/data/mydatset/ --filetype tif
+\end{lstlisting}
+
+\subsubsection{Level of Detail}\label{lod}
+
+The maximum level of detail (also called zoom level) must be specified when creating a layer. The tool "ogCalcExtent" gives you a recommended value. The higher the level of detail, the more files are generated and the processing will be slower. In table \ref{tbl1} you can see the pixel resolution at different level of detail. Be aware the resolution changes along latitude.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{lod}	& \textbf{Resolution [m]}\\
+\hline
+1	& 78272\\
+\hline
+2	& 39136\\
+\hline
+3	& 19568\\
+\hline
+4	& 9784\\
+\hline
+5	& 4892\\
+\hline
+6	& 2446\\
+\hline
+7	& 1223\\
+\hline
+8	& 611\\
+\hline
+9	& 306\\
+\hline
+10	& 152\\
+\hline
+11	& 76\\
+\hline
+12	& 38\\
+\hline
+13	& 19\\
+\hline
+14	& 9.6\\
+\hline
+15	& 4.8\\
+\hline
+16	& 2.39\\
+\hline
+17	& 1.19\\
+\hline
+18	& 0.6\\
+\hline
+19	& 0.3\\
+\hline
+20	& 0.151\\
+\hline
+21	& 0.074\\
+\hline
+22	& 0.037\\
+\hline
+23	& 0.019\\
+\hline
+\end{tabular}
+\caption{Level of Detail Pixel Resolution at Latitude 0 (for image data)}\label{tbl1}
+\end{table}
+
+\subsection{Create Layer - ogCreateLayer}\label{ogCreateLayer}
+
+You can create a new layer using the ogCreateLayer function. This must be done for each dataset.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--name   & name of the layer (ASCII, no special chars)\\
+\hline
+--lod & desired level of detail\\
+\hline
+--extent & tile boundary $tx_0$ $ty_0$ $tx_1$ $ty_1$ for elevation/image data. The 4 values are space separated and $tx_0<tx_1$ and $ty_0<ty_1$ \\
+\hline
+--type & The type of layer. This can be "image" or "elevation". (More types will be added in future releases).\\ 
+\hline
+--force   & [optional] If a dataset with same name already exists, it will be deleted and recreated.\\
+\hline
+--numthreads & [optional] Specify number of threads used to create the layer. This should be the number of cores of your CPU. In most cases this is not important as creating a new layer is a fast operation.\\
+\hline
+\end{tabular}
+\caption{Command Arguments for Creating a New Layer}
+\end{table}
+
+\subsection{Adding Data - ogAddData}\label{ogAddData}
+
+\subsubsection{Adding Image Data}
+
+Image Data can be added using the "ogAddData" tool. An example how to use this is provided in the tutorial in section \ref{tutorial}.
+The possible parameters are shown in table \ref{tableaddimage}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--image [filename]   & Use this flag when adding image data\\
+\hline
+--layer [layername]   & Name of the image layer previously created using ogCreateLayer.\\
+\hline
+--srs [srsid] & spatial reference system of the image file, in the form EPSG:xxxxx.\\
+\hline
+--overwrite , --fill   &  use --overwrite to overwrite existing parts of the layer, use --fill to fill empty regions only with new data. In most cases you want to use the --fill option. When updating new data you would use --overwrite\\
+\hline
+--numthreads [num] & [optional] Specify number of threads used to add the data. This should be the number of cores of your CPU.\\
+\hline
+\end{tabular}
+\caption{Adding Image Data}\label{tableaddimage}
+\end{table}
+
+\subsubsection{Adding Elevation Data}
+
+Adding elevation data is basically the same like adding image data. The pararameters for adding elevation are shown in table \ref{tableaddelv}. An example of adding elevation data is found in the tutorial in section \ref{tutorial}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--elevation [filename]  & Specify the elevation file to be added\\
+\hline
+--layer [layername]  & Name of the elevation layer previously created using ogCreateLayer.\\
+\hline
+--srs [srsid] & spatial reference system of the elevation file, in the form EPSG:xxxxx.\\
+\hline
+--overwrite , --fill   &  use --overwrite to overwrite existing parts of the layer, use --fill to fill empty regions only with new data. In most cases you want to use the --fill option. When updating new data you would use --overwrite\\
+\hline
+--numthreads [num] & [optional] Specify number of threads used to add the data. This should be the number of cores of your CPU.\\
+\hline
+\end{tabular}
+\caption{Adding Elevation Data}\label{tableaddelv}
+\end{table}
+
+\subsection{Adding Data in a Compute Cluster}
+
+To speed up processing very large datasets, ogAddData can be executed on different computers at the same time. Each Data Fragment must be added from a different node in your system.
+
+\bildhalf{images/cluster.png}{Calling ogAddData from different compute nodes}
+
+
+\subsection{Triangulating Elevation Data - ogTriangulate}\label{ogTriangulate}
+
+When adding elevation data is finished the data must be triangulated to create the 3D-Geometry JSON files. This is done using the "ogTriangulate" tool. Currently the tool creates triangulated tiles using Delaunay Triangulation. In future releases it will be possible to choose other triangulation or raster algorithms.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--layer [layername]  & Name of the elevation layer previously created using ogCreateLayer.\\
+\hline
+--triangulate & Use delaunay triangulation algorithm.\\
+\hline
+--maxpoints & [optional] specify the maximum allowed points per tile. The default value is 512. In most cases values should be between 256 and 512.\\
+\hline
+--numthreads [num] & [optional] Specify number of threads used for triangulation.\\
+\hline
+\end{tabular}
+\caption{Triangulating}\label{tabletriangulate}
+\end{table}
+
+
+\subsection{Resampling - ogResample}\label{ogResample}
+
+The tools ogAddData and ogTriangulate only calculate the maximum zoom level. ogResample is a tool for calculating the remaining zoom levels. 
+
+\subsubsection{Resampling Image Data}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--layer [layername]  & Name of the image layer.\\
+\hline
+--type [layertype]  & use "image" here.\\
+\hline
+--numthreads [num] & [optional] Specify number of threads used for resampling.\\
+\hline
+\end{tabular}
+\caption{Parameters for Image Resampling}
+\end{table}
+
+\subsubsection{Resampling Elevation Data}
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--layer [layername]  & Name of the image layer.\\
+\hline
+--type [layertype]  & use "elevation" here.\\
+\hline
+--numpoints [num]  & [optional] specify the maximum allowed points per tile. The default value is 512. In most cases values should be between 256 and 512.\\
+\hline
+--numthreads [num] & [optional] Specify number of threads used for resampling.\\
+\hline
+\end{tabular}
+\caption{Parameters for Elevation Resampling}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Installing the Tools}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Downloading prebuilt packages}
+
+Prebuilt packages are currently only available for the Windows platform.
+Because the processing tools have many dependencies to other software, building it yourself is very time consuming.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Configuring the Tools}
+
+Configuration is done in an XML file (setup.xml) where you specify the directory where data will be processed and a directory for logging. setup.xml is located in 
+
+\begin{lstlisting}[frame=tb,caption=]{}
+C:\Program Files (x86)\OpenWebGlobeProcessing\setup.xml
+\end{lstlisting}
+
+If you don't want to modify the included setup.xml simply type:
+
+\begin{lstlisting}[frame=tb,caption=]{}
+cd "C:\Program Files (x86)\OpenWebGlobeProcessing"
+mkdir process
+mkdir log
+\end{lstlisting}
+
+If you want to edit the XML:
+
+\begin{lstlisting}[frame=tb,caption=]{}
+<ProcessingSettings>
+   <processpath>c:/data/bla/</processpath>
+   <logpath>c:/logs/</logpath>
+</ProcessingSettings>
+\end{lstlisting}
+
+The "processpath" must point to an \textbf{existing directory} where data will be written (high performance storage)
+
+The "logpath" is the path where log files are written. It must point to an existing directory.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Tutorial: Image and Elevation Data Processing}\label{tutorial}
+
+In this tutorial an image and an elevation dataset will be processed and put on the globe.
+Along with the processing tools there is an example dataset of the Bugaboo Provincial Park (British Columbia, Canada) which was produced by Tyler Mitchell and Will Cadell, Timberline Forest Inventory Consultants, British Columbia, Canada.  From DEM and a fused Landsat texture based on data from http://geobase.ca. This dataset is freely available, therefore it is copied as a tutorial dataset along with the OpenWebGlobe data processing utilities.
+
+The image data is in "data/bugaboo/bugaboo\_img.jgw" and the elevation data is located in "data/bugaboo/bugaboo\_dem.tif".
+
+\bild{images/imageElevation.png}{Image and Elevation Data of Bugaboo Provincial Park.}
+
+\subsection{Processing the Image Data}
+
+\subsubsection{Calculating Extent}
+
+The example image data is in NAD27 / UTM zone 11N projection, which corresponds to EPSG code 26711. 
+The image data must be in a supported raster data format with 3 channels (RGB). Refer to table \ref{rasterformats} for all supported formats.
+
+\begin{lstlisting}[frame=tb,caption=]{} 
+ogCalcExtent --srs EPSG:26711 --inputdir data\bugaboos\ --filetype jpg
+\end{lstlisting}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--srs   & spatial reference system. EPSG:26711 is used here.\\
+\hline
+--inputdir & the directory where data is located. For this example a relative path is used and pointing to the included demo data.\\
+\hline
+--filetype & The file type is jpg. A correspoinding .jgw file is present too.\\
+\hline
+\end{tabular}
+\caption{Parameters of ogCalcExtent used in this example}
+\end{table}
+
+
+The output of this will be 
+
+\begin{lstlisting}
+SRS epsg-code: 26711
+[OK]   data\bugaboos\bugaboo_img.jpg
+GATHERED BOUNDARY (Mercator):
+        ulx: -0.6508961467967627
+        lry: 0.3239096059373637
+        lrx: -0.6444645967523146
+        uly: 0.330477474424119
+BOUNDARY in WGS84:
+       lng0: -117.1613064234173
+       lat0: 50.25377317536166
+       lng1: -116.0036274154166
+       lat1: 51.00368256032537
+ pixelsize: 9.882724674077332 m
+LEVEL OF DETAIL 1: Tile Coords: (0, 0)-(0, 0)
+LEVEL OF DETAIL 2: Tile Coords: (0, 1)-(0, 1)
+LEVEL OF DETAIL 3: Tile Coords: (1, 2)-(1, 2)
+LEVEL OF DETAIL 4: Tile Coords: (2, 5)-(2, 5)
+LEVEL OF DETAIL 5: Tile Coords: (5, 10)-(5, 10)
+LEVEL OF DETAIL 6: Tile Coords: (11, 21)-(11, 21)
+LEVEL OF DETAIL 7: Tile Coords: (22, 42)-(22, 43)
+LEVEL OF DETAIL 8: Tile Coords: (44, 85)-(45, 86)
+LEVEL OF DETAIL 9: Tile Coords: (89, 171)-(91, 173)
+LEVEL OF DETAIL 10: Tile Coords: (178, 342)-(182, 346)
+LEVEL OF DETAIL 11: Tile Coords: (357, 685)-(364, 692)
+LEVEL OF DETAIL 12: Tile Coords: (714, 1371)-(728, 1384)
+LEVEL OF DETAIL 13: Tile Coords: (1429, 2742)-(1456, 2769)
+LEVEL OF DETAIL 14: Tile Coords: (2859, 5484)-(2912, 5538)
+LEVEL OF DETAIL 15: Tile Coords: (5719, 10969)-(5825, 11077)
+LEVEL OF DETAIL 16: Tile Coords: (11439, 21938)-(11650, 22154)
+LEVEL OF DETAIL 17: Tile Coords: (22878, 43877)-(23300, 44308)
+LEVEL OF DETAIL 18: Tile Coords: (45757, 87755)-(46600, 88616)
+LEVEL OF DETAIL 19: Tile Coords: (91515, 175511)-(93201, 177233)
+LEVEL OF DETAIL 20: Tile Coords: (183030, 351022)-(186402, 354466)
+LEVEL OF DETAIL 21: Tile Coords: (366061, 702045)-(372805, 708932)
+LEVEL OF DETAIL 22: Tile Coords: (732123, 1404090)-(745611, 1417864)
+****************************************
+RECOMMENDATION (MINIMUM LOD):
+IF THIS IS ELEVATION: LOD=17: Tile Coords: (22878, 43877)-(23300, 44308)
+
+IF THIS IS IMAGE: LOD=13: Tile Coords: (1429, 2742)-(1456, 2769)
+****************************************
+\end{lstlisting}
+
+ 
+\subsubsection{Creating the Image Layer}
+
+The recommended zoom levels would be 13, but we want to have a little bit more and choose 16.
+For zoom level 16 the tile coords are 11439 21938 11650 22154. With this information we can create the image layer.
+
+\begin{lstlisting}
+ogCreateLayer --name bugaboos --lod 16 --extent 11439 21938 11650 22154 --type image 
+              --force
+\end{lstlisting}
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{6cm}|}
+\hline
+\textbf{Option}	& \textbf{Description}\\
+\hline
+--name	& The name of the layer is simply called "bugaboos". This will be the directory name inside of the "process" dir.\\
+\hline
+--lod   & we choose the maximum level of detail 16\\
+\hline
+--extent & the extent at lod 16, previously calculated with ogCalcExtent.\\
+\hline
+--type & this is an image layer, so we use "image".\\
+\hline
+--force & if we already have a "bugaboos" layer it will be deleted. Be careful with this option!\\
+\hline
+\end{tabular}
+\caption{Parameters of ogCreateLayer used in this example}
+\end{table}
+
+The ogCreateLayer command will output the following:
+
+
+\begin{lstlisting}
+[date_time]: Creating all required subdirectories...
+0212130230321131
+0212132130002030
+[date_time]: creating LOD directory: process/bugaboos/tiles/1
+[date_time]: creating LOD directory: process/bugaboos/tiles/2
+[date_time]: creating LOD directory: process/bugaboos/tiles/3
+[date_time]: creating LOD directory: process/bugaboos/tiles/4
+[date_time]: creating LOD directory: process/bugaboos/tiles/5
+[date_time]: creating LOD directory: process/bugaboos/tiles/6
+[date_time]: creating LOD directory: process/bugaboos/tiles/7
+[date_time]: creating LOD directory: process/bugaboos/tiles/8
+[date_time]: creating LOD directory: process/bugaboos/tiles/9
+[date_time]: creating LOD directory: process/bugaboos/tiles/10
+[date_time]: creating LOD directory: process/bugaboos/tiles/11
+[date_time]: creating LOD directory: process/bugaboos/tiles/12
+[date_time]: creating LOD directory: process/bugaboos/tiles/13
+[date_time]: creating LOD directory: process/bugaboos/tiles/14
+[date_time]: creating LOD directory: process/bugaboos/tiles/15
+[date_time]: creating LOD directory: process/bugaboos/tiles/16
+[date_time]: calculated in: 0.406 s
+
+[date_time]: All required subdirectories created...
+\end{lstlisting}
+
+
+in your processing directory you will find the tile structure and the file "layersettings.json", which contains the following:
+
+\begin{lstlisting}
+{
+   "name" : "bugaboos",
+   "type" : "image",
+   "format" : "png",
+   "maxlod" : 16,
+   "extent" : [11439, 21938, 11650, 22154]
+}
+\end{lstlisting}
+
+At this time all directories are empty, as data has not yet been added.
+
+\subsubsection{Adding Data}
+
+Now we are ready to add the image data. This is done using:
+
+\begin{lstlisting}
+ogAddData --numthreads 4 --layer bugaboos --image data\bugaboos\bugaboo_img.jpg 
+          --srs EPSG:26711 --fill
+\end{lstlisting}
+
+If you have several image mosaics you would call ogAddData for each mosaic.
+
+This operation is time consuming. The result look like this:
+
+\begin{lstlisting}
+[datetime]: Logging started
+[datetime]: Forcing number of threads to 4
+[datetime]: calculated in: 522.771 s
+\end{lstlisting}
+
+At this time the lowest level of image data is finished processing. There are around 45000 tiles on this harddisk now (211x216). On my laptop with a quad-code CPU (Intel Core i7-2720QM @ 2.2 GHz) a tile was generated in 0.01 seconds (87 tiles per second).
+
+The OpenWebGlobe processing tools are optimized for multiprocessing, therefore it is interesting to see what happens when changing the number of threads. Of course this was done after deleting all files and running the processing again using 1,2 and 3 threads. The results are listed in table \ref{imgbenchmark}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Threads}	& \textbf{Total Time [s]} & \textbf{Tiles per Second}\\
+\hline
+1 & 1139.3 & 40\\
+\hline
+2 & 671.1 & 71\\
+\hline
+3 & 534.7 & 85\\
+\hline
+4 & 522.8 & 87\\
+\hline
+\end{tabular}
+\caption{Processing the data with 1 to 4 threads on an Intel Core i7-2720QM @ 2.2 GHz}\label{imgbenchmark}
+\end{table}
+
+
+\subsubsection{Resampling}
+
+The next step is calculating the remaining zoom levels. This can be done using the "ogResample" tool.
+
+\begin{lstlisting}
+ogResample --layer bugaboos --type image --verbose
+\end{lstlisting}
+
+In the directory "processed/bugaboos/tiles/" you can look at the tiles. Each zoom level has its own directory.
+
+\begin{lstlisting}
+[datetime]: Logging started
+[datetime]:
+Resample Setup (Image Layer):
+     name = bugaboos
+   maxlod = 16
+   extent = 11439, 21938, 11650, 22154
+
+[datetime]: Processing Level of Detail 15
+[datetime]: Processing Level of Detail 14
+[datetime]: Processing Level of Detail 13
+[datetime]: Processing Level of Detail 12
+[datetime]: Processing Level of Detail 11
+[datetime]: Processing Level of Detail 10
+[datetime]: Processing Level of Detail 9
+[datetime]: Processing Level of Detail 8
+[datetime]: Processing Level of Detail 7
+[datetime]: Processing Level of Detail 6
+[datetime]: Processing Level of Detail 5
+[datetime]: Processing Level of Detail 4
+[datetime]: Processing Level of Detail 3
+[datetime]: Processing Level of Detail 2
+[datetime]: Processing Level of Detail 1
+[datetime]: calculated in: 823.982 s
+\end{lstlisting}
+
+Now the tiles are finished processing.
+
+\subsection{Processing the Elevation Data}
+
+The workflow for processing elevation data is pretty much the same like the one for images. The exception is that elevation data must be converted to geometry and therefore a triangulation step is necessary.
+
+
+\subsubsection{Calculating Extent}
+
+\begin{lstlisting}
+ogcalcextent.exe --verbose --srs EPSG:26711 --inputdir data\bugaboos\ --filetype tif
+\end{lstlisting}
+
+
+\begin{lstlisting}
+SRS epsg-code: 26711
+[OK]   data\bugaboos\bugaboo_dem.tif
+GATHERED BOUNDARY (Mercator):
+        ulx: -0.6508957532005574
+        lry: 0.3239035952061771
+        lrx: -0.6444587127773991
+        uly: 0.3304770724421868
+BOUNDARY in WGS84:
+       lng0: -117.1612355761003
+       lat0: 50.25308139584989
+       lng1: -116.0025682999319
+       lat1: 51.00363702834048
+ pixelsize: 39.53005418648766 m
+LEVEL OF DETAIL 1: Tile Coords: (0, 0)-(0, 0)
+LEVEL OF DETAIL 2: Tile Coords: (0, 1)-(0, 1)
+LEVEL OF DETAIL 3: Tile Coords: (1, 2)-(1, 2)
+LEVEL OF DETAIL 4: Tile Coords: (2, 5)-(2, 5)
+LEVEL OF DETAIL 5: Tile Coords: (5, 10)-(5, 10)
+LEVEL OF DETAIL 6: Tile Coords: (11, 21)-(11, 21)
+LEVEL OF DETAIL 7: Tile Coords: (22, 42)-(22, 43)
+LEVEL OF DETAIL 8: Tile Coords: (44, 85)-(45, 86)
+LEVEL OF DETAIL 9: Tile Coords: (89, 171)-(91, 173)
+LEVEL OF DETAIL 10: Tile Coords: (178, 342)-(182, 346)
+LEVEL OF DETAIL 11: Tile Coords: (357, 685)-(364, 692)
+LEVEL OF DETAIL 12: Tile Coords: (714, 1371)-(728, 1384)
+LEVEL OF DETAIL 13: Tile Coords: (1429, 2742)-(1456, 2769)
+LEVEL OF DETAIL 14: Tile Coords: (2859, 5484)-(2912, 5538)
+LEVEL OF DETAIL 15: Tile Coords: (5719, 10969)-(5825, 11077)
+LEVEL OF DETAIL 16: Tile Coords: (11439, 21938)-(11650, 22154)
+LEVEL OF DETAIL 17: Tile Coords: (22878, 43877)-(23300, 44308)
+LEVEL OF DETAIL 18: Tile Coords: (45757, 87755)-(46601, 88617)
+LEVEL OF DETAIL 19: Tile Coords: (91515, 175511)-(93203, 177234)
+LEVEL OF DETAIL 20: Tile Coords: (183031, 351022)-(186406, 354469)
+LEVEL OF DETAIL 21: Tile Coords: (366062, 702045)-(372812, 708938)
+LEVEL OF DETAIL 22: Tile Coords: (732124, 1404091)-(745624, 1417876)
+****************************************
+RECOMMENDATION (MINIMUM LOD):
+IF THIS IS ELEVATION: LOD=15: Tile Coords: (5719, 10969)-(5825, 11077)
+
+IF THIS IS IMAGE: LOD=11: Tile Coords: (357, 685)-(364, 692)
+****************************************
+\end{lstlisting}
+
+\subsubsection{Creating the Elevation Layer}
+
+again we choose level of detail 16. As seem from the output of ogCalcExtent the tile coordinates are 11439 21938 11650 22154. This is exactly the same extent as the images. Usually elevation data has different extents. 
+
+Now we create the layer using the following command:
+
+\begin{lstlisting}
+ogCreateLayer --name bugabooselv --lod 16 --extent 11439 21938 11650 22154 
+              --type elevation --force
+\end{lstlisting}
+
+
+\begin{lstlisting}
+[datetime]: Logging started
+[datetime]: Target directory: process/bugabooselv
+[datetime]: Creating all required subdirectories...
+0212130230321131
+0212132130002030
+[datetime]: creating LOD directory: process/bugabooselv/tiles/1
+[datetime]: creating LOD directory: process/bugabooselv/tiles/2
+[datetime]: creating LOD directory: process/bugabooselv/tiles/3
+[datetime]: creating LOD directory: process/bugabooselv/tiles/4
+[datetime]: creating LOD directory: process/bugabooselv/tiles/5
+[datetime]: creating LOD directory: process/bugabooselv/tiles/6
+[datetime]: creating LOD directory: process/bugabooselv/tiles/7
+[datetime]: creating LOD directory: process/bugabooselv/tiles/8
+[datetime]: creating LOD directory: process/bugabooselv/tiles/9
+[datetime]: creating LOD directory: process/bugabooselv/tiles/10
+[datetime]: creating LOD directory: process/bugabooselv/tiles/11
+[datetime]: creating LOD directory: process/bugabooselv/tiles/12
+[datetime]: creating LOD directory: process/bugabooselv/tiles/13
+[datetime]: creating LOD directory: process/bugabooselv/tiles/14
+[datetime]: creating LOD directory: process/bugabooselv/tiles/15
+[datetime]: creating LOD directory: process/bugabooselv/tiles/16
+[datetime]: calculated in: 0.171 s
+
+[datetime]: All required subdirectories created...
+\end{lstlisting}
+
+\subsubsection{Adding Dataset}
+
+\begin{lstlisting}
+ogAddData --numthreads 4 --layer bugabooselv --elevation data\bugaboos\bugaboo_dem.tif 
+          --srs EPSG:26711 --fill
+\end{lstlisting}
+
+This command projects the data to the Mercator projectation and sorts the data spatially. Tiles are stored on the harddisk. The result of the tool is:
+
+\begin{lstlisting}
+[datetime]: Logging started
+[datetime]: Forcing number of threads to 4
+[datetime]: calculated in: 108.054 s
+\end{lstlisting}
+
+\subsubsection{Triangulation}
+
+The next step is triangulating the lowest zoom level, in our case this is 16.
+
+\begin{lstlisting}
+ogTriangulate --layer bugabooselv --verbose --triangulate --maxpoints 256 --numthreads 4
+\end{lstlisting}
+
+"--triangulate" means it uses the delaunay triangulate algorithm. Currently there are no other algormithms for creating the tile geometry. In future it is planned to have different algorithms to create the 3D-Geometry.
+"--maxpoints" specifies the maximal allowed number of points per tile. Good values are between 256 and 512.
+
+This operation is CPU-intense and takes a while to finish.
+
+\begin{lstlisting}
+[datetime]: Logging started
+[datetime]: changing maxpoints to 256
+[datetime]: Forcing number of threads to 4
+[datetime]:
+Elevation Layer:
+     name = bugabooselv
+   maxlod = 16
+   extent = 11439, 21938, 11650, 22154
+
+[datetime]:
+Extent mercator:   extent = -0.650909, 0.323883, -0.64444, 0.330505
+
+[datetime]: calculated in: 841.971 s
+\end{lstlisting}
+
+In the directory process/boogabooelv/tiles/16 you find the .json geometries for the level of detail 16.
+
+\subsubsection{Calculating remaining Zoom Levels}
+
+Now the remaining zoom levels, in our case 1-15 must be generated. Like for image data this is done using the ogResample tool.
+
+\begin{lstlisting}
+ogResample --layer bugabooselv --verbose --type elevation --maxpoints 256
+\end{lstlisting}
+
+Once this is finished you can delete the temp directory (process/bugabooselv/temp).
+
+\subsection{Visualization in OpenWebGlobe}
+
+As mentioned earlier, the processed data is located in the "process" directory by default. Now you have to run a webserver which can access this directory. OpenWebGlobe uses WebGL for textures and it is highly recommended to set the HTTP Access-Control-Allow-Origin header to support cross domain textures.
+
+If you use the Apache webserver you can add a .htaccess file with the following contents:
+
+\begin{lstlisting}
+<IfModule mod_headers.c>
+   Header set Access-Control-Allow-Origin *
+</IfModule>
+\end{lstlisting}
+
+Now you can create html code. The NASA Blue Marble dataset is taken from openwebglobe.org. Of course you could process blue marble dataset yourself now.
+
+\bildhalf{images/bbs02.png}{NASA Blue Marble layer combined with the bugaboos dataset}
+
+\lstset{language=html}
+\begin{lstlisting}
+<html lang="en">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />	  
+	<head>
+		<script type="text/javascript" src="openwebglobe-0.9.0.js"></script>
+	</head>
+	<body style="overflow:hidden;">
+		<div style="width: 100%; height: 100%;">
+			<canvas id="canvas">
+			</canvas>
+		</div>
+	<script type="text/javascript">
+        ogSetArtworkDirectory("http://www.openwebglobe.org/art/");
+		var context = ogCreateContextFromCanvas("canvas", true);
+		var globe = ogCreateGlobe(context);
+		
+        ogAddImageLayer(globe, {
+            url: ["http://www.openwebglobe.org/data/img"],
+            layer: "World500",
+            service: "i3d"
+		});
+        ogAddImageLayer(globe, {
+            url: ["http://localhost/DataProcessing/bin/process/"],
+            layer: "bugaboos",
+            service: "owg"
+		});
+        ogAddElevationLayer(globe, {
+            url: ["http://localhost/DataProcessing/bin/process/"],
+            layer: "bugabooselv",
+            service: "owg"
+		});
+	</script>
+	</body>
+</html>
+\end{lstlisting}
+\lstset{language=bash}
+
+
+\bildhalf{images/bbs00.png}{If you don't specify a global dataset you will see an empty world.}
+
+
+\bildhalf{images/bbs01.png}{More detailed view of the processed data}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Note: Hillshading, Normalmaps will be introduced at a later time
+
+%\section{Example: Processing Elevation as Image}\label{tutorial}
+%
+%Elevation can be visualized as Image Layer as hillshading or slope visualizations. 
+%This functionality has been added to the OpenWebGlobe processing in a recent master thesis \cite{wuest2012}.
+%There is also a functionality to create normalmaps of elevation which can be used in a future version of the OpenWebGlobe SDK to support %more lighting models.
+%
+%\bildhalf{images/hillshade_normalmaps_slope.png}{A hillshading tile generated using the OpenWebGlobe processing tools.\cite{wuest2012}}
+%
+%
+%\subsection{creating a hillshading layer}
+%
+%\subsection{creating a normalmap}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Advanced Topics}
+
+%\section{Point Cloud Processing}
+
+%point cloud processing is still in alpha and not yet part of this release.
+
+\subsection{Building from Source}
+
+\subsubsection{Windows}
+
+Download prebuilt external dependencies from \url{http://www.openwebglobe.org/downloads/dataprocessing_external_win32.tar.gz}.
+This package is for Visual Studio 2010. We do not support other compilers for Windows at this time.
+
+\subsubsection{Linux}
+
+Compile using the included Makefile. Currently not all tools compile under linux. We are working on this.
+
+\subsubsection{MacOS X}
+
+MacOS X is not yet supported in this release. A MacOS X build setup is planned later this year.
+
+%\subsection{Testing File Lock Mechanism}
+%\begin{lstlisting}[frame=tb,caption=]{}
+%cd "C:\Program Files (x86)\OpenWebGlobeProcessing"
+%mkdir tmptest
+%ogFileLockTest --path tmptest --numthreads 4 --iterations 100
+%\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Supported Image and Elevation Formats}
+
+The OpenWebGlobe processing tools use the Geospatial Abstraction Library (GDAL) version 1.9.0, available at (www.gdal.org). It is possible to recompile GDAL to support more formats if necessary.
+The included version of the precompiled binaries supports the following raster formats. All data must be georeferenced to be used with OpenWebGlobe.
+For example if you have a .jpg image you need the corresponding world file (.jgw) or it will not be possible to add this data.
+
+\begin{longtable}{|p{9cm}|p{5cm}|}
+\hline
+Long Format Name&	Code\\
+\hline
+Arc/Info ASCII Grid&	AAIGrid\\
+\hline
+ACE2&	ACE2\\
+\hline
+ADRG/ARC Digitilized Raster Graphics (.gen/.thf)&	ADRG\\
+\hline
+Arc/Info Binary Grid (.adf)&	AIG\\
+\hline
+Magellan BLX Topo (.blx, .xlb)&	BLX\\
+\hline
+Microsoft Windows Device Independent Bitmap (.bmp)&	BMP\\
+\hline
+VTP Binary Terrain Format (.bt)&	BT\\
+\hline
+Military Elevation Data (.dt0, .dt1, .dt2)&	DTED\\
+\hline
+ECRG Table Of Contents (TOC.xml)&	ECRGTOC\\
+\hline
+ESRI .hdr Labelled&	EHdr\\
+\hline
+Erdas Imagine Raw&	EIR\\
+\hline
+NASA ELAS&	ELAS\\
+\hline
+ENVI .hdr Labelled Raster&	ENVI\\
+\hline
+ERMapper (.ers)&	ERS\\
+\hline
+EOSAT FAST Format&	FAST\\
+\hline
+WMO GRIB1/GRIB2 (.grb)&	GRIB\\
+\hline
+GRASS Rasters&	GRASS\\
+\hline
+GRASS ASCII Grid&	GRASSASCIIGrid\\
+\hline
+TIFF / BigTIFF / GeoTIFF (.tif)&	GTiff\\
+\hline
+NOAA .gtx vertical datum shift&	GTX\\
+\hline
+GXF - Grid eXchange File&	GXF\\
+\hline
+HF2/HFZ heightfield raster&	HF2\\
+\hline
+Erdas Imagine (.img)&	HFA\\
+\hline
+Image Display and Analysis (WinDisp)&	IDA\\
+\hline
+ILWIS Raster Map (.mpr,.mpl)&	ILWIS\\
+\hline
+Intergraph Raster&	INGR\\
+\hline
+USGS Astrogeology ISIS cube (Version 2)&	ISIS2\\
+\hline
+USGS Astrogeology ISIS cube (Version 3)&	ISIS3\\
+\hline
+Japanese DEM (.mem)&	JDEM\\
+\hline
+JPEG JFIF (.jpg)&	JPEG\\
+\hline
+KMLSUPEROVERLAY&	KMLSUPEROVERLAY\\
+\hline
+NOAA Polar Orbiter Level 1b Data Set (AVHRR)&	L1B\\
+\hline
+Erdas 7.x .LAN and .GIS&	LAN\\
+\hline
+FARSITE v.4 LCP Format&	LCP\\
+\hline
+Daylon Leveller Heightfield&	Leveller\\
+\hline
+NADCON .los/.las Datum Grid Shift&	LOSLAS\\
+\hline
+MBTiles&	MBTiles\\
+\hline
+In Memory Raster&	MEM\\
+\hline
+Vexcel MFF&	MFF\\
+\hline
+Vexcel MFF2&	MFF2 (HKV)\\
+\hline
+MG4 Encoded Lidar&	MG4Lidar\\
+\hline
+EUMETSAT Archive native (.nat)&	MSGN\\
+\hline
+NLAPS Data Format&	NDF\\
+\hline
+NOAA NGS Geoid Height Grids&	NGSGEOID\\
+\hline
+NITF&	NITF\\
+\hline
+NTv2 Datum Grid Shift&	NTv2\\
+\hline
+%Northwood/VerticalMapper Classified Grid Format .grc/.tab&	NWT\_GRC\\
+%Northwood/VerticalMapper Numeric Grid Format .grd/.tab&	NWT\_GRD\\
+OZI OZF2/OZFX3&	OZI\\
+\hline
+PCI Geomatics Database File&	PCIDSK\\
+\hline
+PCRaster&	PCRaster\\
+\hline
+NASA Planetary Data System&	PDS\\
+\hline
+Swedish Grid RIK (.rik)&	RIK\\
+\hline
+Raster Matrix Format (*.rsw, .mtw)&	RMF\\
+\hline
+Raster Product Format/RPF (CADRG, CIB)&	RPFTOC\\
+\hline
+RadarSat2 XML (product.xml)&	RS2\\
+\hline
+Idrisi Raster&	RST\\
+\hline
+SAGA GIS Binary format&	SAGA\\
+\hline
+SAR CEOS&	SAR\_CEOS\\
+\hline
+ArcSDE Raster&	SDE\\
+\hline
+USGS SDTS DEM (*CATD.DDF)&	SDTS\\
+\hline
+SGI Image Format&	SGI\\
+\hline
+Snow Data Assimilation System&	SNODAS\\
+\hline
+Standard Raster Product (ASRP/USRP)&	SRP\\
+\hline
+SRTM HGT Format&	SRTMHGT\\
+\hline
+USGS ASCII DEM / CDED (.dem)&	USGSDEM\\
+\hline
+GDAL Virtual (.vrt)&	VRT\\
+\hline
+ASCII Gridded XYZ&	XYZ\\
+\hline
+ZMap Plus Grid&	ZMap\\
+\hline
+\caption{Supported Raster Formats}\label{rasterformats} \\
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\section{Datasets}
+
+%Blue Marble (Global Dataset)
+%\url{http://www.bluemarble.ch/bluemarble/Downloads.html}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Planned Features in Future Releases}\label{planned}
+
+Here is a list (in random order) of things that are currently in development or are planned to be implemented soon.
+
+\begin{itemize}
+\item Integration of Hillshading/Normalmaps (recent Masterthesis \cite{wuest2012})
+\item Integration of OpenStreetMap Data processing (recent Masterthesis \cite{wuest2012})
+\item Documentation \& disk images for cloud integration (Amazon EC2)
+\item Tools for preprocessing point clouds
+\item Tools for preprocessing 3d objects (large scale)
+\item WMS support
+\item support different projection definitions, for example proj4 strings
+\item sparse quadtree support for image datasets
+\item Documentation: add a section about OpenLayer support
+\item efficient updating layers
+\item new tools for very large/global datasets
+\end{itemize}
+
+
+\bibliographystyle{plain}
+\bibliography{bib}
+
+\end{document}

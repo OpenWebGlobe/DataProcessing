@@ -52,6 +52,12 @@
     <Filter Include="boost\json-spirit">
       <UniqueIdentifier>{18528c2c-40b1-4b77-b414-eb395471f49a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="http">
+      <UniqueIdentifier>{608ffaa9-e060-407b-8e4d-e9fd8cab5f27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io\fs">
+      <UniqueIdentifier>{e913b1ad-8265-4c19-be0a-a314d5d3b482}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\core\geo\CoordinateTransformation.cpp">
@@ -175,8 +181,36 @@
     <ClCompile Include="..\..\source\core\math\CloudPoint.cpp">
       <Filter>math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\core\app\QueueManager.cpp">
-      <Filter>app</Filter>
+    <ClCompile Include="..\..\source\core\geo\PointMap.cpp">
+      <Filter>geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\http\Post.cpp">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\http\Get.cpp">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\app\QueueManager.cpp" />
+    <ClCompile Include="..\..\source\core\http\Header.cpp">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\fs\FileReaderDisk.cpp">
+      <Filter>io\fs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\fs\FileWriterDisk.cpp">
+      <Filter>io\fs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\FileReaderFactory.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\FileWriterFactory.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\fs\FileReaderHttp.cpp">
+      <Filter>io\fs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\io\fs\FileWriterHttp.cpp">
+      <Filter>io\fs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -395,8 +429,42 @@
     <ClInclude Include="..\..\source\core\math\mat4.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\source\core\app\QueueManager.h">
-      <Filter>app</Filter>
+    <ClInclude Include="..\..\source\core\geo\PointMap.h">
+      <Filter>geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\http\Get.h">
+      <Filter>http</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\http\Header.h">
+      <Filter>http</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\app\QueueManager.h" />
+    <ClInclude Include="..\..\source\core\http\Post.h">
+      <Filter>http</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\FileReaderFactory.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\FileWriterFactory.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\FileReaderDisk.h">
+      <Filter>io\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\FileWriterDisk.h">
+      <Filter>io\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\IFileReader.h">
+      <Filter>io\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\IFileWriter.h">
+      <Filter>io\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\FileReaderHttp.h">
+      <Filter>io\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\core\io\fs\FileWriterHttp.h">
+      <Filter>io\fs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

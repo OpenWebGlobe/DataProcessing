@@ -51,6 +51,8 @@ public:
    // Import elevation points and store on disk
    bool Import(const std::string& tempfile, size_t& size, double& inout_xmin, double& inout_ymin, double& inout_xmax, double& inout_ymax);
  
+   bool GetNextPoint(ElevationPoint& pt);
+
 protected:
    // importer for xyz, xyzw (xyz+weight)
    bool _ImportXYZ(std::vector<ElevationPoint>& result, double& inout_xmin, double& inout_ymin, double& inout_xmax, double& inout_ymax);
@@ -95,6 +97,10 @@ private:
 
    bool           _bImportXYZ;
    std::string    _sFilename;
+   std::string    _tmpFile;
+   size_t         _numPts;
+   size_t         _curPts;
+   void*          _tmpFilePtr;
 };
 
 #endif

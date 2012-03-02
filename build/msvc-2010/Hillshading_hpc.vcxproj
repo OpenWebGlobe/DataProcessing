@@ -14,7 +14,7 @@
     <ProjectGuid>{53BD189F-1BF8-4A54-89E8-53B30BFE9D02}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>DataProcessing</RootNamespace>
-    <ProjectName>ogHillshading_hpc</ProjectName>
+    <ProjectName>ogHillshading</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

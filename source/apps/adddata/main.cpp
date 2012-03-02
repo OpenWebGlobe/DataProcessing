@@ -40,7 +40,6 @@
 #include <sstream>
 #include <omp.h>
 
-
 enum ELayerType
 {
    IMAGE_LAYER,
@@ -59,7 +58,7 @@ int main(int argc, char *argv[])
        ("image", po::value<std::string>(), "image file to add")
        ("elevation",  po::value<std::string>(), "elevation file to add")
        ("greyimage",  po::value<std::string>(), "grey image file to add")
-	   ("point", po::value<std::string>(), "point file to add")
+	    ("point", po::value<std::string>(), "point file to add")
        ("srs", po::value<std::string>(), "spatial reference system for input file")
        ("layer", po::value<std::string>(), "name of layer to add the data")
        ("fill", "fill empty parts, don't overwrite already existing data")
@@ -67,7 +66,7 @@ int main(int argc, char *argv[])
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "verbose output")
        ("nolock", "disable file locking (also forcing 1 thread)")
-       ("virtual", "enable temporary disk storage (instead of RAM) for large datasets")
+       ("force", "force adding data")
        ;
 
    po::variables_map vm;
@@ -127,22 +126,42 @@ int main(int argc, char *argv[])
    {
       eLayer = IMAGE_LAYER;
       sFile = vm["image"].as<std::string>();
+
+      if (FilenameUtils::IsRelative(sFile))
+      {
+         sFile = FileSystem::GetCWD() + "/" + sFile;
+      }
    }
    else if  (vm.count("elevation"))
    {
       eLayer = ELEVATION_LAYER;
       sFile = vm["elevation"].as<std::string>();
+
+      if (FilenameUtils::IsRelative(sFile))
+      {
+         sFile = FileSystem::GetCWD() + "/" + sFile;
+      }
    }
    else if  (vm.count("greyimage"))
    {
       eLayer = GREYIMAGE_LAYER;
       sFile = vm["greyimage"].as<std::string>();
+
+      if (FilenameUtils::IsRelative(sFile))
+      {
+         sFile = FileSystem::GetCWD() + "/" + sFile;
+      }
    }
    else if  (vm.count("point"))
    {
       eLayer = POINT_LAYER;
       sFile = vm["point"].as<std::string>();
       bUseProcessStatus = false;
+
+      if (FilenameUtils::IsRelative(sFile))
+      {
+         sFile = FileSystem::GetCWD() + "/" + sFile;
+      }
    }
 
    if (!vm.count("srs") || !vm.count("layer"))
@@ -158,6 +177,11 @@ int main(int argc, char *argv[])
    if (vm.count("verbose"))
    {
       bVerbose = true;
+   }
+
+   if (vm.count("force"))
+   {
+      bUseProcessStatus = false;
    }
 
    if (vm.count("overwrite") && vm.count("fill"))
@@ -223,6 +247,8 @@ int main(int argc, char *argv[])
    }
 
    int epsg = atoi(sSRS.c_str()+5);
+
+
 
    //---------------------------------------------------------------------------
    // CREATE / UPDATE PROCESS STATUS
@@ -377,8 +403,6 @@ int main(int argc, char *argv[])
 
    return retval;
 }
-
-
 
 //------------------------------------------------------------------------------
 
