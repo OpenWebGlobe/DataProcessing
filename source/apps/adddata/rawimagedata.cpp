@@ -17,28 +17,29 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#include "greyimagedata.h"
+#include "rawimagedata.h"
 #include "string/FilenameUtils.h"
 #include "io/FileSystem.h"
 #include "geo/ImageLayerSettings.h"
 #include "geo/MercatorQuadtree.h"
 #include "image/ImageLoader.h"
-#include "image/ImageWriter.h"
 #include <sstream>
 #include <ctime>
 
+
 //------------------------------------------------------------------------------
-namespace GreyImageData
+namespace RawImageData
 {
    //------------------------------------------------------------------------------
    const int tilesize = 256;
-   const double dHanc = 1.0/(double(tilesize)-1.0);
-   const double dWanc = 1.0/(double(tilesize)-1.0);
+   const double dHanc = 1.0/(double(tilesize));
+   const double dWanc = 1.0/(double(tilesize));
    //------------------------------------------------------------------------------
 
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sImagefile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1)
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sImagefile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1, int maxLod)
    {
       DataSetInfo oInfo;
+      int iMaxLod = maxLod;
 
       if (!ProcessingUtils::init_gdal())
       {
@@ -64,6 +65,7 @@ namespace GreyImageData
 
       int lod = qImageLayerSettings->GetMaxLod();
       out_lod = lod;
+      if(iMaxLod == 0) { iMaxLod = lod; }
       int64 layerTileX0, layerTileY0, layerTileX1, layerTileY1;
       qImageLayerSettings->GetTileExtent(layerTileX0, layerTileY0, layerTileX1, layerTileY1);
 
@@ -98,7 +100,7 @@ namespace GreyImageData
          qLogger->Info(oss.str());
          oss.str("");
       }
-
+      
       boost::shared_ptr<MercatorQuadtree> qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
 
       int64 px0, py0, px1, py1;
@@ -151,7 +153,7 @@ namespace GreyImageData
       }
       // iterate through all tiles and create them
 #ifndef _DEBUG
-   #pragma omp parallel for
+#pragma omp parallel for
 #endif
       for (int64 xx = imageTileX0; xx <= imageTileX1; ++xx)
       {
@@ -237,16 +239,6 @@ namespace GreyImageData
             qCT->TransformBackwards(&anchor_Cx, &anchor_Cy);
             qCT->TransformBackwards(&anchor_Dx, &anchor_Dy);
 
-            /*if (bVerbose)
-            {
-            std::stringstream sst;
-            sst << "Anchor points:\nA(" << anchor_Ax << ", " << anchor_Ay << ")" 
-            << "\nB(" << anchor_Bx << ", " << anchor_By << ")" 
-            << "\nC(" << anchor_Cx << ", " << anchor_Cy << ")"
-            << "\nD(" << anchor_Dx << ", " << anchor_Dy << ")\n";
-            qLogger->Info(sst.str());
-            }*/
-
             // write current tile
             for (int ty=0;ty<tilesize;++ty)
             {
@@ -262,6 +254,7 @@ namespace GreyImageData
                   double dPixelY = (oInfo.affineTransformation_inverse[3] + xd * oInfo.affineTransformation_inverse[4] + yd * oInfo.affineTransformation_inverse[5]);
                   float value;
 
+                  
 
                   // out of image -> set transparent
                   if (dPixelX<0 || dPixelX>oInfo.nSizeX ||
@@ -273,18 +266,17 @@ namespace GreyImageData
                   {
                      // read pixel in image pImage[dPixelX, dPixelY] (biliear, bicubic or nearest neighbour)
                      // and store as r,g,b
+					   //_ReadImageDataMem(pImage, oInfo.nSizeX, oInfo.nSizeY, dPixelX, dPixelY, &value);
                      _ReadImageValueBilinear(pImage, oInfo.nSizeX, oInfo.nSizeY, dPixelX, dPixelY, &value);
-
                      // scale to 256 AND REMOVE VOID PIXELS (-9999 values) !!!! 
                      //if (value<-5000) value = -9999;
                      //value = math::Clamp<float>(unsigned char(value/1000.0f*256.0f), 0, 255);
-     
                   }
 
                   size_t adr=1*ty*tilesize+1*tx;
                      if (bFill)
                      {
-                        if (pTile[adr] < -5000.0f)
+                        if (pTile[adr] < -9000.0f)
                         {
                            pTile[adr] = value;  
                         }
@@ -307,26 +299,58 @@ namespace GreyImageData
             }
 
             ImageWriter::WriteRaw32(sTilefile, tilesize, tilesize, pTile);
-            // TEMP PNG OUT -----
-            /*boost::shared_array<char> pngTile = boost::shared_array<char>(new char[tilesize*tilesize*4]);
-            memset(pngTile.get(),0,tilesize*tilesize*4*sizeof(char));
-            for(size_t xi = 0; xi < tilesize*tilesize; xi++)
+            // --- DOWNSAMPLING   --------------------------------------------------------
+            if(iMaxLod > lod)
             {
-               size_t adr=4*xi;
-               unsigned char scaledValue = unsigned char((pTile[xi]/1000.0f)*255.0f); //(pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value);
-               pngTile[adr+0] = scaledValue;  
-               pngTile[adr+1] = scaledValue;  
-               pngTile[adr+2] = scaledValue;
-               if (pTile[xi] < -5000.0f)
-                  pngTile[adr+3] = 0;
-               else
-                  pngTile[adr+3] = 255;
+               int sX = xx;
+               int sY = yy;
+                  
+               for(size_t iLod = lod+1; iLod <= iMaxLod; iLod++)
+               {
+                  if(iLod > lod)
+                  {
+                     // update tile extents
+                     sX = sX*2;
+                     sY = sY*2;
+                  }
+                  std::stringstream lodDir; lodDir << sTileDir << iLod;
+                  if(!FileSystem::DirExists(lodDir.str()))
+                           FileSystem::makedir(lodDir.str());
+                  for(size_t sxx = 0; sxx < 2; sxx++)
+                  {
+                     for(size_t syy = 0; syy < 2; syy++)
+                     {
+                        std::stringstream xDir; xDir << lodDir.str() << "/" << sX+sxx;
+                        if(!FileSystem::DirExists(xDir.str()))
+                           FileSystem::makedir(xDir.str());
+                        std::string sampleFile = ProcessingUtils::GetTilePath(sTileDir, ".raw" , iLod, sX+sxx, sY+syy);
+                        boost::shared_array<float> sampleTile = boost::shared_array<float>(new float[tilesize*tilesize]);
+                        memset(sampleTile.get(),0,tilesize*tilesize*sizeof(float));
+                        for (int ty=0;ty<tilesize;++ty)
+                        {
+                           for (int tx=0;tx<tilesize;++tx)
+                           {
+                              float value;
+                              _ReadImageValueBilinear(pTile, tilesize, tilesize, double((tx/2.0)+(sxx*(tilesize/2.0))), double((ty/2.0)+(syy*(tilesize/2.0))), &value);
+                              sampleTile[tx+tilesize*ty] = value;
+                           }
+                        }
+                        int lockh = FileSystem::Lock(sampleFile);
+                           ImageWriter::WriteRaw32(sampleFile, tilesize, tilesize, sampleTile.get());
+                        FileSystem::Unlock(sampleFile, lockh);
+                        // TEMPORARY FILE OUT               
+                        //std::string fil = ProcessingUtils::GetTilePath(sTileDir, ".png" , iLod, sX+sxx, sY+syy);
+                        //_SaveFileAsPNG(sampleTile.get(), tilesize, tilesize, fil);
+                        // --->
+                     }
+                  }
+               }
             }
-            std::string fil = ProcessingUtils::GetTilePath(sTileDir, ".png" , lod, xx, yy);
-            ImageWriter::WritePNG(fil,(unsigned char*)pngTile.get(), 256,256);*/
-            // ---------------->
-               
-
+            //------------------------------------------------------------------------
+            // TEMPORARY FILE OUT               
+            //std::string fil = ProcessingUtils::GetTilePath(sTileDir, ".png" , lod, xx, yy);
+            //_SaveFileAsPNG(pTile, tilesize, tilesize, fil);
+            // --->
             // unlock file. Other computers/processes/threads can access it again.
             FileSystem::Unlock(sTilefile, lockhandle);
          }

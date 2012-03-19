@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
        ("maxpoints", po::value<int>(), "[optional] for elevation layer: max number of points per tile. Default is 512.")
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "optional info")
+       ("raw", "optional for raw data processing")
        ("pointfile", "generate file with thinned out points")
        ;
 
@@ -79,6 +80,7 @@ int main(int argc, char *argv[])
    int layertype = 0; // 0: image, 1:elevation, 2: point
    int nMaxpoints = 512;
    bool bPointfile = false;
+   bool bRaw = false;
 
 
    try
@@ -103,6 +105,11 @@ int main(int argc, char *argv[])
    if (vm.count("verbose"))
    {
       bVerbose = true;
+   }
+
+   if (vm.count("raw"))
+   {
+      bRaw = true;
    }
 
    if (vm.count("numthreads"))
@@ -172,6 +179,7 @@ int main(int argc, char *argv[])
    {
       std::string sImageLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
       std::string sTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sImageLayerDir) + "tiles");
+      std::string sTempTileDir = FilenameUtils::DelimitPath(FilenameUtils::DelimitPath(sImageLayerDir) + "temp/tiles");
 
       boost::shared_ptr<ImageLayerSettings> qImageLayerSettings = ImageLayerSettings::Load(sImageLayerDir);
       if (!qImageLayerSettings)
@@ -225,7 +233,8 @@ int main(int argc, char *argv[])
          {
             for (int64 x=tx0;x<=tx1;x++)
             {
-               _resampleFromParent(pTileBlockArray, qQuadtree, x, y, nLevelOfDetail, sTileDir);
+               std::string tiledir = bRaw? sTempTileDir : sTileDir;
+               _resampleFromParent(pTileBlockArray, qQuadtree, x, y, nLevelOfDetail, tiledir,bRaw);
             }
          }
       }

@@ -3,11 +3,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--layer PointCloudTest --verbose --type point --pointfile</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>ogresample.exe --layer ASTER4X4 --raw</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--layer PointCloudTest --verbose --type point pointfile</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>ogresample.exe --layer ASTER4X4 --raw</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

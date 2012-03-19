@@ -47,6 +47,7 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
 int _createimagelayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger, bool temp = false);
 int _createelevationlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<int64>& vecExtent, boost::shared_ptr<Logger> qLogger);
 int _createpointlayer(const std::string& sLayerName,  const std::string& sLayerPath, int nLod, const std::vector<double>& vecBoundary, boost::shared_ptr<Logger> qLogger);
+int _createmapniklayer(const std::string& sLayerName,  const std::string& sLayerPath, const std::vector<double>& vecBoundary, boost::shared_ptr<Logger> qLogger);
 int _createDirectoriesXY( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, const std::vector<int64>& vecExtent, int nLod, bool bTemp); 
 int _createDirectoriesXYZ( const std::string& sLayerPath, boost::shared_ptr<Logger> qLogger, int nLod, bool bTemp); 
 
@@ -97,7 +98,8 @@ int main(int argc, char *argv[])
 enum ELayerType
 {
    IMAGE_LAYER,
-   IMAGE_LAYER_TEMP,  // this will be renamed to something "postprocessing layer".
+   IMAGE_POSTPROCESSING_LAYER,  // this will be renamed to something "postprocessing layer".
+   MAPNIK_LAYER,
    ELEVATION_LAYER,
    POI_LAYER,
    POINT_LAYER,
@@ -116,7 +118,7 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
        ("name", po::value<std::string>(), "layer name (string)")
        ("lod", po::value<int>(), "desired level of detail (integer)")
        ("extent", po::value< std::vector<int64> >()->multitoken(), "tile boundary (tx0 ty0 tx1 ty1) for elevation/image data")
-       ("boundary", po::value<std::vector<double> >()->multitoken(), "WGS84 boundary for point data")
+       ("boundary", po::value<std::vector<double> >()->multitoken(), "WGS84 boundary for point data or mapnik rendering")
        ("force", "[optional] force creation. (Warning: if this layer already exists it will be deleted)")
        ("numthreads", po::value<int>(), "[optional] force number of threads")
        ("type",  po::value<std::string>(), "[optional] layer type. This can be image, elevation, poi, point, geometry. image is default value.")
@@ -159,8 +161,11 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
 
    if (!vm.count("lod"))
    {
-      qLogger->Error("lod not specified!");
-      bError = true;
+	   if(vm["type"].as< std::string >() != "mapnik")
+	   {
+		qLogger->Error("lod not specified!");
+		bError = true;
+	   }
    }
    else
    {
@@ -201,9 +206,13 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
       {
          eLayer = IMAGE_LAYER;
       }
-      else if (sLayerType == "imagetemp")
+      else if (sLayerType == "imagepostprocessing")
       {
-         eLayer = IMAGE_LAYER_TEMP;
+         eLayer = IMAGE_POSTPROCESSING_LAYER;
+      }
+	  else if (sLayerType == "mapnik")
+      {
+         eLayer = MAPNIK_LAYER;
       }
       else if (sLayerType == "elevation")
       {
@@ -288,9 +297,13 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
    {
       return _createimagelayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger, false);
    }
-   if (eLayer == IMAGE_LAYER_TEMP)
+   if (eLayer == IMAGE_POSTPROCESSING_LAYER)
    {
       return _createimagelayer(sLayerName, sLayerPath, nLod, vecExtent, qLogger, true);
+   }
+   if (eLayer == MAPNIK_LAYER)
+   {
+      return _createmapniklayer(sLayerName, sLayerPath, vecBoundary, qLogger);
    }
    else if (eLayer == ELEVATION_LAYER)
    {
@@ -384,6 +397,31 @@ int _createpointlayer(const std::string& sLayerName,  const std::string& sLayerP
    }
 
    return _createDirectoriesXYZ(sLayerPath, qLogger, nLod, true);
+}
+
+//------------------------------------------------------------------------------
+
+int _createmapniklayer(const std::string& sLayerName,  const std::string& sLayerPath, const std::vector<double>& vecBoundary, boost::shared_ptr<Logger> qLogger)
+{
+    if (!FileSystem::makedir(sLayerPath))
+   {
+      qLogger->Error("Can't create directory " + sLayerPath);
+      return ERROR_LAYERDIR;
+   }
+
+   boost::shared_ptr<PointLayerSettings> qPointLayerSettings = boost::shared_ptr<PointLayerSettings>(new PointLayerSettings());
+   if (!qPointLayerSettings) {return ERROR_OUTOFMEMORY;}
+
+   qPointLayerSettings->SetLayerName(sLayerName);
+   qPointLayerSettings->SetBoundary(vecBoundary[0], vecBoundary[1], vecBoundary[2], vecBoundary[3], vecBoundary[4], vecBoundary[5]);
+
+   if (!qPointLayerSettings->Save(sLayerPath))
+   {
+      qLogger->Error("Can't write into layer path: " + sLayerPath);
+      return ERROR_WRITE_PERMISSION;
+   }
+
+   return 0;
 }
 
 //------------------------------------------------------------------------------

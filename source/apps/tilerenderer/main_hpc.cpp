@@ -40,6 +40,7 @@
 #include <string/FilenameUtils.h>
 #include <string/StringUtils.h>
 #include <io/FileSystem.h>
+#include <io/CommonPath.h>
 #include <math/mathutils.h>
 #include "ogprocess.h"
 #include "app/ProcessingSettings.h"
@@ -228,31 +229,6 @@ int main ( int argc , char** argv)
    bounds[1] = -90.0;
    bounds[2] = 180.0;
    bounds[3] = 90.0;
-   
-   po::options_description desc("Program-Options");
-   desc.add_options()
-      ("mapnik_dir", po::value<std::string>(), "mapnik path")
-      ("map_file", po::value<std::string>(), "map configurations file")
-      ("output_path", po::value<std::string>(), "output path")
-      ("numthreads", po::value<int>(), "force number of threads")
-      ("min_zoom", po::value<int>(), "[optional] min zoom level")
-      ("max_zoom", po::value<int>(), "[optional] max zoom level")
-      ("bounds", po::value<std::vector<double>>(), "[optional] boundaries (default: -180.0 -90.0 180.0 90.0)")
-      ("verbose", "[optional] Verbose mode")
-      ("generatejobs","[optional] create a jobqueue which can be used in every process")
-      ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
-      ("amount", po::value<int>(), "[opional] define amount of jobs to be read for one process at the time")
-      ("no_override", "[opional] overriding existing tiles disabled")
-      ("enable_locking", "[opional] lock files to prevent concurrency on parallel processes")
-      ("expired_list", po::value<std::string>(), "[optional] list of expired tiles for update rendering (global rendering will be disabled)")
-      ;
-   
-   po::positional_options_description p;
-   p.add("bounds", -1);
-   po::variables_map vm;
-   po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
-   po::notify(vm);
-
    //---------------------------------------------------------------------------
    // -- init options:
    boost::shared_ptr<ProcessingSettings> qSettings =  ProcessingUtils::LoadAppSettings();
@@ -262,6 +238,32 @@ int main ( int argc , char** argv)
       std::cout << "[" << sProcessHostName<< "] " << "Error in configuration! Check setup.xml\n";
       return ERROR_PARAMS;
    }
+   
+   po::options_description desc("Program-Options");
+   desc.add_options()
+      ("layername",po::value<std::string>(), "name of layer to generate data")
+      ("mapdefinitions", po::value<std::string>(), "map configurations file")
+      ("numthreads", po::value<int>(), "[optional] force number of threads default 1")
+	  ("mapnikdir", po::value<std::string>(), "[optional] different mapnik path from {App}/mapnik")
+      ("minzoom", po::value<int>(), "[optional] min zoom level")
+      ("maxzoom", po::value<int>(), "[optional] max zoom level")
+      ("bounds", po::value<std::vector<double>>(), "[optional] boundaries (default: -180.0 -90.0 180.0 90.0)")
+      ("verbose", "[optional] Verbose mode")
+      ("generatejobs","[optional] create a jobqueue which can be used in every process")
+      ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
+      ("amount", po::value<int>(), "[opional] define amount of jobs to be read for one process at the time")
+      ("nooverride", "[opional] overriding existing tiles disabled")
+      ("enablelocking", "[opional] lock files to prevent concurrency on parallel processes")
+      ("expirelist", po::value<std::string>(), "[optional] list of expired tiles for update rendering (global rendering will be disabled)")
+      ;
+   
+   po::positional_options_description p;
+   p.add("bounds", -1);
+   po::variables_map vm;
+   po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+   po::notify(vm);
+
+  
 
    bool bError = false;
    //---------------------------------------------------------------------------
@@ -276,47 +278,48 @@ int main ( int argc , char** argv)
       bError = true;
    }
       
-   if(vm.count("mapnik_dir"))
+   if(vm.count("mapnikdir"))
    {
-      mapnik_dir = vm["mapnik_dir"].as<std::string>();
+      mapnik_dir = vm["mapnikdir"].as<std::string>();
       if(!(mapnik_dir.at(mapnik_dir.length()-1) == '\\' || mapnik_dir.at(mapnik_dir.length()-1) == '/'))
          mapnik_dir = mapnik_dir + "/";
    }
    else
-      bError = true;
+   {
+	   mapnik_dir = FilenameUtils::DelimitPath(CommonPath::GetCwd())+"mapnik/";
+   }
 
       
-   if(vm.count("map_file"))
-      map_file = vm["map_file"].as<std::string>();
+   if(vm.count("mapdefinitions"))
+      map_file = vm["mapdefinitions"].as<std::string>();
    else
       bError = true;
 
       
-   if(vm.count("output_path"))
+   if(vm.count("layername"))
    {
-      output_path = vm["output_path"].as<std::string>();
-      if(!(output_path.at(output_path.length()-1) == '\\' || output_path.at(output_path.length()-1) == '/'))
-         output_path = output_path + "/";
+	  std::string sLayerName = vm["layername"].as<std::string>();
+      output_path = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayerName;
    }
    else
       bError = true;
       
-   if(vm.count("min_zoom"))
-      minZoom = vm["min_zoom"].as<int>();
+   if(vm.count("minzoom"))
+      minZoom = vm["minzoom"].as<int>();
       
-   if(vm.count("max_zoom"))
-      maxZoom = vm["max_zoom"].as<int>();
+   if(vm.count("maxzoom"))
+      maxZoom = vm["maxzoom"].as<int>();
 
    if(vm.count("verbose"))
       bVerbose = true;
 
-   if(vm.count("no_override"))
+   if(vm.count("nooverride"))
       bOverrideTiles = false;
 
-   if(vm.count("expire_list"))
+   if(vm.count("expirelist"))
    {
       std::cout << "[" << sProcessHostName<< "] " << "Using expirelist source " << expire_list << "\n";
-      expire_list = vm["expire_list"].as<std::string>();
+      expire_list = vm["expirelist"].as<std::string>();
       bUpdateMode = true;
    }
    if(vm.count("amount"))
@@ -325,7 +328,7 @@ int main ( int argc , char** argv)
    if(vm.count("generatejobs"))
       bGenerateJobs = true;
 
-   if(vm.count("enable_locking"))
+   if(vm.count("enablelocking"))
       bLockEnabled = true;
 
    if(vm.count("overridejobqueue"))

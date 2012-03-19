@@ -21,7 +21,7 @@
 #include "errors.h"
 #include "imagedata.h"
 #include "elevationdata.h"
-#include "greyimagedata.h"
+#include "rawimagedata.h"
 #include "pointdata.h"
 #include "app/ProcessingSettings.h"
 #include "geo/MercatorQuadtree.h"
@@ -44,7 +44,7 @@ enum ELayerType
 {
    IMAGE_LAYER,
    ELEVATION_LAYER,
-   GREYIMAGE_LAYER,
+   RAWIMAGE_LAYER,
    POINT_LAYER,
 };
 
@@ -57,13 +57,14 @@ int main(int argc, char *argv[])
    desc.add_options()
        ("image", po::value<std::string>(), "image file to add")
        ("elevation",  po::value<std::string>(), "elevation file to add")
-       ("greyimage",  po::value<std::string>(), "grey image file to add")
+       ("rawimage",  po::value<std::string>(), "raw image file to add")
 	    ("point", po::value<std::string>(), "point file to add")
        ("srs", po::value<std::string>(), "spatial reference system for input file")
        ("layer", po::value<std::string>(), "name of layer to add the data")
        ("fill", "fill empty parts, don't overwrite already existing data")
        ("overwrite", "overwrite existing data")
        ("numthreads", po::value<int>(), "force number of threads")
+       ("maxlod", po::value<int>(), "[optional]process top down to this LOD level (rawimage only)")
        ("verbose", "verbose output")
        ("nolock", "disable file locking (also forcing 1 thread)")
        ("force", "force adding data")
@@ -93,6 +94,9 @@ int main(int argc, char *argv[])
    bool bVirtual = false;
    ELayerType eLayer = IMAGE_LAYER;
    bool bUseProcessStatus = true;
+   int  iMaxLod = 0;
+   int  iLod;
+
 
    //---------------------------------------------------------------------------
    // init options:
@@ -117,7 +121,7 @@ int main(int argc, char *argv[])
 
    //---------------------------------------------------------------------------
 
-   if (!vm.count("image") && !vm.count("elevation") && !vm.count("greyimage") && !vm.count("point"))
+   if (!vm.count("image") && !vm.count("elevation") && !vm.count("rawimage") && !vm.count("point"))
    {
       bError = true;
    }
@@ -142,10 +146,10 @@ int main(int argc, char *argv[])
          sFile = FileSystem::GetCWD() + "/" + sFile;
       }
    }
-   else if  (vm.count("greyimage"))
+   else if  (vm.count("rawimage"))
    {
-      eLayer = GREYIMAGE_LAYER;
-      sFile = vm["greyimage"].as<std::string>();
+      eLayer = RAWIMAGE_LAYER;
+      sFile = vm["rawimage"].as<std::string>();
 
       if (FilenameUtils::IsRelative(sFile))
       {
@@ -204,6 +208,10 @@ int main(int argc, char *argv[])
          qLogger->Info(oss.str());
          omp_set_num_threads(n);
       }
+   }
+   if (vm.count("maxlod"))
+   {
+      iMaxLod = vm["maxlod"].as<int>();
    }
 
    if (vm.count("fill"))
@@ -335,9 +343,9 @@ int main(int argc, char *argv[])
    {
       retval = ImageData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
-   else if (eLayer == GREYIMAGE_LAYER)
+   else if (eLayer == RAWIMAGE_LAYER)
    {
-      retval = GreyImageData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1);
+      retval = RawImageData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1, iMaxLod);
    }
    else if (eLayer == ELEVATION_LAYER)
    {

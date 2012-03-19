@@ -51,6 +51,22 @@ public:
    unsigned char* tile;
 };
 //------------------------------------------------------------------------------
+
+   //------------------------------------------------------------------------------
+   inline void _getInterpolatedRawColor(const float* rgbData, const size_t adr0, const size_t adr1, const size_t adr2, const size_t adr3, float* v)
+   {
+      float value = 0.0f;
+      float v0, v1, v2, v3;
+      
+      v0 = rgbData[adr0];
+      v1 = rgbData[adr1];
+      v2 = rgbData[adr2];
+      v3 = rgbData[adr3];
+      value = v0 + v1 + v2 + v3;
+      value/=4;
+      *v = (float)value;
+   }
+
 //------------------------------------------------------------------------------
 
 inline void _getInterpolatedColor(const unsigned char* rgbData, const size_t adr0, const size_t adr1, const size_t adr2, const size_t adr3, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a)
@@ -126,7 +142,8 @@ inline void _getInterpolatedColor(const unsigned char* rgbData, const size_t adr
 //------------------------------------------------------------------------------
 TileBlock* _createTileBlockArray();
 void _destroyTileBlockArray(TileBlock* pTileBlockArray);
-void _resampleFromParent(TileBlock* pTileBlockArray, boost::shared_ptr<MercatorQuadtree> qQuadtree, int64 x, int64 y,int nLevelOfDetail, std::string sTileDir);
+void _resampleFromParent(TileBlock* pTileBlockArray, boost::shared_ptr<MercatorQuadtree> qQuadtree, int64 x, int64 y,int nLevelOfDetail, std::string sTileDir, bool rawData = false);
+void _resampleRawImages(Raw32ImageObject* IH0, Raw32ImageObject* IH1,Raw32ImageObject* IH2,Raw32ImageObject* IH3, std::string sTargetFile, int tilesize, bool b0, bool b1, bool b2, bool b3);
 
 //------------------------------------------------------------------------------
 

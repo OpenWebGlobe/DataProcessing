@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>--numthreads 1 --layer bugaboos --image data\bugaboos\bugaboo_img.jpg --srs EPSG:26711 --fill</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--rawimage data\aster_small\ASTGTM2_N43E023_dem.tif --srs EPSG:4326 --layer ASTER4X4 --fill --minlod 8 --maxlod 13 --numthreads 1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--numthreads 4 --layer bugaboos --image data\bugaboos\bugaboo_img.jpg --srs EPSG:26711 --fill</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--rawimage data\aster_small\ASTGTM2_N43E023_dem.tif --srs EPSG:4326 --layer ASTER4X4 --fill --minlod 8 --maxlod 13 --numthreads 1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
