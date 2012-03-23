@@ -59,8 +59,8 @@ struct SJob
    bool bError = false;
    std::string sLayerPath;
    std::string sJobQueueFile;
-   int iLayerMaxZoom;
-   int iLayerMinZoom;
+   int iLayerMaxZoom = 0;
+   int iLayerMinZoom = 0;
    std::string sAlgorithm;
    std::string sProcessHostName;
    bool bVerbose = false;
@@ -84,6 +84,7 @@ struct SJob
    double altitude = 45;
    double sscale = 1;
    double slopeScale = 1;
+   bool bJPEG = false;
    int iX = 0;
    int iY = 0;
    std::string sTempTileDir;
@@ -94,25 +95,29 @@ struct SJob
    boost::shared_array<ImageObject> pTextures;
 // -------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
 //  Job function (called every thread/compute node)
-void ProcessJob(const SJob& job)
+void ProcessJob(const SJob& job, int layerLod)
 {
-   std::string sCurrentQuadcode = qQuadtree->TileCoordToQuadkey(job.xx,job.yy,job.lod);
-
    //std::cout << sCurrentQuadcode << "\n";
    HSProcessChunk pData;
+   pData.layerLod = layerLod;
    pData.dfXMax = -1e20;
    pData.dfYMax = -1e20;
    pData.dfXMin = 1e20;
    pData.dfYMin = 1e20;
    pData.data.AllocateImage(inputX, inputY, -9999.0f);
+   std::string sParentQuad = qQuadtree->TileCoordToQuadkey(job.xx,job.yy,job.lod);
+   sParentQuad = StringUtils::Left(sParentQuad,layerLod);
+   int64 parentX,parentY;
+   int parentLod;
+   MercatorQuadtree::QuadKeyToTileCoord(sParentQuad,parentX, parentY,parentLod);
    for (int ty=-1;ty<=1;ty++)
    {
       for (int tx=-1;tx<=1;tx++)
       {
-         std::string sQuadcode = qQuadtree->TileCoordToQuadkey(job.xx+tx,job.yy+ty,job.lod);
-         std::string sTilefile = ProcessingUtils::GetTilePath(sTempTileDir, ".raw" , job.lod, job.xx+tx, job.yy+ty);
+         //std::string sQuadcode = qQuadtree->TileCoordToQuadkey(job.xx+tx,job.yy+ty,job.lod);
+         std::string sQuadcode = qQuadtree->TileCoordToQuadkey(parentX+tx, parentY+ty,parentLod);
+         std::string sTilefile = ProcessingUtils::GetTilePath(sTempTileDir, ".raw" , parentLod, parentX+tx, parentY+ty);
                   
          double sx0, sy1, sx1, sy0;
          qQuadtree->QuadKeyToMercatorCoord(sQuadcode, sx0, sy1, sx1, sy0);
@@ -136,8 +141,7 @@ void ProcessJob(const SJob& job)
          if (fin.good())
          {
             while (!fin.eof())
-            {
-                     
+            {    
                float value;
                fin.read((char*)&(value), sizeof(float));
                if (!fin.eof())
@@ -157,7 +161,7 @@ void ProcessJob(const SJob& job)
       }
    }
    // Generate tile
-   process_hillshading(sTileDir, pData, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale,slopeScale, bSlope, bNormalMaps, outputX, outputY, bOverrideTiles, bLockEnabled, bNoData, bColored, bTextured, pTextures);
+   process_hillshading(sTileDir, pData, qQuadtree, job.xx, job.yy, job.lod, z_depth, azimut, altitude,sscale,slopeScale, bSlope, bNormalMaps, outputX, outputY, bOverrideTiles, bLockEnabled, bNoData, bJPEG, bColored, bTextured, pTextures);
 }
 
 //------------------------------------------------------------------------------------
@@ -212,6 +216,7 @@ int main(int argc, char *argv[])
       ("nodata", "[optional] include nodata values")
 	   ("colored", "[optional] color the heigths")
 	   ("textured", "[optional] generic textured heights")
+      ("jpg", "[optional] save files in compressed JPEG quality(78) instead of PNG")
       ;
 
    po::variables_map vm;
@@ -286,6 +291,8 @@ int main(int argc, char *argv[])
       bColored = true;
    if(vm.count("processborders"))
       bBorders = true;
+   if(vm.count("jpg"))
+      bJPEG = true;
 	if(vm.count("textured"))
    {
       bTextured = true;
@@ -333,69 +340,78 @@ int main(int argc, char *argv[])
    clock_t t_0, t_1;
    t_0 = clock();
 
-   if(iLayerMaxZoom > layermaxlod)
+  
+   //---------------------------------------------------------------------------
+   // -- Generate job queue
+   qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
+   sJobQueueFile = sTileDir + "jobqueue.jobs";
+   if(bGenerateJobs)
    {
-      for(size_t ll = layermaxlod; ll <iLayerMaxZoom; ll++)
+      if(iLayerMaxZoom > layermaxlod)
       {
-         layerTileX0 = layerTileX0*2;
-         layerTileX1 = layerTileX1*2;
-         layerTileY0 = layerTileY0*2;
-         layerTileY1 = layerTileY1*2;
+         for(size_t ll = layermaxlod; ll <iLayerMaxZoom; ll++)
+         {
+            layerTileX0 = layerTileX0*2;
+            layerTileX1 = layerTileX1*2;
+            layerTileY0 = layerTileY0*2;
+            layerTileY1 = layerTileY1*2;
+         }
       }
-   }else if(iLayerMaxZoom < layermaxlod)
-   {
-      iLayerMaxZoom = layermaxlod;
-   }
-
-   for(size_t lod = iLayerMaxZoom; lod >= iLayerMinZoom; lod--)
-   {
-      if(lod < iLayerMaxZoom)
+      else
       {
-         // update tile extents
-         layerTileX0 = math::Floor(layerTileX0/2.0);
-         layerTileX1 = math::Floor(layerTileX1/2.0);
-         layerTileY0 = math::Floor(layerTileY0/2.0);
-         layerTileY1 = math::Floor(layerTileY1/2.0);
+         iLayerMaxZoom = layermaxlod;
+         
       }
-      int64 width = layerTileX1-layerTileX0+1;
-      int64 height = layerTileY1-layerTileY0+1;
-      if ((width<3 || height<3) && !bBorders)
+      if(iLayerMinZoom == 0 || iLayerMinZoom > layermaxlod)
       {
-         std::cout << "Extent is too small for hillshading processing skipping current and following LOD levels\n";
-         return ERROR_ELVLAYERSETTINGS;
+         iLayerMinZoom = layermaxlod;
       }
-
-      // Retrieve dataset extent in mercator coord:
-      qQuadtree = boost::shared_ptr<MercatorQuadtree>(new MercatorQuadtree());
-      double xmin, ymin, xmax, ymax;
-      std::string qc0 = qQuadtree->TileCoordToQuadkey(layerTileX0,layerTileY0,lod);
-      std::string qc1 = qQuadtree->TileCoordToQuadkey(layerTileX1,layerTileY1,lod);
-
-      double x00, y00, x10, y10;
-      double x01, y01, x11, y11;
-      qQuadtree->QuadKeyToMercatorCoord(qc0, x00,y00,x10,y10);
-      qQuadtree->QuadKeyToMercatorCoord(qc1, x01,y01,x11,y11);
-
-      xmin = x00;
-      ymin = y11;
-      xmax = x11;
-      ymax = y00;
-      if (bVerbose)
+      for(size_t lod = iLayerMaxZoom; lod >= iLayerMinZoom; lod--)
       {
-         std::cout << "\n[" << sProcessHostName<< "] " << "Extent mercator:";
-         std::cout << "   extent = " << xmin << ", " << ymin << ", " << xmax << ", " << ymax << "\n"<< std::flush;
-      }
 
-      if (!ProcessingUtils::init_gdal())
-      {
-         std::cout << "[" << sProcessHostName<< "] " << "Warning: gdal-data directory not found. Ouput may be wrong!\n"<< std::flush;
-         return 1;
-      }   
-      //---------------------------------------------------------------------------
-      // -- Generate job queue
-      sJobQueueFile = sTileDir + "jobqueue.jobs";
-      if(bGenerateJobs)
-      {
+         if(lod < iLayerMaxZoom)
+         {
+            // update tile extents
+            layerTileX0 = math::Floor(layerTileX0/2.0);
+            layerTileX1 = math::Floor(layerTileX1/2.0);
+            layerTileY0 = math::Floor(layerTileY0/2.0);
+            layerTileY1 = math::Floor(layerTileY1/2.0);
+         }
+         int64 width = layerTileX1-layerTileX0+1;
+         int64 height = layerTileY1-layerTileY0+1;
+         if ((width<3 || height<3) && !bBorders)
+         {
+            std::cout << "Extent is too small for hillshading processing skipping current and following LOD levels\n";
+            return ERROR_ELVLAYERSETTINGS;
+         }
+
+         // Retrieve dataset extent in mercator coord:
+         
+         double xmin, ymin, xmax, ymax;
+         std::string qc0 = qQuadtree->TileCoordToQuadkey(layerTileX0,layerTileY0,lod);
+         std::string qc1 = qQuadtree->TileCoordToQuadkey(layerTileX1,layerTileY1,lod);
+
+         double x00, y00, x10, y10;
+         double x01, y01, x11, y11;
+         qQuadtree->QuadKeyToMercatorCoord(qc0, x00,y00,x10,y10);
+         qQuadtree->QuadKeyToMercatorCoord(qc1, x01,y01,x11,y11);
+
+         xmin = x00;
+         ymin = y11;
+         xmax = x11;
+         ymax = y00;
+         if (bVerbose)
+         {
+            std::cout << "\n[" << sProcessHostName<< "] " << "Extent mercator:";
+            std::cout << "   extent = " << xmin << ", " << ymin << ", " << xmax << ", " << ymax << "\n"<< std::flush;
+         }
+
+         if (!ProcessingUtils::init_gdal())
+         {
+            std::cout << "[" << sProcessHostName<< "] " << "Warning: gdal-data directory not found. Ouput may be wrong!\n"<< std::flush;
+            return 1;
+         }   
+      
          int idx = 0;
          std::cout << "[" << sProcessHostName<< "] " << " Generating jobs starting from (z, x, y) " << "(" << lod << ", " << layerTileX0+(bBorders ? 0 : 1) << ", " << layerTileY0+(bBorders ? 0 : 1) << ")\n"<< std::flush;
          for (int64 xx = layerTileX0+(bBorders ? 0 : 1); xx < layerTileX1+(bBorders ? 1 : 0); ++xx)
@@ -417,56 +433,56 @@ int main(int argc, char *argv[])
             }
          }
          _QueueManager.CommitJobQueue(sJobQueueFile);
-         std::cout << "[" << sProcessHostName<< "] " << " Finished generating " << idx << " jobs ending with (z, x, y) " << "(" << lod << ", " << iX << ", " << iY << ")!\n"<< std::flush;
+         std::cout << "[" << sProcessHostName<< "] " << " Generated " << idx << " jobs ending with (z, x, y) " << "(" << lod << ", " << iX << ", " << iY << ")!\n"<< std::flush;
       }
-      //---------------------------------------------------------------------------
-      // -- Process Jobs Queue
-      else
+   }
+   //---------------------------------------------------------------------------
+   // -- Process Jobs Queue
+   else
+   {
+      if(!FileSystem::FileExists(sJobQueueFile))
       {
-         if(!FileSystem::FileExists(sJobQueueFile))
-         {
-            std::cout << "[" << sProcessHostName<< "] " << "ERROR: Jobqueue file not found: " << sJobQueueFile << " use --generatejobs first...\n"<< std::flush;
-            return ERROR_PARAMS;
-         }
-         std::vector<SJob> vecConverted;
-         std::vector<QJob> jobs;
-         std::cout << "[" << sProcessHostName<< "] >>>" << "start processing...\n"<< std::flush;
-         do
-         {
-            jobs.clear();
-            vecConverted.clear();
-            jobs = _QueueManager.FetchJobList(sJobQueueFile, sizeof(SJob), iAmount,bVerbose);
-            if(jobs.size() > 0)
-            {
-            ConvertJobs(jobs, vecConverted);
-            SJob first, last;
-            first = vecConverted[0];
-            last = vecConverted[vecConverted.size()-1];
-            clock_t subT0 = clock();
-            clock_t subT1;
-            std::cout << "--[" << sProcessHostName<< "] " << "  processing " << vecConverted.size() << " jobs\n       starting from (z, x, y) " << "(" << first.lod << ", " << first.xx << ", " << first.yy << ")\n"<< std::flush;
-   #ifndef _DEBUG
-            std::cout << "..Processing parallel using " << numThreads << "\n";
-                  #pragma omp parallel shared(vecConverted, sTempTileDir, sTileDir, inputX, inputY, outputX, outputY)
-                  {
-                     #pragma omp for 
-   #endif
-                     for(int index = 0; index < vecConverted.size(); index++)
-                     {
-                        ProcessJob(vecConverted[index]);
-                        tileCount++;
-                     }
-   #ifndef _DEBUG
-                  }
-   #endif
-               subT1 = clock();
-               double subTime=(double(subT1-subT0)/double(CLOCKS_PER_SEC));
-               double subTps = vecConverted.size()/subTime;
-               std::cout << "--[" << sProcessHostName<< "] " << "  processing average " << subTps << " tiles per second.\n";
-               std::cout << "--[" << sProcessHostName<< "] " << "  processed " << vecConverted.size() << " jobs\n       terminating with (z, x, y) " << "(" << last.lod << ", " << last.xx << ", " << last.yy << ")\n"<< std::flush;
-            }
-         }while(jobs.size() >= iAmount); 
+         std::cout << "[" << sProcessHostName<< "] " << "ERROR: Jobqueue file not found: " << sJobQueueFile << " use --generatejobs first...\n"<< std::flush;
+         return ERROR_PARAMS;
       }
+      std::vector<SJob> vecConverted;
+      std::vector<QJob> jobs;
+      std::cout << "[" << sProcessHostName<< "] >>>" << "start processing...\n"<< std::flush;
+      do
+      {
+         jobs.clear();
+         vecConverted.clear();
+         jobs = _QueueManager.FetchJobList(sJobQueueFile, sizeof(SJob), iAmount,bVerbose);
+         if(jobs.size() > 0)
+         {
+         ConvertJobs(jobs, vecConverted);
+         SJob first, last;
+         first = vecConverted[0];
+         last = vecConverted[vecConverted.size()-1];
+         clock_t subT0 = clock();
+         clock_t subT1;
+         std::cout << "--[" << sProcessHostName<< "] " << "  processing " << vecConverted.size() << " jobs\n       starting from (z, x, y) " << "(" << first.lod << ", " << first.xx << ", " << first.yy << ")\n"<< std::flush;
+#ifndef _DEBUG
+         std::cout << "..Processing parallel using " << numThreads << "\n";
+               #pragma omp parallel shared(vecConverted, sTempTileDir, sTileDir, inputX, inputY, outputX, outputY)
+               {
+                  #pragma omp for 
+#endif
+                  for(int index = 0; index < vecConverted.size(); index++)
+                  {
+                     ProcessJob(vecConverted[index],layermaxlod);
+                     tileCount++;
+                  }
+#ifndef _DEBUG
+               }
+#endif
+            subT1 = clock();
+            double subTime=(double(subT1-subT0)/double(CLOCKS_PER_SEC));
+            double subTps = vecConverted.size()/subTime;
+            std::cout << "--[" << sProcessHostName<< "] " << "  processing average " << subTps << " tiles per second.\n";
+            std::cout << "--[" << sProcessHostName<< "] " << "  processed " << vecConverted.size() << " jobs\n       terminating with (z, x, y) " << "(" << last.lod << ", " << last.xx << ", " << last.yy << ")\n"<< std::flush;
+         }
+      }while(jobs.size() >= iAmount); 
    }
    t_1 = clock();
          double time=(double(t_1-t_0)/double(CLOCKS_PER_SEC));
@@ -474,4 +490,3 @@ int main(int argc, char *argv[])
          std::cout << "[" << sProcessHostName<< "] <<<" << "finished processing "<< tileCount << " jobs at " << tps << " tiles pers second working for " << time << " seconds.\n"<< std::flush;
    return 0;
 }
-

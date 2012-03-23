@@ -41,11 +41,10 @@ int main(int argc, char *argv[])
    po::options_description desc("Program-Options");
    desc.add_options()
        ("layer", po::value<std::string>(), "image layer to resample")
-       ("type", po::value<std::string>(), "[optional] image (default) or elevation, or point.")
+       ("type", po::value<std::string>(), "[optional] image (default) or raw or elevation, or point.")
        ("maxpoints", po::value<int>(), "[optional] for elevation layer: max number of points per tile. Default is 512.")
        ("numthreads", po::value<int>(), "force number of threads")
        ("verbose", "optional info")
-       ("raw", "optional for raw data processing")
        ("pointfile", "generate file with thinned out points")
        ;
 
@@ -107,11 +106,6 @@ int main(int argc, char *argv[])
       bVerbose = true;
    }
 
-   if (vm.count("raw"))
-   {
-      bRaw = true;
-   }
-
    if (vm.count("numthreads"))
    {
       int n = vm["numthreads"].as<int>();
@@ -123,7 +117,6 @@ int main(int argc, char *argv[])
          omp_set_num_threads(n);
       }
    }
-
    if (vm.count("type"))
    {
       std::string sType = vm["type"].as<std::string>();
@@ -139,6 +132,10 @@ int main(int argc, char *argv[])
       else if (sType == "point")
       {
          layertype = 2;
+      }else if(sType == "raw")
+      {
+         layertype = 0;
+         bRaw = true;
       }
       else
       {
@@ -214,7 +211,6 @@ int main(int argc, char *argv[])
       std::string qc0 = qQuadtree->TileCoordToQuadkey(tx0, ty0, maxlod);
       std::string qc1 = qQuadtree->TileCoordToQuadkey(tx1, ty1, maxlod);
 
-
       for (int nLevelOfDetail = maxlod - 1; nLevelOfDetail>0; nLevelOfDetail--)
       {
          std::ostringstream oss;
@@ -238,6 +234,7 @@ int main(int argc, char *argv[])
             }
          }
       }
+     
 
       // output time to calculate resampling:
       t1=clock();

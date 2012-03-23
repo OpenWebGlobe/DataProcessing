@@ -45,6 +45,8 @@ bool ImageWriter::WritePNG(const std::string& sFilename, unsigned char* buffer_r
    return (stbi_write_png(sFilename.c_str(), width, height, 4, buffer_rbga, 4*width) == 0);
 }
 
+
+
 //------------------------------------------------------------------------------
 
 bool ImageWriter::WritePNG(const std::string& sFilename, ImageObject& image)
@@ -78,7 +80,7 @@ bool ImageWriter::WriteJPG(const std::string& sFilename, ImageObject& image, int
    int len;
    if (JPEGHandler::RGBToJpeg(pInput, image.GetWidth(), image.GetHeight(), quality, outjpg, len))
    {
-      std::fstream off(sFilename.c_str(), std::ios::binary);
+      std::fstream off(sFilename.c_str(), std::ios::out | std::ios::binary);
       if (off.good())
       {
          off.write((char*)outjpg.get(), (std::streamsize)len);

@@ -36,10 +36,9 @@ namespace RawImageData
    const double dWanc = 1.0/(double(tilesize));
    //------------------------------------------------------------------------------
 
-   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sImagefile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1, int maxLod)
+   int process( boost::shared_ptr<Logger> qLogger, boost::shared_ptr<ProcessingSettings> qSettings, std::string sLayer, bool bVerbose, bool bLock, int epsg, std::string sImagefile, bool bFill, int& out_lod, int64& out_x0, int64& out_y0, int64& out_x1, int64& out_y1/*int maxLod*/)
    {
       DataSetInfo oInfo;
-      int iMaxLod = maxLod;
 
       if (!ProcessingUtils::init_gdal())
       {
@@ -65,7 +64,6 @@ namespace RawImageData
 
       int lod = qImageLayerSettings->GetMaxLod();
       out_lod = lod;
-      if(iMaxLod == 0) { iMaxLod = lod; }
       int64 layerTileX0, layerTileY0, layerTileX1, layerTileY1;
       qImageLayerSettings->GetTileExtent(layerTileX0, layerTileY0, layerTileX1, layerTileY1);
 
@@ -300,52 +298,12 @@ namespace RawImageData
 
             ImageWriter::WriteRaw32(sTilefile, tilesize, tilesize, pTile);
             // --- DOWNSAMPLING   --------------------------------------------------------
-            if(iMaxLod > lod)
+            /*if(iMaxLod > lod)
             {
                int sX = xx;
                int sY = yy;
-                  
-               for(size_t iLod = lod+1; iLod <= iMaxLod; iLod++)
-               {
-                  if(iLod > lod)
-                  {
-                     // update tile extents
-                     sX = sX*2;
-                     sY = sY*2;
-                  }
-                  std::stringstream lodDir; lodDir << sTileDir << iLod;
-                  if(!FileSystem::DirExists(lodDir.str()))
-                           FileSystem::makedir(lodDir.str());
-                  for(size_t sxx = 0; sxx < 2; sxx++)
-                  {
-                     for(size_t syy = 0; syy < 2; syy++)
-                     {
-                        std::stringstream xDir; xDir << lodDir.str() << "/" << sX+sxx;
-                        if(!FileSystem::DirExists(xDir.str()))
-                           FileSystem::makedir(xDir.str());
-                        std::string sampleFile = ProcessingUtils::GetTilePath(sTileDir, ".raw" , iLod, sX+sxx, sY+syy);
-                        boost::shared_array<float> sampleTile = boost::shared_array<float>(new float[tilesize*tilesize]);
-                        memset(sampleTile.get(),0,tilesize*tilesize*sizeof(float));
-                        for (int ty=0;ty<tilesize;++ty)
-                        {
-                           for (int tx=0;tx<tilesize;++tx)
-                           {
-                              float value;
-                              _ReadImageValueBilinear(pTile, tilesize, tilesize, double((tx/2.0)+(sxx*(tilesize/2.0))), double((ty/2.0)+(syy*(tilesize/2.0))), &value);
-                              sampleTile[tx+tilesize*ty] = value;
-                           }
-                        }
-                        int lockh = FileSystem::Lock(sampleFile);
-                           ImageWriter::WriteRaw32(sampleFile, tilesize, tilesize, sampleTile.get());
-                        FileSystem::Unlock(sampleFile, lockh);
-                        // TEMPORARY FILE OUT               
-                        //std::string fil = ProcessingUtils::GetTilePath(sTileDir, ".png" , iLod, sX+sxx, sY+syy);
-                        //_SaveFileAsPNG(sampleTile.get(), tilesize, tilesize, fil);
-                        // --->
-                     }
-                  }
-               }
-            }
+               processlod(sTileDir,pTile, lod, lod+1, iMaxLod,sX,sY);
+            }*/
             //------------------------------------------------------------------------
             // TEMPORARY FILE OUT               
             //std::string fil = ProcessingUtils::GetTilePath(sTileDir, ".png" , lod, xx, yy);
@@ -370,5 +328,55 @@ namespace RawImageData
 
       return 0;
    }
+   /*
+   void processlod(std::string sTileDir, float* pTile, int nativeLod, int currentLod, int maxLod, int extentX, int extentY)
+   {
+      int sX = extentX;
+      int sY = extentY;
+      if(currentLod > nativeLod)
+      {
+         // update tile extents
+         sX = sX*2;
+         sY = sY*2;
+      }
+      std::stringstream lodDir; lodDir << sTileDir << currentLod;
+      if(!FileSystem::DirExists(lodDir.str()))
+               FileSystem::makedir(lodDir.str());
+      for(size_t sxx = 0; sxx < 2; sxx++)
+      {
+         for(size_t syy = 0; syy < 2; syy++)
+         {
+            
+            std::stringstream xDir; xDir << lodDir.str() << "/" << sX+sxx;
+            if(!FileSystem::DirExists(xDir.str()))
+               FileSystem::makedir(xDir.str());
+            std::string sampleFile = ProcessingUtils::GetTilePath(sTileDir, ".raw" , currentLod, sX+sxx, sY+syy);
+            boost::shared_array<float> sampleTile = boost::shared_array<float>(new float[tilesize*tilesize]);
+            memset(sampleTile.get(),0,tilesize*tilesize*sizeof(float));
+            
+            for (int ty=0;ty<tilesize;++ty)
+            {
+               for (int tx=0;tx<tilesize;++tx)
+               {
+                  float value;
+                  _ReadImageValueBilinear(pTile, tilesize, tilesize, double((tx/2.0)+(sxx*(tilesize/2.0))), double((ty/2.0)+(syy*(tilesize/2.0))), &value);
+                  sampleTile[tx+tilesize*ty] = value;
+               }
+            }
+            int lockh = FileSystem::Lock(sampleFile);
+               ImageWriter::WriteRaw32(sampleFile, tilesize, tilesize, sampleTile.get());
+            FileSystem::Unlock(sampleFile, lockh);
+            // process downward
+            if(currentLod < maxLod)
+            {
+               processlod(sTileDir, sampleTile.get(), nativeLod, currentLod+1, maxLod, sX+sxx, sY+syy);
+            }
+            // TEMPORARY FILE OUT               
+            //std::string fil = ProcessingUtils::GetTilePath(sTileDir, ".png" , currentLod, sX+sxx, sY+syy);
+            //_SaveFileAsPNG(sampleTile.get(), tilesize, tilesize, fil);
+            // --->
+         }
+      }
+   }*/
 
 }

@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
        ("fill", "fill empty parts, don't overwrite already existing data")
        ("overwrite", "overwrite existing data")
        ("numthreads", po::value<int>(), "force number of threads")
-       ("maxlod", po::value<int>(), "[optional]process top down to this LOD level (rawimage only)")
+       //("maxlod", po::value<int>(), "[optional]process top down to this LOD level (rawimage only)")
        ("verbose", "verbose output")
        ("nolock", "disable file locking (also forcing 1 thread)")
        ("force", "force adding data")
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
    bool bVirtual = false;
    ELayerType eLayer = IMAGE_LAYER;
    bool bUseProcessStatus = true;
-   int  iMaxLod = 0;
+   //int  iMaxLod = 0;
    int  iLod;
 
 
@@ -209,10 +209,10 @@ int main(int argc, char *argv[])
          omp_set_num_threads(n);
       }
    }
-   if (vm.count("maxlod"))
+   /*if (vm.count("maxlod"))
    {
       iMaxLod = vm["maxlod"].as<int>();
-   }
+   }*/
 
    if (vm.count("fill"))
    {
@@ -345,7 +345,7 @@ int main(int argc, char *argv[])
    }
    else if (eLayer == RAWIMAGE_LAYER)
    {
-      retval = RawImageData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1, iMaxLod);
+      retval = RawImageData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
    else if (eLayer == ELEVATION_LAYER)
    {

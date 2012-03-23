@@ -419,7 +419,11 @@ void Raw32ImageObject::AllocateImage(unsigned int w, unsigned int h, float defau
    _height = h;
    
    _qData = boost::shared_array<float>(new float[w*h]);
-   memset(_qData.get(),defaultValue,w*h*sizeof(float));
+   for(size_t i = 0; i < w*h; i++)
+   {
+      _qData[i] = defaultValue;
+   }
+   //memset(_qData.get(),defaultValue,w*h*sizeof(float));
 }
 
 

@@ -20,7 +20,6 @@ void _destroyTileBlockArray(TileBlock* pTileBlockArray)
       delete[] pTileBlockArray;
    }
 }
-
 //------------------------------------------------------------------------------
 void _resampleFromParent( TileBlock* pTileBlockArray, boost::shared_ptr<MercatorQuadtree> qQuadtree, int64 x, int64 y,int nLevelOfDetail, std::string sTileDir, bool rawData) 
 {
@@ -333,5 +332,4 @@ void _resampleFromParent( TileBlock* pTileBlockArray, boost::shared_ptr<Mercator
          }
       }
       ImageWriter::WriteRaw32(sTargetFile,tilesize, tilesize, sampleTile.get());
-      
    }
