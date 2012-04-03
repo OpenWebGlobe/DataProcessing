@@ -27,23 +27,314 @@
 <html lang="en">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <head>
+    <script type="text/javascript" src="codemirror/codemirror.js"></script>
+    <script type="text/javascript" src="codemirror/javascript.js"></script>    
     <script type="text/javascript" src="compiled/jquery-1.7.1.min.js"></script>
-    <script type="text/javascript" src="compiled/mapnikrenderer-optimized.js"></script>
+	 <script type="text/javascript" src="compiled/mapnikrenderer-optimized.js"></script>
     <!--<script type="text/javascript" src="compiled/mapnikrenderer-optimized.js"></script>
     <script type="text/javascript" src="external/closure-library/closure/goog/base.js"></script>
     <script type="text/javascript" src="compiled/deps.js"></script>
     <script type="text/javascript">goog.require('owg.process.MapnikRenderer');</script>-->
+    <link href="codemirror/codemirror.css" rel="stylesheet" type="text/css" />
     <link href="style.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript">
-        function Response(val)
-        {
-            document.write(val);
-        }
-        var mapnik = new MapnikRenderer("bla");
-        mapnik.RenderTile("a=hallo&b=blaaaaa",Response);
+	 		var m_layers = new Array();
+			
+			function Layer(type, name, srs, styleId, params)
+			{
+				this.type = type;
+				this.name = name;
+				this.srs = srs;
+				this.styleId = styleId;
+				this.params = params;
+			}
+			
+			function Response(val)
+			{
+				document.write(val);
+			}
+			//var mapnik = new MapnikRenderer("bla");
+			//mapnik.RenderTile("a=hallo&b=blaaaaa",Response);
+			function SwitchLayerType()
+			{
+				if($('#layertype').val() == "file")
+				{
+					$('#layer_db').css("visibility", "collapse");
+					$('#layer_db').css("height", "0px");
+					$('#layer_file').css("visibility", "visible");
+				} else
+				{
+					$('#layer_db').css("visibility", "visible");
+					$('#layer_db').css("height", "175px");
+					$('#layer_file').css("visibility", "collapse");
+				}
+			}
+			
+			function AddLayer()
+			{
+				var params = new Array();
+				if($('#layertype').val() == "file")
+				{
+					params.push($('#layerfiletype').val());
+					params.push($('#layerfile').val());
+				} else
+				{
+					params.push($('#dbtype').val());
+					params.push($('#dbhost').val());
+					params.push($('#dbport').val());
+					if($('#dbextimate').attr('checked'))
+					{params.push("true");}
+					else
+					{params.push("false");}
+					params.push($('#dbname').val());
+					params.push($('#dbuser').val());
+					params.push($('#dbpass').val());
+					params.push($('#dbtable').val());
+				}
+				var layer = new Layer($('#layertype').val(),$('#layername').val(),$('#layersrs').val(),$('#layerstyle').val(),params);
+				m_layers.push(layer);
+				UpdateLayerList();
+			}
+			
+			function RemoveLayer()
+			{
+				var remove = function(array,from, to) {
+				  var rest = array.slice((to || from) + 1 || array.length);
+				  array.length = from < 0 ? array.length + from : from;
+				  return array.push.apply(array, rest);
+				};
+				for(var i = 0; i < m_layers.length; i++)
+				{
+					if(m_layers[i].name == $('#layerlist').val())
+					{
+						remove(m_layers, i);
+						break;
+					}
+				}
+				UpdateLayerList();
+			}
+			
+			function SaveLayer()
+			{
+			}
+			
+			function UpdateLayerList()
+			{
+				$('#layerlist').empty();
+				for(var i = 0; i < m_layers.length; i++)
+				{
+					var opt = document.createElement("option");
+					opt.value = m_layers[i].name;
+					opt.text = m_layers[i].name;					
+					$('#layerlist').append(opt);
+				}
+			}
+			
+			
     </script>
 </head>
-    <body style="overflow:hidden;" onload="">
-
-    </body>
+<body style="overflow:hidden;" onLoad="">
+   	<div id="head">&nbsp;</div>
+   	<div id="main">
+      	<div id="renderview">
+         <h2>Preview</h2>
+         <br/>
+         </div>
+      </div>
+      <div id="editorcontainer">
+      <div id="tabContainer">
+         <div class="tabs">
+               <ul>
+               <li id="tabHeader_1">Map Definitions</li>
+               <li id="tabHeader_2">Layers</li>
+               <li id="tabHeader_3">Settings</li>
+               </ul>
+            </div>
+            <div class="tabscontent">
+               <div class="tabpage" id="tabpage_1">
+                 	<h2>Map Definitions</h2>
+                 	<table border="0" style="">
+                     <tr>
+                        <td>Backgroundcolor: </td>
+                        <td><input type="text" id="bgcolor" style="width:145px" value="rgba(255,255,255,0)" /></td>
+                     </tr>
+                     <tr>
+                        <td colspan="2">Zoom-Levels:</td>
+                     </tr>
+                     <tr>
+                        <td colspan="2"><textarea id="zooms" style="width: 267px; height: 200px">250000000000
+500000000
+200000000
+200000000
+100000000
+100000000
+50000000
+50000000
+25000000
+25000000
+12500000
+12500000
+6500000
+6500000
+3000000
+3000000
+1500000
+1500000
+750000
+750000
+400000
+400000
+200000
+200000
+100000
+100000
+50000
+50000
+25000
+25000
+12500
+12500
+5000
+5000
+2500
+2500
+1000</textarea></td>
+                     </tr>
+               	</table>
+               </div>
+               <div class="tabpage" id="tabpage_2">
+                 	<h2>Layers</h2>
+                  <select id="layerlist" style="width: 250px"></select>
+                  <input type="button" class="button1" id="addlayer" onClick="AddLayer()" value="Add"/>
+                  <input type="button" class="button1" id="savelayer" onClick="SaveLayer()" value="Save"/>
+                  <input type="button" class="button1" id="removelayer" onClick="RemoveLayer()" value="Remove"/>
+                 	<div style="padding: 5px">
+             			<table border="0" style="">
+                     	<tr>
+                        	<td>Type:</td>
+                        	<td><select id="layertype" onChange="SwitchLayerType()" style="width:150px">
+                        	   <option value="db">Database</option>
+                        	   <option value="file">File</option>
+                        	</select></td>
+                           <td>Style-Id:</td>
+                        	<td><input type="text" id="layerstyle" style="width:145px" value="" /></td>
+                        </tr>
+		               	<tr>
+                        	<td>Name:</td>
+                        	<td><input type="text" id="layername" style="width:145px" value="" /></td>
+                           <td>SRS:</td>
+                        	<td><input type="text" id="layersrs" style="width:145px" value="" /></td>
+                        </tr>
+                     </table>
+                     <div id="layer_db">
+                     	<h3>Database properties</h3>
+                     	<table border="0" cellspacing="4px">
+                     	<tr>
+                        	<td>Type:</td>
+                        	<td><select id="dbtype" style="width:150px">
+                        	   <option value="postgis">PostGIS</option>
+                        	</select></td>
+                           <td>Database Name:</td>
+                        	<td><input type="text" id="dbname" style="width:145px" value="" /></td>
+                        </tr>
+		               	<tr>
+                        	<td>Host:</td>
+                        	<td><input type="text" id="dbhost" style="width:145px" value="" /></td>
+                           <td>Username:</td>
+                        	<td><input type="text" id="dbuser" style="width:145px" value="" /></td>
+                        </tr>
+                        <tr>
+                        	<td>Port:</td>
+                        	<td><input type="text" id="dbport" style="width:145px" value="" /></td>
+                           <td>Password:</td>
+                        	<td><input type="password" id="dbpass" style="width:145px" value="" /></td>
+                        </tr>
+                        <tr>
+                        	<td>Estimate extent:</td>
+                        	<td><input type="checkbox" id="dbextimate"/></td>
+                           <td >Argument:</td>
+                        	<td><textarea id="dbtable" style="width: 200px; height: 50px">(select what from table where id = 0) as result</textarea></td>
+                        </tr>
+                        <tr>
+                       
+                        </tr>
+                     </table>
+                     </div>
+                     <div id="layer_file">
+                     	<h3>File properties</h3>
+                     	<table border="0" cellspacing="4px">
+                     	<tr>
+                        	<td>Type:</td>
+                        	<td><select id="layerfiletype" style="width:150px">
+                        	   <option value="shape">Shapefile</option>
+                              <option value="gdal">GDAL GeoTiff</option>
+                        	</select></td>
+                        </tr>
+		               	<tr>
+                        	<td>File:</td>
+                        	<td><input type="text" id="layerfile" style="width:145px" value="" /></td>
+                        </tr>
+                     </table>
+                     </div>
+                 	</div>
+               </div>
+               <div class="tabpage" id="tabpage_3">
+                 <h2>Settings</h2>
+                 <p>Pellentesque habitant morbi tristique senectus...</p>
+               </div>
+            </div>
+         </div>
+         <div id="editor"><span><h2>Styles</h2></span><br/><textarea style="width: 100%;background-color:#EEEEEE" id="code" name="code">
+{
+   "header":{
+   },
+   "map": {
+   }
+}
+         </textarea>
+         </div>
+      </div>
+		<script type="text/javascript">
+				window.onload=function() {
+					// get tab container
+					var container = document.getElementById("tabContainer");
+					// set current tab
+					var navitem = container.querySelector(".tabs ul li");
+					//store which tab we are on
+					var ident = navitem.id.split("_")[1];
+					navitem.parentNode.setAttribute("data-current",ident);
+					//set current tab with class of activetabheader
+					navitem.setAttribute("class","tabActiveHeader");
+					//hide two tab contents we don't need
+					var pages = container.querySelectorAll(".tabpage");
+					for (var i = 1; i < pages.length; i++) {
+						pages[i].style.display="none";
+					}
+					
+					//this adds click event to tabs
+					var tabs = container.querySelectorAll(".tabs ul li");
+					for (var i = 0; i < tabs.length; i++) {
+						tabs[i].onclick=displayPage;
+					}
+				}
+				
+				// on click of one of tabs
+				function displayPage() {
+					var current = this.parentNode.getAttribute("data-current");
+					//remove class of activetabheader and hide old contents
+					document.getElementById("tabHeader_" + current).removeAttribute("class");
+					document.getElementById("tabpage_" + current).style.display="none";
+					
+					var ident = this.id.split("_")[1];
+					//add class of activetabheader to new active tab and show contents
+					this.setAttribute("class","tabActiveHeader");
+					document.getElementById("tabpage_" + ident).style.display="block";
+					this.parentNode.setAttribute("data-current",ident);
+				}
+				var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+							  lineNumbers: true,
+							  matchBrackets: true
+							});
+         </script>
+</body>
 </html>
