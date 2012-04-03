@@ -1,15 +1,6 @@
 ################################################################################
 #!c:\python27\python.exe
-#
-# Server side python execution using WSGI
-# Author: Martin Christen, martin.christen@fhnw.ch
-#
-# Run this script then open your webbrowser and enter:
-#   localhost:8000/?a=5
-#   localhost:8000/?a=1&b=20
-#   localhost:8000/?c=123
-#
-# or install apache with mod_wsgi and run it directly on your website!
+# Author: Robert Wüest, robert.wueest@fhnw.ch
 #
 # (c) 2012 by FHNW University of Applied Sciences and Arts Northwestern Switzerland
 ################################################################################
@@ -18,22 +9,89 @@ import os.path
 import os
 import sys
 import cgi
+from ctypes import *
 
-json_template = """\
-[
-  Version: "1.0",
-  Tool: "JSON-Test",
-  Message: \"%(GET)s\",
-  PythonVersion: \"%(version)s\"
-]
+################################################################################
+# Mapnik Templates
+################################################################################
+mapnik_header = """\
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map [
+%(entities)s]>
+"""
+mapnik_map = """\
+<Map bgcolor=\"%(bgcolor)s\" srs=\"%(srs)s\">
+%(definitions)s
+</Map>
 """
 
-################################################################################
-message_text = "empty!"
-################################################################################
+mapnik_entity = """\
+    <!ENTITY %(name)s \"%(value)s\">
+"""
 
+mapnik_minscaledenominator_entity = """\
+    <!ENTITY minscale_zoom%(zoom)i \"<MinScaleDenominator>%(denominator)s</MinScaleDenominator>\">
+"""
+
+mapnik_maxscaledenominator_entity = """\
+    <!ENTITY maxscale_zoom%(zoom)i \"<MaxScaleDenominator>%(denominator)s</MaxScaleDenominator>\">
+"""
+
+mapnik_style = """\
+    <style name = \"%(name)s\">
+%(rules)s
+    </style>
+"""
+
+mapnik_style_rule = """\
+        <Rule>
+%(zoom)s
+%(filter)s
+%(symbolizers)s
+        </Rule>
+"""
+
+mapnik_style_polygonsymbolizer = """\
+            <PolygonSymbolizer>
+%(cssparams)s
+            </PolygonSymbolizer>
+"""
+
+mapnik_style_linesymbolizer = """\
+            <LineSymbolizer>
+%(cssparams)s
+            </LineSymbolizer>
+"""
+
+mapnik_style_polygonpatternsymbolizer = """\
+            <PolygonPatternSymbolizer  file=\"%(file)s\" type=\"%(type)s\" width=\"%(width)s\" height=\"%(height)s\"/>
+"""
+
+mapnik_style_textsymbolizer = """\
+            <TextSymbolizer name=\"%(name)s\" face_name=\"%(font_face)s\" size=\"%(size)s\" dx=\"%(dx)s\"dy=\"%(dy)s\" fill=\"%(fill)s\" halo_radius=\"%(halo_radius)s\" wrap_width=\"%(wrap_width)s\"/>
+"""
+
+mapnik_style_cssparameter = """\
+                <CssParameter name=\"%(name)s\"/>%(value)s</CssParameter>
+"""
+
+mapnik_layer = """\
+    <Layer name=\"%(name)s\" status=\"%(status)s\" srs=\"%(srs)\">
+        <StyleName>%(name)s</StyleName>
+        <Datasource>
+%(params)s
+        </Datasource>
+    </Layer>
+"""
+
+mapnik_layer_param = """\
+            <Parameter name=\"%(name)s\">%(value)s</Parameter>
+"""
+################################################################################
+# application
+################################################################################
 def application(environ, start_response):
-    # emit status / headers
+
     status = "200 OK"
     headers = [('Content-Type', 'application/json'), ('Access-Control-Allow-Origin', '*') ]
     #headers = [('content-type', 'text/plain')]
@@ -41,32 +99,11 @@ def application(environ, start_response):
 
     form = cgi.FieldStorage(fp=environ['wsgi.input'],environ=environ)
 
-    #---------------------------------------------------------------------------
-    #check if input is correct!
-    if "a" not in form or "b" not in form:
-       message_text = "please specify a or b!!"
-
-    if "a" in form and "b" not in form:
-       message_text = "only a is defined: a=" + str(form.getvalue("a"))
-
-    if "b" in form and "a" not in form:
-       message_text = "only b is defined: b=" + str(form.getvalue("b"))
-
-    if "a" in form and "b" in form:
-       message_text = "a=" + str(form.getvalue("a")) + " b=" + str(form.getvalue("b"))
-    #---------------------------------------------------------------------------
-
-    # assemble and return content
-    content = json_template % {
-	    'GET': message_text,
-       'version': sys.version
-    }
-	
     return [content]
 
-#-------------------------------------------------------------------------------
+################################################################################
 # FOR STAND ALONE EXECUTION / DEBUGGING:
-#-------------------------------------------------------------------------------
+################################################################################
 if __name__ == '__main__':
     # this runs when script is started directly from commandline
     try:

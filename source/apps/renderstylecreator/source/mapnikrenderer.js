@@ -33,7 +33,7 @@ goog.provide('owg.process.MapnikRenderer');
  */
 function MapnikRenderer(path)
 {
-    
+
 }
 //-----------------------------------------------------------------------------
 /**
@@ -47,7 +47,6 @@ MapnikRenderer.prototype.RenderTile = function(params,callback)
     {
         url = "mapnik.py";
     }
-    alert(url);
     var http_request = new window.XMLHttpRequest();
     http_request.open("GET",url+"?"+params, true);
     http_request.onreadystatechange = function()
