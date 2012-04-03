@@ -372,7 +372,6 @@ function MapnikRenderer() {
 MapnikRenderer.prototype.RenderTile = function(a, b) {
   var c = "http://localhost:8000/";
   GetURLParameter("debug") != 1 && (c = "mapnik.py");
-  alert(c);
   var d = new window.XMLHttpRequest;
   d.open("GET", c + "?" + a, !0);
   d.onreadystatechange = function() {
