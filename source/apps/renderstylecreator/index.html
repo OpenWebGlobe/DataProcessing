@@ -130,6 +130,15 @@
 				}
 			}
 			
+			function ValidateStyles(value)
+			{
+				try {
+					var obj = jQuery.parseJSON(value);
+					jQuery('#styleerror').html('');
+				} catch(err){
+					jQuery('#styleerror').html("Parsing Error : " + err.message);
+				}			
+			}
 			
     </script>
 </head>
@@ -284,11 +293,22 @@
                </div>
             </div>
          </div>
-         <div id="editor"><span><h2>Styles</h2></span><br/><textarea style="width: 100%;background-color:#EEEEEE" id="code" name="code">
+         <div id="editor"><span><h2>Styles</h2></span>
+         <input type="button" class="button1" id="addlayer" onClick="ValidateStyles(editor.getValue())" value="Validate" style="float:right; margin-top: -20px"/><div id="styleerror" style="float:right;margin-top: -16px; color:#993300; font-size: 12px; padding-right: 5px"></div><br/>
+         <textarea style="width: 100%;background-color:#EEEEEE" id="code" name="code">
 {
-   "header":{
-   },
-   "map": {
+   "landuse":{
+      "rules": [
+         {	
+            "minzoom": 2,
+            "maxzoom": 2,
+            "filter": "[landuse] = 'quarry'",
+            "polygonsymbolizer": 
+            {
+               "fill" : "#abdf96"
+            }
+         }
+      ]
    }
 }
          </textarea>
@@ -334,7 +354,7 @@
 				var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
 							  lineNumbers: true,
 							  matchBrackets: true
-							});
+							});					
          </script>
 </body>
 </html>
