@@ -47,11 +47,12 @@ MapnikRenderer.prototype.RenderTile = function(params,callback)
     {
         url = "mapnik.py";
     }
+
     var http_request = new window.XMLHttpRequest();
     http_request.open("GET",url+"?"+params, true);
     http_request.onreadystatechange = function()
     {
-        if (http_request.readyState == 4)// && http_request.status == 200)
+        if (http_request.readyState == 4)
         {
             callback(http_request.responseText);
         }
