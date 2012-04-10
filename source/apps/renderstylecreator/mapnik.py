@@ -5,13 +5,15 @@
 # (c) 2012 by FHNW University of Applied Sciences and Arts Northwestern Switzerland
 ################################################################################
 
-import os.path
-import os
 import sys
 import cgi
 import urllib
+import string
 from ctypes import *
+from os import *
 import json
+from PIL import Image
+import cStringIO
 
 ################################################################################
 # Mapnik Templates
@@ -21,8 +23,7 @@ mapnik_header = """<?xml version="1.0" encoding="utf-8"?>
 %(entities)s]>
 """
 mapnik_map = """<Map bgcolor=\"%(bgcolor)s\" srs=\"%(srs)s\">
-%(layers)s%(styles)s</Map>
-"""
+%(layers)s%(styles)s</Map>"""
 
 mapnik_entity = """    <!ENTITY %(name)s \"%(value)s\">
 """
@@ -55,7 +56,7 @@ mapnik_style_polygonpatternsymbolizer = """            <PolygonPatternSymbolizer
 mapnik_style_textsymbolizer = """            <TextSymbolizer %(params)s />
 """
 
-mapnik_style_cssparameter = """                <CssParameter name=\"%(name)s\"/>%(value)s</CssParameter>
+mapnik_style_cssparameter = """                <CssParameter name=\"%(name)s\">%(value)s</CssParameter>
 """
 
 mapnik_style_parameter = """ %(name)s=\"%(value)s\""""
@@ -74,10 +75,7 @@ mapnik_layer_param = """            <Parameter name=\"%(name)s\">%(value)s</Para
 ################################################################################
 def application(environ, start_response):
 
-    status = "200 OK"
-    headers = [('Content-Type', 'application/json'), ('Access-Control-Allow-Origin', '*') ]
-    #headers = [('content-type', 'text/plain')]
-    start_response(status, headers)
+
 
     form = cgi.FieldStorage(fp=environ['wsgi.input'],environ=environ)
     s = form.getvalue("style")
@@ -125,19 +123,21 @@ def application(environ, start_response):
             cRule = cStyle["rules"][j]
             ruleFilter = ""
             ruleZooms = ""
-            if cRule["filter"]:
+            if 'filter' in cRule:
                 ruleFilter += "            <Filter>"+cRule["filter"]+"</Filter>\n"
-            if cRule["maxzoom"]:
+            if 'maxzoom' in cRule:
                 ruleZooms += "            &maxscale_zoom"+str(cRule["maxzoom"])+";\n"
-            if cRule["minzoom"]:
+            if 'minzoom' in cRule:
                 ruleZooms += "            &minscale_zoom"+str(cRule["minzoom"])+";\n"
             for k in range(len(cRule["symbolizers"])):
                 tCssParams = ""
                 tParams = ""
                 cSym = cRule["symbolizers"][k]
-                for l in range(len(cSym["params"])):
-                    tCssParams += mapnik_style_cssparameter % { 'name': cSym["params"][l][0], 'value' : cSym["params"][l][1]}
-                    tParams += mapnik_style_parameter % { 'name': cSym["params"][l][0], 'value' : cSym["params"][k][l]}
+
+                for l in range(len(list(cSym["params"].viewkeys()))):
+                    cParam = cSym["params"][list(cSym["params"].viewkeys())[l]]
+                    tCssParams += mapnik_style_cssparameter % { 'name': list(cSym["params"].viewkeys())[l], 'value' : cParam}
+                    tParams += mapnik_style_parameter % { 'name': list(cSym["params"].viewkeys())[l], 'value' : cParam}
                 if cSym["type"] == "polygon":
                     tSymbolizers += mapnik_style_polygonsymbolizer % {'cssparams' : tCssParams }
                 elif cSym["type"] == "polygonpattern":
@@ -151,8 +151,32 @@ def application(environ, start_response):
 
     tMapnik += mapnik_header % {'entities' : tHeaders}
     tMapnik += mapnik_map % { 'bgcolor' : bgcolor, 'srs': srs, 'layers': tLayers, 'styles': tStyles }
-    print tMapnik
-    return ""
+    #print tMapnik
+    chdir("E:/WebViewer/DataProcessing/bin/")
+    libtest = cdll.LoadLibrary('ogMapnikBindings.dll')
+    mapnik_dir = c_char_p("mapnik/")
+    mapdef = c_char_p(str(tMapnik))
+    width = c_int(int(form.getvalue("height")))
+    height = c_int(int(form.getvalue("width")))
+    lon0 = c_double(float(form.getvalue("lon0")))
+    lat0 = c_double(float(form.getvalue("lat0")))
+    lon1 = c_double(float(form.getvalue("lon1")))
+    lat1 = c_double(float(form.getvalue("lat1")))
+    libtest.PyRenderTile.restype = c_char_p
+    asize = width.value*height.value*4
+    output = create_string_buffer(asize)
+    cpo = libtest.PyRenderTile(mapnik_dir,mapdef,width,height,lon0,lat0,lon1,lat1,output)
+    lnr = 0
+    #for j in range(asize):
+     #   print ord(output[j])
+    status = "200 OK"
+    headers = [('Content-Type', 'image/png'),('Content-Size', str(asize)), ('Access-Control-Allow-Origin', '*') ]
+    start_response(status, headers)
+    img = Image.frombuffer('RGBA', (width.value, height.value), output, 'raw', 'RGBA', 0, 1)
+    f = cStringIO.StringIO()
+    img.save(f, "PNG")
+    f.seek(0)
+    return f.read()
 
 ################################################################################
 # FOR STAND ALONE EXECUTION / DEBUGGING:

@@ -77,9 +77,10 @@ table{
   overflow-y: auto;
   overflow-x: auto;
   width: 100%;
-  font-size: 11pt;
-  line-height:13px;
-    background-color: #FFF;
+  font-size: 12pt;
+  line-height:15px;
+  background-color: #FFF;
+  font-weight: bold;
 }
 
 #main {
@@ -105,18 +106,15 @@ table{
 }
 
 #layer_db {
-	border: 1px solid #CCCCCC;
-	padding: 5px;
-	-moz-border-radius: 4px;
-	border-radius:4px;
 	visibility: visible;
 	height: 175px;
 }
 
 #layer_file {
-	border: 1px solid #CCCCCC;
-	padding: 5px;
-	-moz-border-radius: 4px;
-	border-radius:4px;
+
 	visibility:collapse;
+}
+
+.content_frame{
+padding: 5px; -moz-border-radius: 4px;border-radius:4px;border: 1px solid #CCC; margin: 3px
 }

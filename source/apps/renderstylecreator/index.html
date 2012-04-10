@@ -69,6 +69,7 @@
                 var dropZone = document.getElementById('dropfile');
                 dropZone.addEventListener('dragover', handleDragOver, false);
                 dropZone.addEventListener('drop', handleFileSelect, false);
+
             });
 
 	 		var m_layers = new Array();
@@ -237,9 +238,16 @@
 
             function Render(style)
             {
-                var response = function(val)
+                var response = function(img)
                 {
-                    alert(decodeURIComponent(val));
+                    //alert(decodeURIComponent(val));
+                    var c=document.getElementById("rendercanvas");
+                    var ctx = c.getContext("2d");
+                    ctx.canvas.width = parseInt($("#img_w").val());
+                    ctx.canvas.height = parseInt($("#img_h").val());
+                    $('#rendercanvas').css("width", $("#img_w").val()+"px");
+                    $('#rendercanvas').css("height", $("#img_h").val()+"px");
+                    ctx.drawImage(img,0,0);
                 };
                 if(ValidateZooms(jQuery('#zooms').val()))
                 {
@@ -249,7 +257,14 @@
                                 +"&zooms="+encodeURIComponent(jQuery('#zooms').val())
                                 +"&layers="+encodeURIComponent(JSON.stringify(m_layers))
                                 +"&srs="+encodeURIComponent(jQuery('#mapsrs').val())
-                                +"&bgcolor="+encodeURIComponent(jQuery('#bgcolor').val()),response);
+                                +"&bgcolor="+encodeURIComponent(jQuery('#bgcolor').val())
+                                +"&width="+encodeURIComponent(jQuery('#img_w').val())
+                                +"&height="+encodeURIComponent(jQuery('#img_h').val())
+                                +"&lon0="+encodeURIComponent(jQuery('#lon0').val())
+                                +"&lat0="+encodeURIComponent(jQuery('#lat0').val())
+                                +"&lon1="+encodeURIComponent(jQuery('#lon1').val())
+                                +"&lat1="+encodeURIComponent(jQuery('#lat1').val())
+                                ,response);
                     }
                 }
 
@@ -414,6 +429,9 @@
       	<div class="ui-widget-content" id="renderview">
          <h2>Preview</h2><input type="button"  id="render" onClick="Render(editor.getValue())" value="Render" style="float:right; margin-top: -25px"/>
          <br/>
+              <div id="render_image" style="overflow: scroll;background-color: #FFFFFF; padding: 5px; border: 1px solid #CCC;height:350px;-moz-border-radius: 4px;border-radius:4px;margin: 3px">
+                  <canvas id="rendercanvas" width="50" height="50" style=""></canvas>
+              </div>
          </div>
      </div>
       <div id="editorcontainer">
@@ -438,41 +456,25 @@
                      </tr>
                      <tr>
                         <td>Zoom-Levels:</td>
-                        <td colspan="2"><textarea id="zooms" style="width: 350px; height: 200px">[250000000000,
+                        <td colspan="2"><textarea id="zooms" style="width: 350px; height: 200px">[
+250000000000,
 500000000,
 200000000,
-200000000,
-100000000,
 100000000,
 50000000,
-50000000,
-25000000,
 25000000,
 12500000,
-12500000,
-6500000,
 6500000,
 3000000,
-3000000,
-1500000,
 1500000,
 750000,
-750000,
-400000,
 400000,
 200000,
-200000,
-100000,
 100000,
 50000,
-50000,
-25000,
 25000,
 12500,
-12500,
 5000,
-5000,
-2500,
 2500,
 1000
 ]</textarea><br/><div id="zoomerror" style="float:right; color:#993300; font-size: 12px; padding-top: 5px"></div></td>
@@ -485,7 +487,8 @@
                   <input type="button" id="addlayer" onClick="AddLayer()" style="visibility: visible" value="Add"/>
                   <input type="button" id="savelayer" onClick="SaveLayer()" style="visibility: hidden"value="Save"/>
                   <input type="button" id="removelayer" onClick="RemoveLayer()" style="visibility: hidden" value="Remove"/>
-                 	<div style="padding: 5px">
+                 	<div class="content_frame">
+                         <h3>Properties</h3>
              			<table border="0" style="">
                      	<tr>
                         	<td>Type:</td>
@@ -507,7 +510,7 @@
                              <td><input type="checkbox" id="layerstatus" checked/></td>
                          </tr>
                      </table>
-                     <div id="layer_db">
+                     <div id="layer_db" class="content_frame">
                      	<h3>Database properties</h3>
                      	<table border="0" cellspacing="4px">
                      	<tr>
@@ -541,7 +544,7 @@
                         </tr>
                      </table>
                      </div>
-                     <div id="layer_file">
+                     <div id="layer_file" class="content_frame">
                      	<h3>File properties</h3>
                      	<table border="0" cellspacing="4px">
                      	<tr>
@@ -561,7 +564,19 @@
                </div>
                <div id="tab_3">
                  <h2>Settings</h2>
-                 <p></p>
+                    <div class="content_frame">
+                        <h3>Boundaries (WGS84):</h3>
+                       <table>
+                           <tr><td>lon0: </td><td><input type="text" id="lon0" style="width:150px" value="-13.224"/></td>
+                               <td>lat0: </td><td><input type="text" id="lat0" style="width:150px" value="58.801"/></td></tr>
+                           <tr><td>lon1: </td><td><input type="text" id="lon1" style="width:150px" value="30.370"/></td>
+                               <td>lat1: </td><td><input type="text" id="lat1" style="width:150px" value="32.169"/></td></tr></table>
+                    </div>
+                    <div class="content_frame"><h3>Tilesize:</h3>
+                       <table>
+                           <tr><td>Width: </td><td><input type="text" id="img_w" style="width:150px" value="256"/></td>
+                               <td>Height: </td><td><input type="text" id="img_h" style="width:150px" value="256"/></td></tr></table>
+                     </div>
                </div>
 
                <div  id="tab_4">
@@ -580,9 +595,9 @@
             [
                 {
                     "type": "polygon",
-                    "params": [
-                        ["fill" , "#abdf96"]
-                    ]
+                    "params": {
+                        "fill" : "#abdf96"
+                    }
                 }
             ]
          }
@@ -611,10 +626,12 @@
                     var sHeight = (window.innerHeight-75);
                     var eHeight = (window.innerHeight-90);
                     var fHeight = (window.innerHeight-200);
+                    var vHeight = (window.innerHeight-160);
                     $('#renderview').css("height", rHeight+"px");
                     $('#editorcontainer').css("height", sHeight+"px");
                     $('#tabContainer').css("height", (eHeight)+"px");
                     $('.CodeMirror-scroll').css("height", fHeight+"px");
+                    $('#render_image').css("height", vHeight+"px");
                 }
 
          </script>

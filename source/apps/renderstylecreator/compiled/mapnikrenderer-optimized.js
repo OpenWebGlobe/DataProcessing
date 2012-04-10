@@ -372,12 +372,11 @@ function MapnikRenderer() {
 MapnikRenderer.prototype.RenderTile = function(a, b) {
   var c = "http://localhost:8000/";
   GetURLParameter("debug") != 1 && (c = "mapnik.py");
-  var d = new window.XMLHttpRequest;
-  d.open("GET", c + "?" + a, !0);
-  d.onreadystatechange = function() {
-    d.readyState == 4 && b(d.responseText)
+  var d = new Image;
+  d.onload = function() {
+    b(d)
   };
-  d.send()
+  d.src = c + "?" + a
 };
 function GetURLParameter(a) {
   return decodeURI((RegExp(a + "=(.+?)(&|$)").exec(document.location.search) || [, null])[1])

@@ -39,7 +39,7 @@ extern "C"
       return a; 
    }
 
-   __declspec(dllexport) char* PyRenderTile(char * mapnik_dir, char* mapdef, char* path, int w, int h, double lon0, double lat0, double lon1, double lat1)
+   __declspec(dllexport) char* PyRenderTile(char * mapnik_dir, char* mapdef, int w, int h, double lon0, double lat0, double lon1, double lat1, char* output)
    {
       std::stringstream plugin_path;
       mapnik::projection mapnikProj;
@@ -73,6 +73,7 @@ extern "C"
          // -- Generate map container
          map.set_background(color_factory::from_string("white"));
          std::cout << "..parse map file definitions.....";
+         std::cout << mapdef << std::flush;
          load_map_string(map,mapdef);
          std::cout << "....Ok!\n" << std::flush;
 
@@ -97,23 +98,27 @@ extern "C"
          mapnik::Image32 buf(map.getWidth(),map.getHeight());
          mapnik::agg_renderer<mapnik::Image32> ren(map,buf);
          ren.apply();
-         mapnik::save_to_file<mapnik::ImageData32>(buf.data(),path,"png");
+         for(size_t i = 0; i < w*h*4; i++)
+         {
+            output[i] = buf.raw_data()[i];
+         }
+         mapnik::save_to_file<mapnik::ImageData32>(buf.data(),"bla.png","png");
+         return "S";
       }
       catch ( const mapnik::config_error & ex )
       {
          std::cout << "### Configuration ERROR: " << ex.what() << std::flush;
-         return 0;
+         return "E1";
       }
       catch ( const std::exception & ex )
       {
          std::cout << "### std::exception: " << ex.what() << std::flush;
-         return 0;
+         return "E2";
       }
       catch ( ... )
       {
          std::cout << "### Unknown exception." << std::flush;
-         return 0;
+         return "E3";
       }
-      return 0;
    }
 }

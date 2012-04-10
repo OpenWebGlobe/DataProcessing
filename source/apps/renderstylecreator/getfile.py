@@ -17,7 +17,7 @@ def application(environ, start_response):
     out = json.loads(data)
     output = json.dumps(out, sort_keys=False, indent=3)
     headers = [
-        ("Content-Disposition", "attachment; filename=manik_style.json"),
+        ("Content-Disposition", "attachment; filename=mapnik_style.json"),
         ("Content-Type", "text/force-download"),
         ("Content-Length", str(len(output))),
         ("Connection", "close")
