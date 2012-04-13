@@ -34,3 +34,40 @@ Dependencies:
 * libxml2
 * mpi
 
+Building on linux:
+==================
+Step by step
+•	Install Git
+o	sudo apt-get install git-core
+•	Clone Repository:
+o	git clone https://{username}@github.com/OpenWebGlobe/DataProcessing.git
+•	Install GDAL
+o	sudo apt-get install gdal-bin
+o	sudo apt-get install libgdal1-dev
+•	Install Mapnik Dependencies:
+o	sudo apt-get install -y libltdl3-dev libpng12-dev libtiff4-dev libicu-dev
+o	sudo apt-get install -y python-dev python-cairo-dev python-nose
+o	sudo apt-get install libboost-python1.46-dev
+o	sudo apt-get install libboost-filesystem1.46-dev
+o	sudo apt-get install libboost-system1.46-dev
+o	sudo apt-get install libboost-regex1.46-dev
+o	sudo apt-get install libboost-thread1.46-dev
+o	sudo apt-get install libboost-program-options1.46-dev
+o	sudo apt-get install libboost-iostreams1.46-dev
+o	sudo apt-get install -y libfreetype6-dev libcairo2-dev libcairomm-1.0-dev
+o	sudo apt-get install -y libgeotiff-dev libtiff4 libtiff4-dev libtiffxx0c2
+o	sudo apt-get install -y libsigc++-dev libsigc++0c2 libsigx-2.0-2 libsigx-2.0-dev
+o	sudo apt-get install -y python-gdal
+o	sudo apt-get install -y imagemagick ttf-dejavu
+Install Mapnik
+•	In {your_path}/DataProcessing
+o	mkdir external
+o	cd external
+o	git clone https://github.com/mapnik/mapnik.git -b 0.7.x 
+•	Build Mapnik from sourc
+o	cd {your_path}/DataProcessing /external/mapnik
+o	python scons/scons.py configure  (if this doesn’t fails continue)
+o	python scons/scons.py
+o	python scons/scons.py install
+o  cd build/linux
+o  sudo make
