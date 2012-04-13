@@ -73,7 +73,7 @@ extern "C"
          // -- Generate map container
          map.set_background(color_factory::from_string("white"));
          std::cout << "..parse map file definitions.....";
-         std::cout << mapdef << std::flush;
+         //std::cout << mapdef << std::flush;
          load_map_string(map,mapdef);
          std::cout << "....Ok!\n" << std::flush;
 
@@ -102,7 +102,7 @@ extern "C"
          {
             output[i] = buf.raw_data()[i];
          }
-         mapnik::save_to_file<mapnik::ImageData32>(buf.data(),"bla.png","png");
+         //mapnik::save_to_file<mapnik::ImageData32>(buf.data(),"bla.png","png");
          return "S";
       }
       catch ( const mapnik::config_error & ex )
