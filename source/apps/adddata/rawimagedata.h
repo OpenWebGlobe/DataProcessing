@@ -184,7 +184,7 @@ namespace RawImageData
       for(size_t xi = 0; xi < bufferwidth*bufferheight; xi++)
       {
          size_t adr=4*xi;
-         unsigned char scaledValue = unsigned char((buffer[xi]/1000.0f)*255.0f); //(pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value);
+         unsigned char scaledValue = (unsigned char)((buffer[xi]/1000.0f)*255.0f); //(pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value);
          pngTile[adr+0] = scaledValue;  
          pngTile[adr+1] = scaledValue;  
          pngTile[adr+2] = scaledValue;

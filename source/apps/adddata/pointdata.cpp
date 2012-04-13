@@ -16,6 +16,8 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
+#ifdef _USE_POINTS
+
 #include "pointdata.h"
 #include "string/FilenameUtils.h"
 #include "io/FileSystem.h"
@@ -236,4 +238,7 @@ namespace PointData
    }
 
 }
+
+#endif
+
 

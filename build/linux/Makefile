@@ -2,16 +2,16 @@ AR=ar
 CXX=g++
 MPICXX=mpic++
 
-BOOST=../../external/boost_1_46_1
+BOOST=/usr/lib/
 BOOST_LIBS=date_time filesystem program_options thread system
 BOOST_TOOLSET=gcc-4.4.3
 BOOST_VARIANT=release
 BOOST_LINK=static
 BOOST_THREADING=multi
 
-GDAL_VERSION=1.7.0
+GDAL_VERSION=1.8.0
 
-CFLAGS=-fopenmp -I$(BOOST) -I../../source/core -I/usr/include/gdal -O2 -Werror
+CFLAGS=-fopenmp -I$(BOOST) -I/usr/include/freetype2 -I../../source/core -I/usr/include/gdal -O2 -Werror
 
 TARGETS=\
 	../../bin/ogAddData \
@@ -25,9 +25,10 @@ TARGETS=\
 
 LIBS=\
      -Wl,--whole-archive ../../bin/libOpenWebGlobeProcessing.a -Wl,--no-whole-archive \
-     $(foreach lib,$(BOOST_LIBS),$(BOOST)/bin.v2/libs/$(lib)/build/$(BOOST_TOOLSET)/$(BOOST_VARIANT)/link-$(BOOST_LINK)/threading-$(BOOST_THREADING)/libboost_$(lib).a) \
+     $(foreach lib,$(BOOST_LIBS),$(BOOST)/libboost_$(lib).a) \
      -lgdal$(GDAL_VERSION) \
-     -lxerces-c
+     -lxerces-c \
+     -lmapnik
 
 OGADDDATA_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/adddata -name *.cpp))
 OGCALCEXTENT_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/calcextent -name *.cpp))

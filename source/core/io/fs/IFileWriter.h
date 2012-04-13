@@ -19,6 +19,7 @@
 #ifndef _IFILEWRITER_H
 #define _IFILEWRITER_H
 
+#include <iostream>
 #include "og.h"
 #include <vector>
 

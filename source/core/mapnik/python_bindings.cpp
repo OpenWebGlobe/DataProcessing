@@ -32,14 +32,24 @@
 #include <mapnik/envelope.hpp>
 #include <mapnik/proj_transform.hpp>
 
+#ifdef _MSC_VER
+ #define PYTHON_MAPNIK_API __declspec(dllexport)
+#else
+ #define PYTHON_MAPNIK_API
+#endif
+ 
+
+
+
 extern "C"
 {
-   __declspec(dllexport) char* test(char * a)
+
+   PYTHON_MAPNIK_API char* test(char * a)
    {
       return a; 
    }
 
-   __declspec(dllexport) char* PyRenderTile(char * mapnik_dir, char* mapdef, int w, int h, double lon0, double lat0, double lon1, double lat1, char* output)
+   PYTHON_MAPNIK_API char* PyRenderTile(char * mapnik_dir, char* mapdef, int w, int h, double lon0, double lat0, double lon1, double lat1, char* output)
    {
       std::stringstream plugin_path;
       mapnik::projection mapnikProj;
@@ -103,22 +113,22 @@ extern "C"
             output[i] = buf.raw_data()[i];
          }
          //mapnik::save_to_file<mapnik::ImageData32>(buf.data(),"bla.png","png");
-         return "S";
+         return (char*)"S";
       }
       catch ( const mapnik::config_error & ex )
       {
          std::cout << "### Configuration ERROR: " << ex.what() << std::flush;
-         return "E1";
+         return (char*)"E1";
       }
       catch ( const std::exception & ex )
       {
          std::cout << "### std::exception: " << ex.what() << std::flush;
-         return "E2";
+         return (char*)"E2";
       }
       catch ( ... )
       {
          std::cout << "### Unknown exception." << std::flush;
-         return "E3";
+         return (char*)"E3";
       }
    }
 }
