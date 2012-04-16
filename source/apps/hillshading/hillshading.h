@@ -513,9 +513,9 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, boos
                vec3<float> value = SobleOperator(afWin, dem_z);
                if (pTile[adr+3] == 0)
                {
-                  pTile[adr+0] = unsigned char((value.x + 1.0) * (255.0 / 2.0));
-                  pTile[adr+1] = unsigned char((value.y + 1.0) * (255.0 / 2.0));  
-                  pTile[adr+2] = unsigned char((value.z + 1.0) * (255.0 / 2.0)); 
+                  pTile[adr+0] = (unsigned char)((value.x + 1.0) * (255.0 / 2.0));
+                  pTile[adr+1] = (unsigned char)((value.y + 1.0) * (255.0 / 2.0));  
+                  pTile[adr+2] = (unsigned char)((value.z + 1.0) * (255.0 / 2.0)); 
                   pTile[adr+3] = foundNData ? 0.0 : 255;
                } 
             }
@@ -561,7 +561,7 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, boos
                }
                // Write PNG
                size_t adr=4*(dy-offsetY)*width+4*(dx-offsetX);
-               unsigned char scaledValue = unsigned char(value); //(pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value); 
+               unsigned char scaledValue = (unsigned char)value; //(pData.data.GetValue(dx,dy)/500)*255; //math::Floor(value); 
 			      if(colored)
 			      {
 				      double scaledHeight = ifWin[4];
@@ -583,9 +583,9 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, boos
 					      colHSV.h = 30;
 				      }
 				      Color::rgb colRGB = Color::hsv2rgb(colHSV);
-				      unsigned char sR = unsigned char((255.0)*colRGB.r);
-				      unsigned char sG = unsigned char((255.0)*colRGB.g);
-				      unsigned char sB = unsigned char((255.0)*colRGB.b);
+				      unsigned char sR = (unsigned char)((255.0)*colRGB.r);
+				      unsigned char sG = (unsigned char)((255.0)*colRGB.g);
+				      unsigned char sB = (unsigned char)((255.0)*colRGB.b);
 				      if (pPatternTile[adr+3] == 0)
 				      {
 					     pPatternTile[adr+0] = foundNData ? 0 : sR; 
@@ -696,9 +696,9 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, boos
                   colRGB.b = colRGB.b < 0.0f ? 0: colRGB.b > 0.99999f ? 1.0 : colRGB.b;
 
 				      // -->
-				      unsigned char sR = unsigned char((255.0)*colRGB.r);
-				      unsigned char sG = unsigned char((255.0)*colRGB.g);
-				      unsigned char sB = unsigned char((255.0)*colRGB.b);
+				      unsigned char sR = (unsigned char)((255.0)*colRGB.r);
+				      unsigned char sG = (unsigned char)((255.0)*colRGB.g);
+				      unsigned char sB = (unsigned char)((255.0)*colRGB.b);
 				      if (pPatternTile[adr+3] == 0)
 				      {
 					     pPatternTile[adr+0] = foundNData ? 0 : sR; 

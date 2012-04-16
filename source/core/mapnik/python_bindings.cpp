@@ -16,8 +16,6 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#include "render_tile.h"
-#include "google_projection.h"
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <mapnik/map.hpp>
@@ -90,14 +88,12 @@ extern "C"
          mapnikProj = projection(map.srs());
 
          // Convert to map projection (e.g. mercator co-ords EPSG:900913)
-         dtuple c0(lon0,lat0);
-         dtuple c1(lon1,lat1);
-         mapnikProj.forward(c0.a, c0.b);
-         mapnikProj.forward(c1.a, c1.b);
+         mapnikProj.forward(lon0, lat0);
+         mapnikProj.forward(lon1, lat1);
 
          // Bounding box for the tile
 
-         mapnik::Envelope<double> bbox = mapnik::Envelope<double>(c0.a,c0.b,c1.a,c1.b);
+         mapnik::Envelope<double> bbox = mapnik::Envelope<double>(lon0,lat0,lon1,lat1);
 
          map.resize(w, h);
          map.zoomToBox(bbox);

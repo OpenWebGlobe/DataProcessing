@@ -21,6 +21,8 @@ TARGETS=\
 	../../bin/ogFileLockTest \
 	../../bin/ogResample \
 	../../bin/ogTriangulate \
+	../../bin/ogTileRenderer \
+	../../bin/ogHillshading \
 	../../bin/libOpenWebGlobeProcessing.a
 
 LIBS=\
@@ -35,6 +37,8 @@ OGCALCEXTENT_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/calcextent
 OGCREATELAYER_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/createlayer -name *.cpp))
 OGDEPLOY_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/deploy -name *.cpp -not -name main_mpi.cpp))
 OGFILELOCKTEST_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/locktest -name *.cpp))
+OGTILERENDER_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/tilerenderer -name *.cpp -not -name main_mpi.cpp -and -not -name main_mpi_mdb.cpp -and -not -name main.cpp -and -not -name render_image.cpp -and -not -name rundemo.cpp))
+OGHILLSHADING_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/hillshading -name *.cpp -not -name main_mpi.cpp -and -not -name main.cpp))
 OGRESAMPLE_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/resample -name *.cpp -not -name main_mpi.cpp))
 RESAMPLE_MPI_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/resample -name *.cpp -not -name main.cpp))
 OGTRIANGULATE_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/triangulate -name *.cpp))
@@ -50,6 +54,12 @@ all: $(TARGETS)
 
 ../../bin/ogCreateLayer: $(OGCREATELAYER_OBJS) ../../bin/libOpenWebGlobeProcessing.a
 	$(CXX) -o $@ $(CFLAGS) $(OGCREATELAYER_OBJS) $(LIBS)
+
+../../bin/ogTileRenderer: $(OGTILERENDER_OBJS) ../../bin/libOpenWebGlobeProcessing.a
+	$(CXX) -o $@ $(CFLAGS) $(OGTILERENDER_OBJS) $(LIBS)
+
+../../bin/ogHillshading: $(OGHILLSHADING_OBJS) ../../bin/libOpenWebGlobeProcessing.a
+	$(CXX) -o $@ $(CFLAGS) $(OGHILLSHADING_OBJS) $(LIBS)
 
 ../../bin/ogDeploy: $(OGDEPLOY_OBJS) ../../bin/libOpenWebGlobeProcessing.a
 	$(CXX) -o $@ $(CFLAGS) $(OGDEPLOY_OBJS) $(LIBS)
@@ -81,6 +91,8 @@ clean:
 	rm -f $(OGRESAMPLE_OBJS)
 	rm -f $(RESAMPLE_MPI_OBJS)
 	rm -f $(OGTRIANGULATE_OBJS)
+	rm -f $(OGTILERENDERER_OBJS)
+	rm -f $(OGHILLSHADING_OBJS)
 	rm -f $(LIBOPENWEBGLOBEPROCESSING_OBJS)
 	rm -f $(TARGETS)
 

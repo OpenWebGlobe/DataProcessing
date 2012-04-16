@@ -298,12 +298,12 @@ int main(int argc, char *argv[])
       bTextured = true;
          // Coloring textures
       pTextures = boost::shared_array<ImageObject>(new ImageObject[6]);
-      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/ground.png", Img::PixelFormat::PixelFormat_RGBA, pTextures[0]);
-      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/grass.png", Img::PixelFormat::PixelFormat_RGBA, pTextures[1]);
-      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/snow.png", Img::PixelFormat::PixelFormat_RGBA, pTextures[2]);
-      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/rock.png", Img::PixelFormat::PixelFormat_RGBA, pTextures[3]);
-      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/desert.png", Img::PixelFormat::PixelFormat_RGBA, pTextures[4]);
-      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/water.png", Img::PixelFormat::PixelFormat_RGBA, pTextures[5]);
+      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/ground.png", Img::PixelFormat_RGBA, pTextures[0]);
+      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/grass.png", Img::PixelFormat_RGBA, pTextures[1]);
+      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/snow.png", Img::PixelFormat_RGBA, pTextures[2]);
+      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/rock.png", Img::PixelFormat_RGBA, pTextures[3]);
+      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/desert.png", Img::PixelFormat_RGBA, pTextures[4]);
+      ImageLoader::LoadFromDisk(Img::Format_PNG, "data/water.png", Img::PixelFormat_RGBA, pTextures[5]);
    }
 
 	   if(bError)

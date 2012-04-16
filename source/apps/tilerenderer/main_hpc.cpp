@@ -47,8 +47,6 @@
 #include "errors.h"
 #include <boost/program_options.hpp>
 #include <omp.h>
-#include <mpi.h>
-#include "mpi/Utils.h"
 #include "functions.h"
 #include "app/QueueManager.h"
 #include <boost/asio.hpp>
@@ -247,7 +245,7 @@ int main ( int argc , char** argv)
 	  ("mapnikdir", po::value<std::string>(), "[optional] different mapnik path from {App}/mapnik")
       ("minzoom", po::value<int>(), "[optional] min zoom level")
       ("maxzoom", po::value<int>(), "[optional] max zoom level")
-      ("bounds", po::value<std::vector<double>>(), "[optional] boundaries (default: -180.0 -90.0 180.0 90.0)")
+      ("bounds", po::value< std::vector<double> >(), "[optional] boundaries (default: -180.0 -90.0 180.0 90.0)")
       ("verbose", "[optional] Verbose mode")
       ("generatejobs","[optional] create a jobqueue which can be used in every process")
       ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
@@ -262,7 +260,6 @@ int main ( int argc , char** argv)
    po::variables_map vm;
    po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
    po::notify(vm);
-
   
 
    bool bError = false;
@@ -277,7 +274,8 @@ int main ( int argc , char** argv)
    {
       bError = true;
    }
-      
+   
+   
    if(vm.count("mapnikdir"))
    {
       mapnik_dir = vm["mapnikdir"].as<std::string>();
@@ -286,9 +284,9 @@ int main ( int argc , char** argv)
    }
    else
    {
-	   mapnik_dir = FilenameUtils::DelimitPath(CommonPath::GetCwd())+"mapnik/";
+	   mapnik_dir = FileSystem::GetCWD();
+	   mapnik_dir = mapnik_dir +"/mapnik/";
    }
-
       
    if(vm.count("mapdefinitions"))
       map_file = vm["mapdefinitions"].as<std::string>();
@@ -303,6 +301,7 @@ int main ( int argc , char** argv)
    }
    else
       bError = true;
+	
       
    if(vm.count("minzoom"))
       minZoom = vm["minzoom"].as<int>();
@@ -337,12 +336,12 @@ int main ( int argc , char** argv)
       std::cout << "overriding job queue\n";
    }else
       bOverrideQueue = false;
-
+	
      
    // CH Bounds  double bounds[4] = {5.955870,46.818020,10.492030,47.808380}; 
    if(vm.count("bounds"))
    {
-      std::vector<double> dv = vm["bounds"].as<std::vector<double>>();
+      std::vector<double> dv = vm["bounds"].as< std::vector<double> >();
       if(dv.size() != 4)
          bError = true;
       else
