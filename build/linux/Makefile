@@ -11,7 +11,7 @@ BOOST_THREADING=multi
 
 GDAL_VERSION=1.8.0
 
-CFLAGS=-fopenmp -I$(BOOST) -I/usr/include/freetype2 -I../../source/core -I/usr/include/gdal -O2 -Werror
+CFLAGS= -DMAPNIK_2 -fopenmp -I$(BOOST) -I/usr/include/freetype2 -I../../source/core -I/usr/include/gdal -O2 -Werror
 
 TARGETS=\
 	../../bin/ogAddData \

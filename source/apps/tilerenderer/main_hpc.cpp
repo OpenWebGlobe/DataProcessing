@@ -26,12 +26,16 @@
 #include <mapnik/datasource_cache.hpp>
 #include <mapnik/font_engine_freetype.hpp>
 #include <mapnik/agg_renderer.hpp>
-#include <mapnik/filter_factory.hpp>
+#ifndef MAPNIK_2
+	#include <mapnik/filter_factory.hpp>
+	#include <mapnik/envelope.hpp>
+#else
+	#include <mapnik/expression.hpp>
+#endif
 #include <mapnik/color_factory.hpp>
 #include <mapnik/image_util.hpp>
 #include <mapnik/config_error.hpp>
 #include <mapnik/load_map.hpp>
-#include <mapnik/envelope.hpp>
 #include <mapnik/proj_transform.hpp>
 #include <iostream>
 #include <string>

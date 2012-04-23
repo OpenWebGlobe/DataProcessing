@@ -28,7 +28,9 @@
 #include <mapnik/coord.hpp>
 #include <mapnik/load_map.hpp>
 #include <mapnik/agg_renderer.hpp>
-#include <mapnik/envelope.hpp>
+#ifndef MAPNIK_2
+	#include <mapnik/envelope.hpp>
+#endif
 #include <mapnik/image_util.hpp>
 #include <mapnik/map.hpp>
 #include <io/FileSystem.h>
@@ -57,27 +59,43 @@ inline void _renderTile(std::string tile_uri, mapnik::Map m, int x, int y, int z
       prj.forward(c1.a, c1.b);
 
       // Bounding box for the tile
-
+#ifndef MAPNIK_2
       mapnik::Envelope<double> bbox = mapnik::Envelope<double>(c0.a,c0.b,c1.a,c1.b);
-
-      m.resize(256, 256);
+      m.resize(256,256);
       m.zoomToBox(bbox);
+#else
+      mapnik::box2d<double> bbox(c0.a,c0.b,c1.a,c1.b);
+      m.resize(256,256);
+      m.zoom_to_box(bbox);
+#endif
       m.set_buffer_size(128);
 
       // Render image with default Agg renderer
-   
+#ifndef MAPNIK_2
       mapnik::Image32 buf(m.getWidth(),m.getHeight());
       mapnik::agg_renderer<mapnik::Image32> ren(m,buf);
+#else
+      mapnik::image_32 buf(m.width(), m.height());
+      mapnik::agg_renderer<mapnik::image_32> ren(m,buf);
+#endif
       ren.apply();
       if(lockEnabled)
       {
          int lockhandle = FileSystem::Lock(tile_uri);
+#ifndef MAPNIK_2
          mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
+#else
+	 mapnik::save_to_file<mapnik::image_data_32>(buf.data(),tile_uri,"png");
+#endif
          FileSystem::Unlock(tile_uri, lockhandle);
       }
       else
       {
+#ifndef MAPNIK_2
          mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
+#else
+	 mapnik::save_to_file<mapnik::image_data_32>(buf.data(),tile_uri,"png");
+#endif
       }
    }
 }
