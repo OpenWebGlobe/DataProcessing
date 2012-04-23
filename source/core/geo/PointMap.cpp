@@ -16,6 +16,8 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
+#ifdef _USE_POINTS
+
 #include "PointMap.h"
 
 #pragma warning (disable : 4290 )
@@ -278,3 +280,6 @@ bool PointMap::GetNextIndex(int64& idx)
 }
 
 //------------------------------------------------------------------------------
+
+
+#endif

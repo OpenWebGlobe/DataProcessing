@@ -16,30 +16,43 @@
 *     Licensed under MIT License. Read the file LICENSE for more information   *
 *******************************************************************************/
 
-#include "render_tile.h"
-#include "google_projection.h"
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <mapnik/map.hpp>
 #include <mapnik/datasource_cache.hpp>
 #include <mapnik/font_engine_freetype.hpp>
 #include <mapnik/agg_renderer.hpp>
-#include <mapnik/filter_factory.hpp>
+#ifndef MAPNIK_2
+  #include <mapnik/filter_factory.hpp>
+  #include <mapnik/envelope.hpp>
+#else
+  #include <mapnik/expression.hpp>
+#endif
 #include <mapnik/color_factory.hpp>
 #include <mapnik/image_util.hpp>
 #include <mapnik/config_error.hpp>
 #include <mapnik/load_map.hpp>
-#include <mapnik/envelope.hpp>
 #include <mapnik/proj_transform.hpp>
+
+#ifdef _MSC_VER
+ #define PYTHON_MAPNIK_API __declspec(dllexport)
+ #define _WIN_
+#else
+ #define PYTHON_MAPNIK_API
+#endif
+ 
+
+
 
 extern "C"
 {
-   __declspec(dllexport) char* test(char * a)
+
+   PYTHON_MAPNIK_API char* test(char * a)
    {
       return a; 
    }
 
-   __declspec(dllexport) char* PyRenderTile(char * mapnik_dir, char* mapdef, int w, int h, double lon0, double lat0, double lon1, double lat1, char* output)
+   PYTHON_MAPNIK_API char* PyRenderTile(char * mapnik_dir, char* mapdef, int w, int h, double lon0, double lat0, double lon1, double lat1, char* output)
    {
       std::stringstream plugin_path;
       mapnik::projection mapnikProj;
@@ -47,11 +60,15 @@ extern "C"
       try
       {
          mapnik::Map map(w, h);
+#ifdef _WIN_
    #ifdef _DEBUG
          plugin_path <<  mapnik_dir << "input/debug/";
    #else
          plugin_path << mapnik_dir << "input/release/";   
    #endif
+#else
+	plugin_path << mapnik_dir << "input/";
+#endif
          datasource_cache::instance()->register_datasources(plugin_path.str().c_str());
          std::stringstream font_dir;
          font_dir << mapnik_dir << "fonts/dejavu-fonts-ttf-2.30/ttf/";
@@ -80,45 +97,48 @@ extern "C"
          mapnikProj = projection(map.srs());
 
          // Convert to map projection (e.g. mercator co-ords EPSG:900913)
-         dtuple c0(lon0,lat0);
-         dtuple c1(lon1,lat1);
-         mapnikProj.forward(c0.a, c0.b);
-         mapnikProj.forward(c1.a, c1.b);
+         mapnikProj.forward(lon0, lat0);
+         mapnikProj.forward(lon1, lat1);
 
          // Bounding box for the tile
-
-         mapnik::Envelope<double> bbox = mapnik::Envelope<double>(c0.a,c0.b,c1.a,c1.b);
-
+#ifndef MAPNIK_2
+         mapnik::Envelope<double> bbox = mapnik::Envelope<double>(lon0,lat0,lon1,lat1);
+	 map.resize(w,h);
+	 map.zoomToBox(bbox);
+	 map.set_buffer_size(128);
+	 mapnik::Image32 buf(map.getWidth(),map.getHeight());
+	 mapnik::agg_renderer<mapnik::Image32> ren(map,buf);
+#else	 
+	 mapnik::box2d<double> bbox(lon0,lat0,lon1,lat1);
          map.resize(w, h);
-         map.zoomToBox(bbox);
+         map.zoom_to_box(bbox);
          map.set_buffer_size(128);
-
-         // Render image with default Agg renderer
    
-         mapnik::Image32 buf(map.getWidth(),map.getHeight());
-         mapnik::agg_renderer<mapnik::Image32> ren(map,buf);
+         mapnik::image_32 buf(map.width(),map.height());
+         mapnik::agg_renderer<mapnik::image_32> ren(map,buf);
+#endif
          ren.apply();
          for(size_t i = 0; i < w*h*4; i++)
          {
             output[i] = buf.raw_data()[i];
          }
          //mapnik::save_to_file<mapnik::ImageData32>(buf.data(),"bla.png","png");
-         return "S";
+         return (char*)"S";
       }
       catch ( const mapnik::config_error & ex )
       {
          std::cout << "### Configuration ERROR: " << ex.what() << std::flush;
-         return "E1";
+         return (char*)"E1";
       }
       catch ( const std::exception & ex )
       {
          std::cout << "### std::exception: " << ex.what() << std::flush;
-         return "E2";
+         return (char*)"E2";
       }
       catch ( ... )
       {
          std::cout << "### Unknown exception." << std::flush;
-         return "E3";
+         return (char*)"E3";
       }
    }
 }

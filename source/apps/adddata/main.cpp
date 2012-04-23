@@ -22,7 +22,9 @@
 #include "imagedata.h"
 #include "elevationdata.h"
 #include "rawimagedata.h"
+#ifdef _USE_POINTS
 #include "pointdata.h"
+#endif
 #include "app/ProcessingSettings.h"
 #include "geo/MercatorQuadtree.h"
 #include "geo/CoordinateTransformation.h"
@@ -351,10 +353,12 @@ int main(int argc, char *argv[])
    {
       retval = ElevationData::process(qLogger, qSettings, sLayer, bVerbose, bLock, bVirtual, epsg, sFile, bFill, lod, x0, y0, x1, y1);
    }
+#ifdef _USE_POINTS   
    else if (eLayer == POINT_LAYER)
    {
       retval = PointData::process(qLogger, qSettings, sLayer, bVerbose, bLock, epsg, sFile, bFill, lod, x0, y0, z0, x1, y1, z1);
    }
+#endif
 
    //---------------------------------------------------------------------------
    // UPDATE PROCESS STATUS

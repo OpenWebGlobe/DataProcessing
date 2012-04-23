@@ -308,6 +308,7 @@ int main(int argc, char *argv[])
       out << "calculated in: " << double(t1-t0)/double(CLOCKS_PER_SEC) << " s \n";
       qLogger->Info(out.str());
    }
+#ifdef _USE_POINTS
    else if (layertype == 2) // point
    {
       std::string sPointLayerDir = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayer;
@@ -449,6 +450,7 @@ int main(int argc, char *argv[])
          it++;
       }*/
    }
+#endif
 
    return 0;
 }
