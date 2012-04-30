@@ -57,17 +57,16 @@ o	sudo apt-get install libboost-iostreams1.46-dev
 o	sudo apt-get install -y libfreetype6-dev libcairo2-dev libcairomm-1.0-dev
 o	sudo apt-get install -y libgeotiff-dev libtiff4 libtiff4-dev libtiffxx0c2
 o	sudo apt-get install -y libsigc++-dev libsigc++0c2 libsigx-2.0-2 libsigx-2.0-dev
-o	sudo apt-get install -y python-gdal
+o	sudo apt-get install -y python-gdal python-imaging
+o	sudo apt-get install  ttf-unifont ttf-dejavu ttf-dejavu-core ttf-dejavu-extra
 o	sudo apt-get install -y imagemagick ttf-dejavu
+o	sudo apt-get install libgdal1-dev python-gdal postgresql-8.4 postgresql-server-dev-8.4 postgresql-contrib-8.4 postgresql-8.4-postgis libsqlite3-dev
+o	sudo apt-get install -y g++ cpp libicu-dev libxml2 libxml2-dev libjpeg-dev libltdl7 libltdl-dev libpng-dev build-essential python-nose
+
 Install Mapnik
 •	In {your_path}/DataProcessing
 o	mkdir external
 o	cd external
-o	git clone https://github.com/mapnik/mapnik.git -b 0.7.x 
-•	Build Mapnik from sourc
-o	cd {your_path}/DataProcessing /external/mapnik
-o	python scons/scons.py configure  (if this doesn’t fails continue)
-o	python scons/scons.py
-o	python scons/scons.py install
-o  cd build/linux
-o  sudo make
+o	git clone http://github.com/mapnik/mapnik
+o	cd mapnik
+o	./configure && make && sudo make install
