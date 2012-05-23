@@ -123,11 +123,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\source\core\mapnik\google_projection.h" />
-    <ClInclude Include="..\..\source\core\mapnik\render_tile.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\source\core\mapnik\google_projection.cpp" />
     <ClCompile Include="..\..\source\core\mapnik\python_bindings.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

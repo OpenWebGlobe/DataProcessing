@@ -249,7 +249,10 @@ int main ( int argc , char** argv)
 	  ("mapnikdir", po::value<std::string>(), "[optional] different mapnik path from {App}/mapnik")
       ("minzoom", po::value<int>(), "[optional] min zoom level")
       ("maxzoom", po::value<int>(), "[optional] max zoom level")
-      ("bounds", po::value< std::vector<double> >(), "[optional] boundaries (default: -180.0 -90.0 180.0 90.0)")
+      ("lon0",   po::value<double>(), "[optional] boundary lon0")
+      ("lat0",   po::value<double>(), "[optional] boundary lat0")
+      ("lon1",   po::value<double>(), "[optional] boundary lon1")
+      ("lat1",   po::value<double>(), "[optional] boundary lat1")
       ("verbose", "[optional] Verbose mode")
       ("generatejobs","[optional] create a jobqueue which can be used in every process")
       ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
@@ -258,13 +261,7 @@ int main ( int argc , char** argv)
       ("enablelocking", "[opional] lock files to prevent concurrency on parallel processes")
       ("expirelist", po::value<std::string>(), "[optional] list of expired tiles for update rendering (global rendering will be disabled)")
       ;
-   
-   po::positional_options_description p;
-   p.add("bounds", -1);
-   po::variables_map vm;
-   po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
-   po::notify(vm);
-  
+   po::variables_map vm;  
 
    bool bError = false;
    //---------------------------------------------------------------------------
@@ -301,7 +298,7 @@ int main ( int argc , char** argv)
    if(vm.count("layername"))
    {
 	  std::string sLayerName = vm["layername"].as<std::string>();
-      output_path = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayerName;
+      output_path = FilenameUtils::DelimitPath(qSettings->GetPath()) + sLayerName + "/tiles/";
    }
    else
       bError = true;
@@ -343,15 +340,21 @@ int main ( int argc , char** argv)
 	
      
    // CH Bounds  double bounds[4] = {5.955870,46.818020,10.492030,47.808380}; 
-   if(vm.count("bounds"))
+   if(vm.count("lon0"))
    {
-      std::vector<double> dv = vm["bounds"].as< std::vector<double> >();
-      if(dv.size() != 4)
-         bError = true;
-      else
-      {
-         bounds[0] = dv[0]; bounds[1] = dv[1]; bounds[2] =dv [2]; bounds[3] = dv[3];
-      }
+      bounds[0] = vm["lon0"].as<double>();
+   }
+   if(vm.count("lat0"))
+   {
+      bounds[1] = vm["lat0"].as<double>();
+   }
+   if(vm.count("lon1"))
+   {
+      bounds[2] = vm["lon1"].as<double>();
+   }
+   if(vm.count("lat1"))
+   {
+      bounds[3] = vm["lat1"].as<double>();
    }
    int numThreads = 1;
    if (vm.count("numthreads"))
