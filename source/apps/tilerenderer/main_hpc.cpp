@@ -40,7 +40,7 @@
 #include <iostream>
 #include <string>
 #include <boost/filesystem.hpp>
-#include "render_tile.h"
+#include "rendertile.h"
 #include <string/FilenameUtils.h>
 #include <string/StringUtils.h>
 #include <io/FileSystem.h>
@@ -73,6 +73,7 @@ std::string map_file;
 std::string mapnik_dir;
 std::string output_path;
 std::string expire_list;
+std::string rootPath;
 bool bUpdateMode;
 bool bVerbose = false;
 bool bGenerateJobs = false;
@@ -83,6 +84,10 @@ bool bLockEnabled = false;
 double bounds[4];
 int minZoom;
 int maxZoom;
+bool _bCompose = false;
+std::string _sCompositionLayer = "";
+std::string _sCompositionMode = "overlay";
+double _dCompositionAlpha = 1.0;
 std::vector<Tile> vExpireList;
 std::string sJobQueueFile;
 std::string sProcessHostName;
@@ -94,10 +99,12 @@ void ProcessJob(const SJob& job)
 {
    std::stringstream ss;
    ss << output_path << job.zoom << "/" << job.x << "/" << job.y << ".png";
+   std::stringstream ss1;
+   ss1 << rootPath << "/" << _sCompositionLayer << "/tiles/"<< job.zoom << "/" << job.x << "/" << job.y << ".png";
    //std::cout << "..Render tile " << ss.str() << "on rank: " << rank << "   Tilesize: "<< g_map.getWidth() << " Projection: " << g_mapnikProj.params() << "\n";
    try
    {
-   _renderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose, bOverrideTiles, bLockEnabled);
+    TileRenderer::RenderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose, bOverrideTiles, bLockEnabled,ss1.str(), _sCompositionMode, _dCompositionAlpha);
    }catch(std::exception ex)
    {
       std::cout << std::cout << "[" << sProcessHostName<< "] ### RENDER ERROR @ z: "<< job.zoom<< "x: "<< job.x<< "y: "<< job.y << "\n";
@@ -234,6 +241,7 @@ int main ( int argc , char** argv)
    //---------------------------------------------------------------------------
    // -- init options:
    boost::shared_ptr<ProcessingSettings> qSettings =  ProcessingUtils::LoadAppSettings();
+   rootPath = qSettings->GetPath();
 
    if (!qSettings)
    {
@@ -253,6 +261,9 @@ int main ( int argc , char** argv)
       ("lat0",   po::value<double>(), "[optional] boundary lat0")
       ("lon1",   po::value<double>(), "[optional] boundary lon1")
       ("lat1",   po::value<double>(), "[optional] boundary lat1")
+	  ("compositionlayer",po::value<std::string>(), "[optional] existing layer to compose with")
+	  ("compositionmode",po::value<std::string>(), "[optional] composition mode when using composition layer [unify, overlay]")
+	  ("compositionalpha",po::value<double>(), "[optional] composition alpha value when using composition layer")
       ("verbose", "[optional] Verbose mode")
       ("generatejobs","[optional] create a jobqueue which can be used in every process")
       ("overridejobqueue","[optional] overrides existing queue file if exist (only when generatejobs is set!)")
@@ -338,7 +349,26 @@ int main ( int argc , char** argv)
    }else
       bOverrideQueue = false;
 	
-     
+   if(vm.count("compositionlayer"))
+   {
+      _sCompositionLayer = vm["compositionlayer"].as<std::string>();
+	  _bCompose = true;
+	  std::string compPath = FilenameUtils::DelimitPath(qSettings->GetPath()) + _sCompositionLayer + "/tiles/";
+	  if(!FileSystem::DirExists(compPath))
+	  {
+		  std::cout << "### ERROR: Composition layer does not exist or isn't valid\n";
+		  bError = true;
+	  }
+   }
+   if(vm.count("compositionmode"))
+   {
+      _sCompositionMode = vm["compositionmode"].as<std::string>();
+   }
+   if(vm.count("compositionalpha"))
+   {
+      _dCompositionAlpha = vm["compositionalpha"].as<double>();
+   }
+
    // CH Bounds  double bounds[4] = {5.955870,46.818020,10.492030,47.808380}; 
    if(vm.count("lon0"))
    {

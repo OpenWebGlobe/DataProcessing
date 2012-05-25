@@ -65,7 +65,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\win32\icu;$(SolutionDir)..\..\external\win32;$(SolutionDir)lib\Debug;$(SolutionDir)..\..\external\mapnik_msvc2010\lib;$(MSMPI_LIB32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>msmpi.lib;OpenWebGlobeProcessingd.lib;mapnik_0.7.2d.lib;icuucd.lib;freetyped.lib;ltdl.lib;zlibd.lib;pngd.lib;proj.lib;tiffd.lib;libxmld.lib;libcurld.lib;gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenWebGlobeProcessingd.lib;mapnik_0.7.2d.lib;icuucd.lib;freetyped.lib;ltdl.lib;zlibd.lib;pngd.lib;proj.lib;tiffd.lib;libxmld.lib;libcurld.lib;gdal_i.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -105,7 +105,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\external\boost\lib\win32-msvc10;$(SolutionDir)..\..\external\win32;$(SolutionDir)..\..\external\win32\icu;$(SolutionDir)..\..\external\mapnik_msvc2010\lib;$(SolutionDir)lib\Release;$(MSMPI_LIB32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>msmpi.lib;OpenWebGlobeProcessing.lib;gdal_i.lib;mapnik_0.7.2.lib;icuuc.lib;freetype.lib;ltdl.lib;zlib.lib;png.lib;proj.lib;tiff.lib;libxml.lib;libcurl.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenWebGlobeProcessing.lib;gdal_i.lib;mapnik_0.7.2.lib;icuuc.lib;freetype.lib;ltdl.lib;zlib.lib;png.lib;proj.lib;tiff.lib;libxml.lib;libcurl.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>
