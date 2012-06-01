@@ -56,9 +56,9 @@ public:
 		);
 protected:
 #ifndef MAPNIK_2
-	static void Compose(std::string compositionLayerPath, std::string compositionMode, double compositionAlpha, int width, int height, mapnik::Image32* buf);
+	static void Compose(std::string compositionLayerPath, std::string compositionMode, double compositionAlpha, int width, int height, mapnik::Image32* buf,int zz, int xx, int yy);
 #else
-	static void Compose(std::string compositionLayerPath, std::string compositionMode, double compositionAlpha, int width, int height, mapnik::image_32* buf);
+	static void Compose(std::string compositionLayerPath, std::string compositionMode, double compositionAlpha, int width, int height, mapnik::image_32* buf,int zz, int xx, int yy);
 #endif
 };
 #endif

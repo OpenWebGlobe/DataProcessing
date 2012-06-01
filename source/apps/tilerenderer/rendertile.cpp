@@ -32,6 +32,8 @@ void TileRenderer::RenderTile(std::string tile_uri, mapnik::Map m, int x, int y,
    }
    else
    {
+	   
+       
       // Calculate pixel positions of bottom-left & top-right
       ituple p0(x * 256, (y + 1) * 256);
       ituple p1((x + 1) * 256, y * 256);
@@ -39,6 +41,8 @@ void TileRenderer::RenderTile(std::string tile_uri, mapnik::Map m, int x, int y,
       // Convert to LatLong (EPSG:4326)
       dtuple l0 = tileproj.pixel2GeoCoord(p0, zoom);
       dtuple l1 = tileproj.pixel2GeoCoord(p1, zoom);
+
+	  
 
       // Convert to map projection (e.g. mercator co-ords EPSG:900913)
       dtuple c0(l0.a,l0.b);
@@ -72,10 +76,10 @@ void TileRenderer::RenderTile(std::string tile_uri, mapnik::Map m, int x, int y,
       {
          int lockhandle = FileSystem::Lock(tile_uri);
 #ifndef MAPNIK_2
-		 Compose(compositionLayerPath, compositionMode, compositionAlpha, m.getWidth(),m.getHeight(),&buf);
+		 Compose(compositionLayerPath, compositionMode, compositionAlpha, m.getWidth(),m.getHeight(),&buf, zoom, x,y);
          mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
 #else
-	 Compose(compositionLayerPath, compositionMode, compositionAlpha, m.width(),m.height(),&buf);
+	 Compose(compositionLayerPath, compositionMode, compositionAlpha, m.width(),m.height(),&buf, zoom, x,y);
 	 mapnik::save_to_file<mapnik::image_data_32>(buf.data(),tile_uri,"png");
 #endif
          FileSystem::Unlock(tile_uri, lockhandle);
@@ -83,10 +87,10 @@ void TileRenderer::RenderTile(std::string tile_uri, mapnik::Map m, int x, int y,
       else
       {
 #ifndef MAPNIK_2
-		 Compose(compositionLayerPath, compositionMode, compositionAlpha, m.getWidth(),m.getHeight(),&buf);
+		 Compose(compositionLayerPath, compositionMode, compositionAlpha, m.getWidth(),m.getHeight(),&buf, zoom, x,y);
          mapnik::save_to_file<mapnik::ImageData32>(buf.data(),tile_uri,"png");
 #else
-		Compose(compositionLayerPath, compositionMode, compositionAlpha, m.width(),m.height(),&buf);
+		Compose(compositionLayerPath, compositionMode, compositionAlpha, m.width(),m.height(),&buf, zoom, x,y);
 		mapnik::save_to_file<mapnik::image_data_32>(buf.data(),tile_uri,"png");
 #endif
       }
@@ -94,20 +98,47 @@ void TileRenderer::RenderTile(std::string tile_uri, mapnik::Map m, int x, int y,
 }
 
 #ifndef MAPNIK_2
-void TileRenderer::Compose(std::string compositionLayerPath, std::string compositionMode, double compositionAlpha, int width, int height, mapnik::Image32* buf)
+void TileRenderer::Compose(std::string compositionLayerPath, std::string compositionMode, double compositionAlpha, int width, int height, mapnik::Image32* buf, int zz, int xx, int yy)
 #else
-void TileRenderer::Compose(std::string compositionLayerPath, std::string compositionMode, double compositionAlpha, int width, int height, mapnik::image_32* buf)
+void TileRenderer::Compose(std::string compositionLayerPath, std::string compositionMode, double compositionAlpha, int width, int height, mapnik::image_32* buf,int zz, int xx, int yy)
 #endif
 {
+	std::string compositionTilePath = "";
 	 // COMPOSITION MODE
 	if(compositionLayerPath != "")
 	{
 		//std::stringstream str;
 		//str<< compositionLayerPath << "/tiles/" << zoom << "/" << x << "/" << y << ".png";
 		ImageObject compImg;
-		if(ImageLoader::LoadFromDisk(Img::Format_PNG, compositionLayerPath, Img::PixelFormat_RGBA,compImg))
+
+		// find possible composition
+		  int compositionLevel = 1;
+		  double modX = 1;
+		  double modY = 1;
+		  if(compositionLayerPath != "")
+		  {
+			for(size_t h = zz; h > 0; h--)
+			{
+				std::stringstream ss;
+				ss << compositionLayerPath <<  h << "/" << (math::Floor((double)xx/(compositionLevel > 0? compositionLevel:1))) << "/" << (math::Floor((double)yy/(compositionLevel > 0? compositionLevel:1))) << ".png";
+				if(FileSystem::FileExists(ss.str()))
+				{
+					compositionTilePath = ss.str();
+					double dx = ((double)xx/compositionLevel);
+					double dy = ((double)yy/compositionLevel);
+					int ix = int(math::Floor(dx));
+					int iy = int(math::Floor(dy));
+					modX =  dx - ix;
+					modY =  dy - iy;
+					break;
+				}
+				compositionLevel *= 2;
+			}
+		  }
+		
+		if(ImageLoader::LoadFromDisk(Img::Format_PNG, compositionTilePath, Img::PixelFormat_RGBA,compImg))
 		{
-			if(compositionMode == "unify")
+			if(compositionMode == "unify" || compositionMode == "unifyopaque")
 			{
 				for(size_t y = 0; y < height; y++)
 				{
@@ -115,13 +146,31 @@ void TileRenderer::Compose(std::string compositionLayerPath, std::string composi
 					{
 						unsigned char comp[4];
 						int adr = 4*y*width+4*x;
-						compImg.ReadPixel4(x,y,comp[0],comp[1],comp[2],comp[3]);
+						if(compositionLevel > 0)
+						{
+							double pX = ((double)x/compositionLevel)+(modX*width);
+							double pY = ((double)y/compositionLevel)+(modY*height);
+							compImg.ReadPixelBilinear4(pX,pY,comp[0],comp[1],comp[2],comp[3]);
+						}
+						else
+						{
+							compImg.ReadPixel4(x,y,comp[0],comp[1],comp[2],comp[3]);
+						}
+						
 						unsigned int compInt = 0x00000000;
 						compInt = compInt | comp[3];
 						compInt = (compInt << 8) | comp[2];
 						compInt = (compInt << 8) | comp[1];
 						compInt = (compInt << 8) | comp[0];
-						unsigned char alpha = buf->raw_data()[adr+3];
+						unsigned char alpha;
+						if(compositionMode == "unifyopaque")
+						{
+							alpha = buf->raw_data()[adr+3] > 0 ? 255 : 0;
+						}
+						else
+						{
+							alpha = buf->raw_data()[adr+3];
+						}
 						//buf.setPixel(x,y,compInt);
 						buf->blendPixel(x,y,compInt,(int)alpha);
 					}
@@ -135,7 +184,16 @@ void TileRenderer::Compose(std::string compositionLayerPath, std::string composi
 					{
 						unsigned char comp[4];
 						int adr = 4*y*width+4*x;
-						compImg.ReadPixel4(x,y,comp[0],comp[1],comp[2],comp[3]);
+						if(compositionLevel > 0)
+						{
+							int pX = (x/compositionLevel)+(modX*width);
+							int pY = (y/compositionLevel)+(modY*height);
+							compImg.ReadPixelBilinear4(pX,pY,comp[0],comp[1],comp[2],comp[3]);
+						}
+						else
+						{
+							compImg.ReadPixel4(x,y,comp[0],comp[1],comp[2],comp[3]);
+						}
 						unsigned int compInt = 0x00000000;
 						compInt = compInt | comp[3];
 						compInt = (compInt << 8) | comp[2];

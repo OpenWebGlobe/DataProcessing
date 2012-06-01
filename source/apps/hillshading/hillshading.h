@@ -263,16 +263,16 @@ inline void _ReadRawImageValueBilinear(float* buffer, int bufferwidth, int buffe
    _ReadRawImageDataMem(buffer, bufferwidth, bufferheight, u11,v11,&value11);
 
 
-   if (value00<-5000.0f || value10<-5000.0f || value01<-5000.0f || value11<-5000.0f)
+   if (value00<-1000.0f || value10<-1000.0f || value01<-1000.0f || value11<-1000.0f)
    {
       *value = -9999.0f;
       return;
    }
-   if(value00 == 0.0f)
+   /*if(value00 == 0.0f)
    {
       *value = 0.0f;
       return;
-   }
+   }*/
 
    double valued;
 
@@ -293,7 +293,7 @@ inline void _ReadImageDataMem(unsigned char* buffer, int bufferwidth, int buffer
    *r = buffer[bufferwidth*4*y+4*x];
    *g = buffer[bufferwidth*4*y+4*x+1];
    *b = buffer[bufferwidth*4*y+4*x+2];
-   *a = 255;
+   *a = buffer[bufferwidth*4*y+4*x+3];
 }
 
 //---------------------------------------------------------------------------
@@ -598,20 +598,25 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, boos
 			      {
                    ImageObject ground = textures[0];
                    ImageObject grass = textures[1];
-                   ImageObject snow = textures[2];
+				   /* Temp SNOW is 2 */
+                   ImageObject snow = textures[3];
                    ImageObject rock = textures[3];
                    ImageObject desert = textures[4];
                    ImageObject water = textures[5];
 				      // TEXTURED
 				      double scaledHeight = ifWin[4];
 				      Color::rgb colRGB;
-                  if( ifWin[4] == 0.0f)
+				  int step1 = 200;
+				  int step2 = 600;
+				  int step3 = 1300;
+				  int step4 = 2200;
+                  /*if( ifWin[4] == 0.0f)
                   {
                      unsigned char r,g,b,a;
 					      water.ReadPixel4((dx-offsetX),(dy-offsetY),r,g,b,a);
 					      colRGB.r = double(r)/255.0;colRGB.g = double(g)/255.0;colRGB.b = double(b)/255.0;
                   }
-                  else if(scaledHeight <= 300)
+                  else*/ if(scaledHeight <= step1)
 				      {
 					      Color::rgb col1;
 					      Color::rgb col2;
@@ -620,9 +625,9 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, boos
 					      col1.r = double(r)/255.0;col1.g = double(g)/255.0;col1.b = double(b)/255.0;
 					      ground.ReadPixel4((dx-offsetX),(dy-offsetY),r,g,b,a);
 					      col2.r = double(r)/255.0;col2.g = double(g)/255.0;col2.b = double(b)/255.0;
-					      colRGB = Color::overblendrgb(col1,col2,(scaledHeight)/300);
+					      colRGB = Color::overblendrgb(col1,col2,(scaledHeight)/step1);
 				      }
-				      else if(scaledHeight > 300 && scaledHeight <= 400)
+				      else if(scaledHeight > step1 && scaledHeight <= step2)
 				      {
 					      Color::rgb col1;
 					      Color::rgb col2;
@@ -631,15 +636,15 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, boos
 					      col1.r = double(r)/255.0;col1.g = double(g)/255.0;col1.b = double(b)/255.0;
 					      grass.ReadPixel4((dx-offsetX),(dy-offsetY),r,g,b,a);
 					      col2.r = double(r)/255.0;col2.g = double(g)/255.0;col2.b = double(b)/255.0;
-					      colRGB = Color::overblendrgb(col1,col2,(scaledHeight-300)/100);
+					      colRGB = Color::overblendrgb(col1,col2,(scaledHeight-step1)/(step2-step1));
 				      }
-				      else if( scaledHeight <= 1400)
+				      else if( scaledHeight <= step3)
 				      {
 					      unsigned char r,g,b,a;
 					      grass.ReadPixel4((dx-offsetX),(dy-offsetY),r,g,b,a);
 					      colRGB.r = double(r)/255.0;colRGB.g = double(g)/255.0;colRGB.b = double(b)/255.0;
 				      }
-				     else if(scaledHeight > 1400 && scaledHeight <= 1600)
+				     else if(scaledHeight > step3 && scaledHeight <= step4)
 				      {
 					      Color::rgb col1;
 					      Color::rgb col2;
@@ -648,7 +653,7 @@ inline void process_hillshading(std::string filepath, HSProcessChunk pData, boos
 					      col1.r = double(r)/255.0;col1.g = double(g)/255.0;col1.b = double(b)/255.0;
 					      snow.ReadPixel4((dx-offsetX),(dy-offsetY),r,g,b,a);
 					      col2.r = double(r)/255.0;col2.g = double(g)/255.0;col2.b = double(b)/255.0;
-					      colRGB = Color::overblendrgb(col1,col2,((scaledHeight-1400)/200));
+					      colRGB = Color::overblendrgb(col1,col2,((scaledHeight-step3)/(step4-step3)));
 				      }
 				      else //if(scaledHeight > 1600)
 				      {

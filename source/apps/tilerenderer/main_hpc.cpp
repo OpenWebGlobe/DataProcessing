@@ -100,10 +100,11 @@ void ProcessJob(const SJob& job)
    std::stringstream ss;
    ss << output_path << job.zoom << "/" << job.x << "/" << job.y << ".png";
    std::stringstream ss1;
-   ss1 << rootPath << "/" << _sCompositionLayer << "/tiles/"<< job.zoom << "/" << job.x << "/" << job.y << ".png";
+   ss1 << rootPath << "/" << _sCompositionLayer << "/tiles/";
    //std::cout << "..Render tile " << ss.str() << "on rank: " << rank << "   Tilesize: "<< g_map.getWidth() << " Projection: " << g_mapnikProj.params() << "\n";
    try
    {
+
     TileRenderer::RenderTile(ss.str(),g_map,job.x,job.y,job.zoom,g_gProj,g_mapnikProj, bVerbose, bOverrideTiles, bLockEnabled,ss1.str(), _sCompositionMode, _dCompositionAlpha);
    }catch(std::exception ex)
    {

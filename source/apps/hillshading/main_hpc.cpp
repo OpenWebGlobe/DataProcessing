@@ -357,12 +357,22 @@ int main(int argc, char *argv[])
             layerTileY1 = layerTileY1*2;
          }
       }
+	  else if(iLayerMaxZoom < layermaxlod)
+      {
+         for(size_t ll = layermaxlod; ll > iLayerMaxZoom; ll--)
+         {
+            layerTileX0 = math::Floor(layerTileX0/2.0);
+            layerTileX1 = math::Floor(layerTileX1/2.0);
+            layerTileY0 = math::Floor(layerTileY0/2.0);
+            layerTileY1 = math::Floor(layerTileY1/2.0);
+         }
+      }
       else
       {
          iLayerMaxZoom = layermaxlod;
          
       }
-      if(iLayerMinZoom == 0 || iLayerMinZoom > layermaxlod)
+      if(iLayerMinZoom == 0)
       {
          iLayerMinZoom = layermaxlod;
       }
