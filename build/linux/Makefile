@@ -9,7 +9,7 @@ BOOST_VARIANT=release
 BOOST_LINK=static
 BOOST_THREADING=multi
 
-GDAL_VERSION=1.8.0
+GDAL_VERSION=
 
 CFLAGS= -DMAPNIK_2 -fopenmp -I$(BOOST) -I/usr/include/freetype2 -I../../source/core -I/usr/include/gdal -O2 -Werror
 
@@ -30,14 +30,14 @@ LIBS=\
      $(foreach lib,$(BOOST_LIBS),$(BOOST)/libboost_$(lib).so) \
      -lgdal$(GDAL_VERSION) \
      -lxerces-c \
-     -lmapnik
+     -lmapnik2
 
 LIBSSTATIC=\
 	-Wl,--whole-archive ../../bin/libOpenWebGlobeProcessing.a -Wl,--no-whole-archive \
 	$(foreach lib,$(BOOST_LIBS),$(BOOST)/libboost_$(lib).a) \
 	-lgdal$(GDAL_VERSION) \
 	-lxerces-c \
-	-lmapnik
+	-lmapnik2
 
 OGADDDATA_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/adddata -name *.cpp))
 OGCALCEXTENT_OBJS=$(patsubst %.cpp,%.o,$(shell find ../../source/apps/calcextent -name *.cpp))
