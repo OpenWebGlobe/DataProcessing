@@ -131,9 +131,12 @@ int _start(int argc, char *argv[], boost::shared_ptr<Logger> qLogger, const std:
       po::store(po::parse_command_line(argc, argv, desc), vm);
       po::notify(vm);
    }
-   catch (std::exception&)
+   catch (const std::exception &ex)
    {
       bError = true;
+      std::cout << "Error when parsing command line options:\n" << ex.what() << "\n\n";
+      std::cout << desc << "\n";
+      return 4;
    }
 
    std::string sLayerName;
