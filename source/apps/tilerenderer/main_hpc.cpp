@@ -30,7 +30,10 @@
 	#include <mapnik/filter_factory.hpp>
 	#include <mapnik/envelope.hpp>
 #else
-	#include <mapnik/expression.hpp>
+  #include <mapnik/expression_evaluator.hpp>
+  #include <mapnik/expression_grammar.hpp>
+  #include <mapnik/expression_node.hpp>
+  #include <mapnik/expression_string.hpp>
 #endif
 #include <mapnik/color_factory.hpp>
 #include <mapnik/image_util.hpp>
