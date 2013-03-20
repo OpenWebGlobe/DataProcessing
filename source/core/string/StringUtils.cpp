@@ -23,6 +23,11 @@
 
 std::wstring StringUtils::Utf8_To_wstring(const std::string& utf8string)
 {
+#if defined(_M_X64) || defined(__amd64__)
+   std::wstring resultstring;
+   resultstring.assign(utf8string.begin(), utf8string.end());
+   return resultstring;
+#else
    if (utf8string.length()==0)
    {
       return std::wstring();
@@ -65,12 +70,18 @@ std::wstring StringUtils::Utf8_To_wstring(const std::string& utf8string)
       assert(false);
    }
    return L"";
+#endif
 }
 
 //------------------------------------------------------------------------------
 
 std::string StringUtils::wstring_To_Utf8(const std::wstring& widestring)
 {
+#if defined(_M_X64) || defined(__amd64__)
+   std::string resultstring;
+   resultstring.assign(widestring.begin(), widestring.end());
+   return resultstring;
+#else
    size_t widesize = widestring.length();
 
    if (sizeof(wchar_t) == 2)
@@ -112,6 +123,7 @@ std::string StringUtils::wstring_To_Utf8(const std::wstring& widestring)
       assert(false);
    }
    return "";
+#endif
 }
 
 //------------------------------------------------------------------------------
